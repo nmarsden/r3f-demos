@@ -1,28 +1,17 @@
-import { createRoot } from 'react-dom/client'
-import { Canvas } from '@react-three/fiber'
-import { getProject } from '@theatre/core'
-import studio from '@theatre/studio'
-import extension from '@theatre/r3f/dist/extension'
-import {editable as e, PerspectiveCamera, SheetProvider} from '@theatre/r3f'
 import './index.css'
-
-studio.initialize()
-studio.extend(extension)
-
-const demoSheet = getProject('Demo Project').sheet('Demo Sheet')
+import {createRoot} from 'react-dom/client'
+import {Canvas} from '@react-three/fiber'
+import {Cube} from "./cube/cube";
 
 const App = () => {
   return (
-    <Canvas>
-      <SheetProvider sheet={demoSheet}>
-        <PerspectiveCamera theatreKey="Camera" makeDefault position={[-5, 5, 5]} fov={75} lookAt={[0, 0, 0]} />
+    <Canvas camera={{
+      position: [5, 5, -5],
+      fov: 75,
+    }}>
         <ambientLight />
-        <e.pointLight theatreKey="Light" position={[10, 10, 5]} />
-        <e.mesh theatreKey="Cube">
-          <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color="orange" />
-        </e.mesh>
-      </SheetProvider>
+        <pointLight position={[0, 1, -3]} />
+        <Cube />
     </Canvas>
   )
 }
