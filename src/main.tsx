@@ -5,13 +5,11 @@ import {Cube} from "./cube/cube";
 
 const App = () => {
   return (
-    <Canvas camera={{
-      position: [5, 5, -5],
-      fov: 75,
-    }}>
-        <ambientLight />
-        <pointLight position={[0, 1, -3]} />
-        <Cube />
+    <Canvas
+      shadows={true}
+      camera={{ position: [-3, 0, 5], fov: 70 }}
+    >
+      <Cube />
     </Canvas>
   )
 }
