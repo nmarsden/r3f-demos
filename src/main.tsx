@@ -1,7 +1,7 @@
 import './index.css'
 import {createRoot} from 'react-dom/client'
 import {Canvas} from '@react-three/fiber'
-import {Cube} from "./cube/cube";
+import {Shapes} from "./components/shapes";
 
 const App = () => {
   return (
@@ -9,7 +9,7 @@ const App = () => {
       shadows={true}
       camera={{ position: [-3, 0, 5], fov: 70 }}
     >
-      <Cube />
+      <Shapes />
     </Canvas>
   )
 }
