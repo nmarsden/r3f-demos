@@ -13,6 +13,9 @@ import {
 import {useEffect, useRef, useState, ReactNode} from "react";
 import {useSpring, animated, config, AnimationResult} from '@react-spring/three'
 import * as THREE from "three";
+import {useThree} from "@react-three/fiber";
+import {OrbitControls as OrbitControlsRef} from 'three-stdlib'
+import {ThreeEvent} from "@react-three/fiber/dist/declarations/src/core/events";
 
 type Shape = {
   name: string;
@@ -43,7 +46,7 @@ const Heading = () => {
     lockY={false}
     lockZ={false} // Lock the rotation on the z axis (default=false)
   >
-    <Center position={[0, 5, -3]}>
+    <Center position={[0, 4.5, -3]}>
       <Text3D
         curveSegments={32}
         bevelEnabled
@@ -143,7 +146,7 @@ const Shape = ({ shape }) => {
           transparent={false}
       />}
     </animated.mesh>
-    <mesh position={[0, -1.5, 0]} scale={10} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
+    <mesh position={[0, -1.2, 0]} scale={10} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
       <planeGeometry />
       <shadowMaterial opacity={1} />
     </mesh>
@@ -174,6 +177,7 @@ const CurvedText = ({ color, text, position, onClicked }) => {
   return <>
     <Text3D
       ref={text3D}
+      name={"curvedText"}
       curveSegments={20}
       bevelEnabled
       bevelSize={0.02}
@@ -183,9 +187,13 @@ const CurvedText = ({ color, text, position, onClicked }) => {
       letterSpacing={0.02}
       size={0.15}
       font="/Inter_Bold.json"
-      onClick={onClicked}
-      onPointerOver={() => { console.log('onPointerOver'); hover(true) }}
-      onPointerOut={() => { console.log('onPointerOut'); hover(false) }}
+      onClick={(event: ThreeEvent<MouseEvent>) => {
+        if (event.object.name === 'curvedText') {
+          onClicked(event)
+        }
+      }}
+      onPointerOver={() => hover(true) }
+      onPointerOut={() => hover(false) }
       position={position}
     >
       {text}
@@ -207,34 +215,73 @@ const CurvedText = ({ color, text, position, onClicked }) => {
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
-  // TODO when a shape is selected re-orientate the camera so the text is facing the user
+  const [{ rotationY }, api] = useSpring(() => ({
+    from: { rotationY: 0 },
+    config: config.wobbly,
+    immediate: false
+  }))
+
   // TODO when the camera is viewing from the top, rotate the text to face the camera
   // TODO auto-select shape when idle and text is facing the camera,
   const numRadsPerShape = (Math.PI * 2) / shapes.length;
-  const radius = 3;
+  const radius = 2.5;
+  // const radius = 3;
   const positionPerShape: THREE.Vector3[] = shapes.map((_shape, shapeIndex) => {
     const x = radius * Math.sin(shapeIndex * numRadsPerShape);
-    const y = -1.2;
+    const y = -1;
     const z = radius * Math.cos(shapeIndex * numRadsPerShape);
     return new THREE.Vector3(x, y, z);
   })
+
+  const camera = useThree((state) => state.camera)
+
   return (
-    <>
+    <animated.group rotation-y={rotationY}>
       {shapes.map((shape, shapeIndex) =>
         <CurvedText
           key={shape.name}
           color={shapeIndex === selectedShapeIndex ? "orange" : "white"}
           text={shape.name}
           position={positionPerShape[shapeIndex]}
-          onClicked={() => onSelected(shapeIndex)}
+          onClicked={(event: ThreeEvent<MouseEvent>) => {
+            // -- Animate rotationY so that shape text is aligned with the camera
+            const camPos = new THREE.Vector3(0,0,0);
+            camera.getWorldPosition(camPos);
+            camPos.setY(0);
+            const shapePos = new THREE.Vector3(0,0,0);
+            event.object.getWorldPosition(shapePos);
+            shapePos.setY(0);
+
+            const clockWiseAngle = (vector: THREE.Vector3): number => {
+              // Calc. the clockwise angle of a vector on XZ plane relatively to Z-axis
+              let angle = Math.atan2(vector.z, vector.x);
+              angle -= Math.PI * 0.5;
+              angle += angle < 0 ? Math.PI * 2 : 0;
+              return angle;
+            }
+            const camAngle = clockWiseAngle(camPos);
+            const shapeAngle = clockWiseAngle(shapePos);
+
+            const newRotationY = rotationY.get() + shapeAngle - camAngle;
+
+            api.start({ rotationY: newRotationY });
+
+            // -- Call onSelected callback
+            onSelected(shapeIndex)
+          }}
         />
       )}
-    </>
+    </animated.group>
   )
 }
 
 const Shapes = () => {
   const [selectedShapeIndex, setSelectedShapeIndex] = useState(0);
+  const orbitControls = useRef<OrbitControlsRef>(null!)
+
+  const changeShape = (shapeIndex: number) => {
+    setSelectedShapeIndex(shapeIndex);
+  }
 
   return (
     <>
@@ -242,12 +289,13 @@ const Shapes = () => {
         <Lights />
         <Heading />
         <Shape shape={shapes[selectedShapeIndex]} />
-        <ShapeSelector selectedShapeIndex={selectedShapeIndex} onSelected={setSelectedShapeIndex}/>
+        <ShapeSelector selectedShapeIndex={selectedShapeIndex} onSelected={changeShape}/>
         <Environment preset={'sunset'} background blur={1}/>
         <OrbitControls
+          ref={orbitControls}
           makeDefault={true}
           maxPolarAngle={Math.PI / 2}
-          autoRotate={true}
+          autoRotate={false}
           autoRotateSpeed={0.25}
           enableZoom={false}
         />
