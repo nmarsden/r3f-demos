@@ -8,14 +8,14 @@ import {
   Billboard,
   Text3D,
   Center,
-  Bvh
+  Bvh,
+  useGLTF
 } from "@react-three/drei";
 import {useEffect, useRef, useState, ReactNode} from "react";
 import {useSpring, animated, config, AnimationResult} from '@react-spring/three'
 import * as THREE from "three";
-import {useThree} from "@react-three/fiber";
+import {useThree, ThreeEvent} from "@react-three/fiber";
 import {OrbitControls as OrbitControlsRef} from 'three-stdlib'
-import {ThreeEvent} from "@react-three/fiber/dist/declarations/src/core/events";
 
 type Shape = {
   name: string;
@@ -24,6 +24,7 @@ type Shape = {
 
 const shapes: Shape[] = [
   { name: 'SPHERE',       renderFn: () => <sphereGeometry args={[0.5, 64, 32]}/> },
+  { name: 'MODEL',        renderFn: () => <ModelGeometry /> },
   { name: 'BOX',          renderFn: () => <boxGeometry args={[0.75, 0.75, 0.75]}/> },
   { name: 'DODECAHEDRON', renderFn: () => <dodecahedronGeometry args={[0.5]}/> },
   { name: 'CONE',         renderFn: () => <coneGeometry args={[0.5]} /> },
@@ -31,6 +32,13 @@ const shapes: Shape[] = [
   { name: 'CYLINDER',     renderFn: () => <cylinderGeometry args={[0.5, 0.5, 0.5]}/> },
   { name: 'TORUS KNOT',   renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
 ]
+
+const ModelGeometry = () => {
+  const { scene } = useGLTF('/Suzanne.gltf')
+  const geometry = (scene.children[0] as THREE.Mesh).geometry.clone().scale(0.5, 0.5, 0.5).rotateY(Math.PI * 0.25)
+
+  return <bufferGeometry attach="geometry" {...geometry} />
+}
 
 const Lights = () => {
   const spotLight = useRef<THREE.SpotLight>(null!);
@@ -216,12 +224,6 @@ const CurvedText = ({ color, text, position, onClicked }) => {
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
-  const [{ rotationY }, api] = useSpring(() => ({
-    from: { rotationY: 0 },
-    config: config.wobbly,
-    immediate: false
-  }))
-
   // TODO when the camera is viewing from the top, rotate the text to face the camera
   // TODO auto-select shape when idle and text is facing the camera,
   const numRadsPerShape = (Math.PI * 2) / shapes.length;
@@ -233,10 +235,8 @@ const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
     return new THREE.Vector3(x, y, z);
   })
 
-  const camera = useThree((state) => state.camera)
-
   return (
-    <animated.group rotation-y={rotationY}>
+    <>
       {shapes.map((shape, shapeIndex) =>
         <CurvedText
           key={shape.name}
@@ -244,40 +244,47 @@ const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
           text={shape.name}
           position={positionPerShape[shapeIndex]}
           onClicked={(event: ThreeEvent<MouseEvent>) => {
-            // -- Animate rotationY so that shape text is aligned with the camera
-            const camPos = new THREE.Vector3(0,0,0);
-            camera.getWorldPosition(camPos);
-            const shapePos = new THREE.Vector3(0,0,0);
-            event.object.getWorldPosition(shapePos);
-
-            const clockWiseAngle = (vector: THREE.Vector3): number => {
-              // Calc. the clockwise angle of a vector on XZ plane relatively to Z-axis
-              let angle = Math.atan2(vector.z, vector.x);
-              angle -= Math.PI * 0.5;
-              angle += angle < 0 ? Math.PI * 2 : 0;
-              return angle;
-            }
-            const camAngle = clockWiseAngle(camPos);
-            const shapeAngle = clockWiseAngle(shapePos);
-
-            const newRotationY = rotationY.get() + shapeAngle - camAngle;
-
-            api.start({ rotationY: newRotationY });
-
-            // -- Call onSelected callback
-            onSelected(shapeIndex)
+            onSelected({ shapeIndex, shapeTextObject: event.object })
           }}
         />
       )}
-    </animated.group>
+    </>
   )
 }
 
 const Shapes = () => {
   const [selectedShapeIndex, setSelectedShapeIndex] = useState(0);
   const orbitControls = useRef<OrbitControlsRef>(null!)
+  const camera = useThree((state) => state.camera)
+  const [{ rotationY }, api] = useSpring(() => ({
+    from: { rotationY: 0 },
+    config: config.wobbly,
+    immediate: false
+  }))
+  const clockWiseAngle = (vector: THREE.Vector3): number => {
+    // Calc. the clockwise angle of a vector on XZ plane relatively to Z-axis
+    let angle = Math.atan2(vector.z, vector.x);
+    angle -= Math.PI * 0.5;
+    angle += angle < 0 ? Math.PI * 2 : 0;
+    return angle;
+  }
 
-  const changeShape = (shapeIndex: number) => {
+  // @ts-ignore
+  const onShapeSelected = ({ shapeIndex, shapeTextObject }) => {
+    // TODO Fix: sometimes it rotates more than 360 degrees
+    // Animate rotationY so that shape text is aligned with the camera
+    const camPos = new THREE.Vector3(0,0,0);
+    camera.getWorldPosition(camPos);
+    const shapeTextPos = new THREE.Vector3(0,0,0);
+    shapeTextObject.getWorldPosition(shapeTextPos);
+
+    const camAngle = clockWiseAngle(camPos);
+    const shapeTextAngle = clockWiseAngle(shapeTextPos);
+    const newRotationY = rotationY.get() + shapeTextAngle - camAngle;
+
+    api.start({ rotationY: newRotationY });
+
+    // Display selected shape
     setSelectedShapeIndex(shapeIndex);
   }
 
@@ -286,8 +293,10 @@ const Shapes = () => {
       <Bvh firstHitOnly>
         <Lights />
         <Heading />
-        <Shape shape={shapes[selectedShapeIndex]} />
-        <ShapeSelector selectedShapeIndex={selectedShapeIndex} onSelected={changeShape}/>
+        <animated.group rotation-y={rotationY}>
+          <Shape shape={shapes[selectedShapeIndex]} />
+          <ShapeSelector selectedShapeIndex={selectedShapeIndex} onSelected={onShapeSelected}/>
+        </animated.group>
         <Environment preset={'sunset'} background blur={1}/>
         <OrbitControls
           ref={orbitControls}
