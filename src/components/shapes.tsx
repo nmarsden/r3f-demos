@@ -24,11 +24,12 @@ type Shape = {
 
 const shapes: Shape[] = [
   { name: 'SPHERE',       renderFn: () => <sphereGeometry args={[0.5, 64, 32]}/> },
-  { name: 'BOX',          renderFn: () => <boxGeometry /> },
+  { name: 'BOX',          renderFn: () => <boxGeometry args={[0.75, 0.75, 0.75]}/> },
   { name: 'DODECAHEDRON', renderFn: () => <dodecahedronGeometry args={[0.5]}/> },
-  { name: 'CYLINDER',     renderFn: () => <cylinderGeometry args={[0.5, 0.5, 0.5]}/> },
   { name: 'CONE',         renderFn: () => <coneGeometry args={[0.5]} /> },
-  { name: 'TORUS',        renderFn: () => <torusGeometry args={[0.4, 0.1]} /> }
+  { name: 'TORUS',        renderFn: () => <torusGeometry args={[0.4, 0.1]} /> },
+  { name: 'CYLINDER',     renderFn: () => <cylinderGeometry args={[0.5, 0.5, 0.5]}/> },
+  { name: 'TORUS KNOT',   renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
 ]
 
 const Lights = () => {
@@ -225,7 +226,6 @@ const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
   // TODO auto-select shape when idle and text is facing the camera,
   const numRadsPerShape = (Math.PI * 2) / shapes.length;
   const radius = 2.5;
-  // const radius = 3;
   const positionPerShape: THREE.Vector3[] = shapes.map((_shape, shapeIndex) => {
     const x = radius * Math.sin(shapeIndex * numRadsPerShape);
     const y = -1;
@@ -247,10 +247,8 @@ const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
             // -- Animate rotationY so that shape text is aligned with the camera
             const camPos = new THREE.Vector3(0,0,0);
             camera.getWorldPosition(camPos);
-            camPos.setY(0);
             const shapePos = new THREE.Vector3(0,0,0);
             event.object.getWorldPosition(shapePos);
-            shapePos.setY(0);
 
             const clockWiseAngle = (vector: THREE.Vector3): number => {
               // Calc. the clockwise angle of a vector on XZ plane relatively to Z-axis
