@@ -33,6 +33,8 @@ const shapes: Shape[] = [
   { name: 'TORUS KNOT',   renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
 ]
 
+useGLTF.preload('/Suzanne.gltf')
+
 const ModelGeometry = () => {
   const { scene } = useGLTF('/Suzanne.gltf')
   const geometry = (scene.children[0] as THREE.Mesh).geometry.clone().scale(0.5, 0.5, 0.5).rotateY(Math.PI * 0.25)
