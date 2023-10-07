@@ -183,6 +183,8 @@ const CurvedText = ({ color, text, position, onClicked }) => {
     text3D.current.lookAt(new THREE.Vector3(0,position.y,0));
     // rotate to face outwards from center
     text3D.current.rotateOnAxis(new THREE.Vector3(0,1,0), Math.PI)
+    // rotate to face 45 degrees upwards
+    text3D.current.rotateOnAxis(new THREE.Vector3(1,0,0), -Math.PI * 0.25);
   }, [])
 
   return <>
@@ -226,7 +228,6 @@ const CurvedText = ({ color, text, position, onClicked }) => {
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
-  // TODO when the camera is viewing from the top, rotate the text to face the camera
   // TODO auto-select shape when idle and text is facing the camera,
   const numRadsPerShape = (Math.PI * 2) / shapes.length;
   const radius = 2.5;
