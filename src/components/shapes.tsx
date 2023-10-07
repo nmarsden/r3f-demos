@@ -26,11 +26,11 @@ const shapes: Shape[] = [
   { name: 'SPHERE',       renderFn: () => <sphereGeometry args={[0.5, 64, 32]}/> },
   { name: 'MODEL',        renderFn: () => <ModelGeometry /> },
   { name: 'BOX',          renderFn: () => <boxGeometry args={[0.75, 0.75, 0.75]}/> },
-  { name: 'DODECAHEDRON', renderFn: () => <dodecahedronGeometry args={[0.5]}/> },
+  { name: 'DODECA-\nHEDRON', renderFn: () => <dodecahedronGeometry args={[0.5]}/> },
   { name: 'CONE',         renderFn: () => <coneGeometry args={[0.5]} /> },
   { name: 'TORUS',        renderFn: () => <torusGeometry args={[0.4, 0.1]} /> },
   { name: 'CYLINDER',     renderFn: () => <cylinderGeometry args={[0.5, 0.5, 0.5]}/> },
-  { name: 'TORUS KNOT',   renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
+  { name: 'TORUS\n KNOT',   renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
 ]
 
 useGLTF.preload('/Suzanne.gltf')
@@ -46,7 +46,7 @@ const Lights = () => {
   const spotLight = useRef<THREE.SpotLight>(null!);
   return <>
     <ambientLight intensity={0.25} />
-    <spotLight ref={spotLight} angle={0.2} intensity={100} castShadow={true} position={[0, 10, 0]} />
+    <spotLight ref={spotLight} angle={0.3} intensity={100} castShadow={true} position={[0, 10, 0]} />
   </>
 }
 
@@ -157,8 +157,8 @@ const Shape = ({ shape }) => {
           transparent={false}
       />}
     </animated.mesh>
-    <mesh position={[0, -1.2, 0]} scale={10} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
-      <planeGeometry />
+    <mesh position={[0, -1.2, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
+      <planeGeometry args={[10,10]}/>
       <shadowMaterial opacity={1} />
     </mesh>
   </>
@@ -196,7 +196,7 @@ const CurvedText = ({ color, text, position, onClicked }) => {
       bevelSize={0.02}
       bevelThickness={0.01}
       height={0.125}
-      lineHeight={0.5}
+      lineHeight={0.75}
       letterSpacing={0.02}
       size={0.15}
       font="/Inter_Bold.json"
@@ -211,16 +211,20 @@ const CurvedText = ({ color, text, position, onClicked }) => {
     >
       {text}
       <meshStandardMaterial color={color} />
-      {hovered && (
-        <Outlines
-          thickness={0.02}
-          color="orange"
-          angle={Math.PI}
-          screenspace={false}
-          opacity={1}
-          transparent={false}
-        />
-      )}
+      <mesh position-z={-0.25} rotation-z={Math.PI*0.5} name={"curvedText"} castShadow={true} >
+        <capsuleGeometry args={[0.3, 1, 4, 16]} />
+        <meshStandardMaterial color={0xCCCCCC} />
+        {hovered && (
+          <Outlines
+            thickness={0.02}
+            color="orange"
+            angle={Math.PI}
+            screenspace={false}
+            opacity={1}
+            transparent={false}
+          />
+        )}
+      </mesh>
     </Text3D>
   </>
 }
@@ -228,12 +232,12 @@ const CurvedText = ({ color, text, position, onClicked }) => {
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
-  // TODO auto-select shape when idle and text is facing the camera,
+  // TODO auto-select shape when idle and text is facing the camera (use @react-corekit/use-idle to detect idle)
   const numRadsPerShape = (Math.PI * 2) / shapes.length;
   const radius = 2.5;
   const positionPerShape: THREE.Vector3[] = shapes.map((_shape, shapeIndex) => {
     const x = radius * Math.sin(shapeIndex * numRadsPerShape);
-    const y = -1;
+    const y = -0.70;
     const z = radius * Math.cos(shapeIndex * numRadsPerShape);
     return new THREE.Vector3(x, y, z);
   })
