@@ -254,6 +254,32 @@ const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
   )
 }
 
+const normalizedPositionOnXZPlane = (object: THREE.Object3D): THREE.Vector3 => {
+  const v = new THREE.Vector3(0,0,0);
+  object.getWorldPosition(v);
+  v.setY(0);
+  v.normalize();
+  return v;
+};
+
+const angleBetween = (camera: THREE.Camera, object: THREE.Object3D): number => {
+  const camPos = normalizedPositionOnXZPlane(camera);
+  const objectPos = normalizedPositionOnXZPlane(object);
+
+  return Math.acos(camPos.dot(objectPos));
+};
+
+const isRotateClockwise = (camera: THREE.Camera, object: THREE.Object3D): boolean => {
+  const camPos = normalizedPositionOnXZPlane(camera);
+  const objectPos = normalizedPositionOnXZPlane(object);
+
+  const crossProduct = new THREE.Vector3(0,0,0);
+  crossProduct.crossVectors(camPos, objectPos);
+  const yAxis = new THREE.Vector3(0,1,0);
+
+  return (crossProduct.dot(yAxis) > 0);
+};
+
 const Shapes = () => {
   const [selectedShapeIndex, setSelectedShapeIndex] = useState(0);
   const orbitControls = useRef<OrbitControlsRef>(null!)
@@ -263,28 +289,15 @@ const Shapes = () => {
     config: config.wobbly,
     immediate: false
   }))
-  const clockWiseAngle = (vector: THREE.Vector3): number => {
-    // Calc. the clockwise angle of a vector on XZ plane relatively to Z-axis
-    let angle = Math.atan2(vector.z, vector.x);
-    angle -= Math.PI * 0.5;
-    angle += angle < 0 ? Math.PI * 2 : 0;
-    return angle;
-  }
 
   // @ts-ignore
   const onShapeSelected = ({ shapeIndex, shapeTextObject }) => {
-    // TODO Fix: sometimes it rotates more than 360 degrees
     // Animate rotationY so that shape text is aligned with the camera
-    const camPos = new THREE.Vector3(0,0,0);
-    camera.getWorldPosition(camPos);
-    const shapeTextPos = new THREE.Vector3(0,0,0);
-    shapeTextObject.getWorldPosition(shapeTextPos);
+    const theta = angleBetween(camera, shapeTextObject);
+    const isRotateClockWise = isRotateClockwise(camera, shapeTextObject);
+    const rotationYDiff = isRotateClockWise ? -theta : theta;
 
-    const camAngle = clockWiseAngle(camPos);
-    const shapeTextAngle = clockWiseAngle(shapeTextPos);
-    const newRotationY = rotationY.get() + shapeTextAngle - camAngle;
-
-    api.start({ rotationY: newRotationY });
+    api.start({ rotationY: rotationY.get() + rotationYDiff });
 
     // Display selected shape
     setSelectedShapeIndex(shapeIndex);
