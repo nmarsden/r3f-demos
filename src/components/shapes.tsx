@@ -46,7 +46,7 @@ const Lights = () => {
   const spotLight = useRef<THREE.SpotLight>(null!);
   return <>
     <ambientLight intensity={0.25} />
-    <spotLight ref={spotLight} angle={0.24} intensity={100} castShadow={true} position={[0, 10, 0]} />
+    <spotLight ref={spotLight} angle={0.25} intensity={100} castShadow={true} position={[0, 10, 0]} />
   </>
 }
 
@@ -191,6 +191,7 @@ const CurvedText = ({ color, text, position, onClicked }) => {
     <Text3D
       ref={text3D}
       name={"curvedText"}
+      castShadow={true}
       curveSegments={20}
       bevelEnabled
       bevelSize={0.02}
