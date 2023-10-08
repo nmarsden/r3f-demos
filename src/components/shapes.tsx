@@ -61,16 +61,16 @@ const Heading = () => {
     lockY={false}
     lockZ={false} // Lock the rotation on the z axis (default=false)
   >
-    <Center position={[0, 11, -15]}>
+    <Center position={[0, 12, -15]}>
       <Text3D
         curveSegments={32}
         bevelEnabled
-        bevelSize={0.2}
-        bevelThickness={0.5}
+        bevelSize={0.3}
+        bevelThickness={0.15}
         height={0.5}
         lineHeight={0.5}
-        letterSpacing={-0.06}
-        size={3}
+        letterSpacing={0.15}
+        size={2.5}
         font="/Inter_Bold.json"
       >
         {"SHAPES"}
@@ -153,7 +153,7 @@ const Shape = ({ shape }) => {
       <meshStandardMaterial metalness={0.75} roughness={0.15} />
       {shape.name === 'SPHERE' && <Decal map={texture} />}
       {hovered && <Outlines
-          thickness={0.02}
+          thickness={0.01}
           color="orange"
           angle={Math.PI}
           screenspace={false}
@@ -161,7 +161,7 @@ const Shape = ({ shape }) => {
           transparent={false}
       />}
     </animated.mesh>
-    <mesh position={[0, -1.2, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
+    <mesh position={[0, -1.3, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
       <planeGeometry args={[1000,1000]}/>
       <shadowMaterial opacity={1} />
     </mesh>
