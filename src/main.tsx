@@ -7,7 +7,7 @@ const App = () => {
   return (
     <Canvas
       shadows={true}
-      camera={{ position: [0, 2, 5], fov: 70 }}
+      camera={{ position: [0, 2, 4.5], fov: 70 }}
     >
       <Shapes />
     </Canvas>

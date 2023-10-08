@@ -13,9 +13,11 @@ import {
 } from "@react-three/drei";
 import {useEffect, useRef, useState, ReactNode} from "react";
 import {useSpring, animated, config, AnimationResult} from '@react-spring/three'
+import {EffectComposer, Vignette} from "@react-three/postprocessing";
 import * as THREE from "three";
 import {useThree, ThreeEvent} from "@react-three/fiber";
 import {OrbitControls as OrbitControlsRef} from 'three-stdlib'
+// import {Leva, useControls} from "leva";
 
 type Shape = {
   name: string;
@@ -57,16 +59,16 @@ const Heading = () => {
     lockY={false}
     lockZ={false} // Lock the rotation on the z axis (default=false)
   >
-    <Center position={[0, 4.5, -3]}>
+    <Center position={[0, 11, -15]}>
       <Text3D
         curveSegments={32}
         bevelEnabled
-        bevelSize={0.04}
-        bevelThickness={0.1}
+        bevelSize={0.2}
+        bevelThickness={0.5}
         height={0.5}
         lineHeight={0.5}
         letterSpacing={-0.06}
-        size={0.75}
+        size={3}
         font="/Inter_Bold.json"
       >
         {"SHAPES"}
@@ -158,7 +160,7 @@ const Shape = ({ shape }) => {
       />}
     </animated.mesh>
     <mesh position={[0, -1.2, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
-      <planeGeometry args={[10,10]}/>
+      <planeGeometry args={[1000,1000]}/>
       <shadowMaterial opacity={1} />
     </mesh>
   </>
@@ -311,6 +313,7 @@ const Shapes = () => {
 
   return (
     <>
+      {/*<Leva />*/}
       <Bvh firstHitOnly>
         <Lights />
         <Heading />
@@ -318,6 +321,9 @@ const Shapes = () => {
           <Shape shape={shapes[selectedShapeIndex]} />
           <ShapeSelector selectedShapeIndex={selectedShapeIndex} onSelected={onShapeSelected}/>
         </animated.group>
+        <EffectComposer>
+          <Vignette eskil={false} offset={0} darkness={0.7} />
+        </EffectComposer>
         <Environment preset={'sunset'} background blur={1}/>
         <OrbitControls
           ref={orbitControls}
