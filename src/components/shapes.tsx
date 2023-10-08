@@ -24,6 +24,8 @@ type Shape = {
   renderFn: () => ReactNode
 }
 
+const uiColor = "brown";
+
 const shapes: Shape[] = [
   { name: 'SPHERE',       renderFn: () => <sphereGeometry args={[0.5, 64, 32]}/> },
   { name: 'MODEL',        renderFn: () => <ModelGeometry /> },
@@ -72,7 +74,7 @@ const Heading = () => {
         font="/Inter_Bold.json"
       >
         {"SHAPES"}
-        <meshStandardMaterial color="white" />
+        <meshStandardMaterial metalness={0.0} roughness={0.25} color={uiColor}/>
       </Text3D>
     </Center>
   </Billboard>
@@ -148,10 +150,10 @@ const Shape = ({ shape }) => {
       onPointerOut={() => hover(false)}
     >
       {shape.renderFn()}
-      <meshStandardMaterial color="white" />
+      <meshStandardMaterial metalness={0.75} roughness={0.15} />
       {shape.name === 'SPHERE' && <Decal map={texture} />}
       {hovered && <Outlines
-          thickness={0.05}
+          thickness={0.02}
           color="orange"
           angle={Math.PI}
           screenspace={false}
@@ -213,10 +215,10 @@ const CurvedText = ({ color, text, position, onClicked }) => {
       position={position}
     >
       {text}
-      <meshStandardMaterial color={color} />
+      <meshStandardMaterial metalness={0.25} roughness={0.45} color={color}/>
       <mesh position-z={-0.25} rotation-z={Math.PI*0.5} name={"curvedText"} castShadow={true} >
         <capsuleGeometry args={[0.3, 1, 4, 16]} />
-        <meshStandardMaterial color={0xCCCCCC} />
+        <meshStandardMaterial metalness={0.0} roughness={0.25} color={uiColor}/>
         {hovered && (
           <Outlines
             thickness={0.02}
@@ -324,7 +326,7 @@ const Shapes = () => {
         <EffectComposer>
           <Vignette eskil={false} offset={0} darkness={0.7} />
         </EffectComposer>
-        <Environment preset={'sunset'} background blur={1}/>
+        <Environment preset={'warehouse'} background blur={1}/>
         <OrbitControls
           ref={orbitControls}
           makeDefault={true}
