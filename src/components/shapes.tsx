@@ -27,14 +27,14 @@ type Shape = {
 const uiColor = "brown";
 
 const shapes: Shape[] = [
-  { name: 'SPHERE',       renderFn: () => <sphereGeometry args={[0.5, 64, 32]}/> },
-  { name: 'MODEL',        renderFn: () => <ModelGeometry /> },
-  { name: 'BOX',          renderFn: () => <boxGeometry args={[0.75, 0.75, 0.75]}/> },
+  { name: 'SPHERE',          renderFn: () => <sphereGeometry args={[0.5, 64, 32]}/> },
+  { name: 'MODEL',           renderFn: () => <ModelGeometry /> },
+  { name: 'BOX',             renderFn: () => <boxGeometry args={[0.75, 0.75, 0.75]}/> },
   { name: 'DODECA-\nHEDRON', renderFn: () => <dodecahedronGeometry args={[0.5]}/> },
-  { name: 'CONE',         renderFn: () => <coneGeometry args={[0.5]} /> },
-  { name: 'TORUS',        renderFn: () => <torusGeometry args={[0.4, 0.1]} /> },
-  { name: 'CYLINDER',     renderFn: () => <cylinderGeometry args={[0.5, 0.5, 0.5]}/> },
-  { name: 'TORUS\n KNOT',   renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
+  { name: 'CONE',            renderFn: () => <coneGeometry args={[0.5, 0.5, 62]} /> },
+  { name: 'TORUS',           renderFn: () => <torusGeometry args={[0.3, 0.15]} /> },
+  { name: 'CYLINDER',        renderFn: () => <cylinderGeometry args={[0.5, 0.5, 0.5]}/> },
+  { name: 'TORUS\n KNOT',    renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
 ]
 
 useGLTF.preload('/Suzanne.gltf')
@@ -87,10 +87,10 @@ const Shape = ({ shape }) => {
   const [hovered, hover] = useState(false)
 
   const INITIAL_ANIMATION = () => ({
-    from: { scale: 0, rotateX: 0, rotateY: 0, rotateZ: 0, position: [0, 0, 0] },
+    from: { scale: 0, rotateX: 0, rotateY: 0, rotateZ: 0, position: [0, 0.4, 0] },
     // @ts-ignore
     to: async (next)=> {
-      await next({ scale: 2 })
+      await next({ scale: 3 })
       await next({ rotateX: Math.PI })
       await next({ rotateY: Math.PI })
       await next({ rotateZ: Math.PI })
@@ -105,7 +105,7 @@ const Shape = ({ shape }) => {
   })
 
   const FLOATING_ANIMATION = () => ({
-    from: { scale: 2, rotateX: Math.PI, rotateY: Math.PI, rotateZ: Math.PI, position: [0, 0.5, 0] },
+    from: { scale: 3, rotateX: Math.PI, rotateY: Math.PI, rotateZ: Math.PI, position: [0, 0.5, 0] },
     to: [
       { rotateX: Math.PI*0.75 },
       { position: [0, 1, 0] },
