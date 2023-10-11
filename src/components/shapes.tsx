@@ -150,7 +150,7 @@ const Shape = ({ shape }) => {
       onPointerOut={() => hover(false)}
     >
       {shape.renderFn()}
-      <meshStandardMaterial metalness={0.75} roughness={0.15} />
+      <meshStandardMaterial metalness={0.75} roughness={0.15} color={0x2176AE}/>
       {shape.name === 'SPHERE' && <Decal map={texture} />}
       {hovered && <Outlines
           thickness={0.01}
