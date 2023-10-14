@@ -37,10 +37,10 @@ const shapes: Shape[] = [
   { name: 'TORUS\n KNOT',    renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
 ]
 
-useGLTF.preload('/Suzanne.gltf')
+useGLTF.preload('/shapes/Suzanne.gltf')
 
 const ModelGeometry = () => {
-  const { scene } = useGLTF('/Suzanne.gltf')
+  const { scene } = useGLTF('/shapes/Suzanne.gltf')
   const geometry = (scene.children[0] as THREE.Mesh).geometry.clone().scale(0.5, 0.5, 0.5).rotateY(Math.PI * 0.25)
 
   return <bufferGeometry attach="geometry" {...geometry} />
@@ -71,7 +71,7 @@ const Heading = () => {
         lineHeight={0.5}
         letterSpacing={0.15}
         size={2.5}
-        font="/Inter_Bold.json"
+        font="/shapes/Inter_Bold.json"
       >
         {"SHAPES"}
         <meshStandardMaterial metalness={0.0} roughness={0.25} color={uiColor}/>
@@ -83,7 +83,7 @@ const Heading = () => {
 // @ts-ignore
 const Shape = ({ shape }) => {
   const boxMesh = useRef<THREE.Mesh>(null!)
-  const texture = useTexture('/cross.png')
+  const texture = useTexture('/shapes/cross.png')
   const [hovered, hover] = useState(false)
 
   const INITIAL_ANIMATION = () => ({
@@ -204,7 +204,7 @@ const CurvedText = ({ color, text, position, onClicked }) => {
       lineHeight={0.75}
       letterSpacing={0.02}
       size={0.15}
-      font="/Inter_Bold.json"
+      font="/shapes/Inter_Bold.json"
       onClick={(event: ThreeEvent<MouseEvent>) => {
         if (event.object.name === 'curvedText') {
           onClicked(event)
