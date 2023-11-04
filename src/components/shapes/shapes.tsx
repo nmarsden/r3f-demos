@@ -35,6 +35,15 @@ const shapes: Shape[] = [
   { name: 'CYLINDER',        renderFn: () => <cylinderGeometry args={[0.5, 0.5, 0.5]}/> },
 ]
 
+const numRadsPerShape = (Math.PI * 2) / shapes.length;
+const radius = 2.5;
+const positionPerShape: THREE.Vector3[] = shapes.map((_shape, shapeIndex) => {
+  const x = radius * Math.sin(shapeIndex * numRadsPerShape);
+  const y = -0.70;
+  const z = radius * Math.cos(shapeIndex * numRadsPerShape);
+  return new THREE.Vector3(x, y, z);
+})
+
 useGLTF.preload('/shapes/Suzanne.gltf')
 
 const ModelGeometry = () => {
@@ -172,8 +181,6 @@ const Shape = ({ shape, opacity }: { shape: Shape, opacity: number }) => {
 
 // @ts-ignore
 const CurvedText = ({ color, text, position, onClicked, opacity }) => {
-  // TODO fix bug where the rotation of the text is sometimes incorrect
-  // TODO fix bug where the sometimes the text and capsule do not show at all
   const [hovered, hover] = useState(false)
   const text3D = useRef<THREE.Mesh>(null!)
 
@@ -188,15 +195,11 @@ const CurvedText = ({ color, text, position, onClicked, opacity }) => {
     // center the vertices of the text geometry
     text3D.current.geometry.center();
     // rotate to face the center
-    text3D.current.lookAt(new THREE.Vector3(0,position.y,0));
+    text3D.current.lookAt(new THREE.Vector3(0,0,0));
     // rotate to face outwards from center
     text3D.current.rotateOnAxis(new THREE.Vector3(0,1,0), Math.PI)
     // rotate to face 45 degrees upwards
-    text3D.current.rotateOnAxis(new THREE.Vector3(1,0,0), -Math.PI * 0.25);
-
-    // if (text === 'TORUS\n KNOT') {
-    //   console.info(text + ': rotation=', text3D.current.rotation);
-    // }
+    text3D.current.rotateOnAxis(new THREE.Vector3(1,0,0), -Math.PI * 0.5);
   }, [text3D])
 
   return <>
@@ -258,15 +261,6 @@ const CurvedText = ({ color, text, position, onClicked, opacity }) => {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ShapeSelector = ({ selectedShapeIndex, onSelected, opacity }) => {
   // TODO auto-select shape when idle and text is facing the camera (use @react-corekit/use-idle to detect idle)
-  const numRadsPerShape = (Math.PI * 2) / shapes.length;
-  const radius = 2.5;
-  const positionPerShape: THREE.Vector3[] = shapes.map((_shape, shapeIndex) => {
-    const x = radius * Math.sin(shapeIndex * numRadsPerShape);
-    const y = -0.70;
-    const z = radius * Math.cos(shapeIndex * numRadsPerShape);
-    return new THREE.Vector3(x, y, z);
-  })
-
   return (
     <>
       {shapes.map((shape, shapeIndex) =>

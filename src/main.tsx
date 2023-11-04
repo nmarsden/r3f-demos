@@ -54,9 +54,9 @@ const App = () => {
 
   const [location] = useLocation();
   const transition = useTransition(location, {
-    from: { position: [0, 0, 0], rotation: [0, Math.PI, 0], scale: [0, 0, 0], opacity: 0 },
-    enter: { position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1], opacity: 1 },
-    leave: { position: [0, 0, 0], rotation: [0, -Math.PI, 0], scale: [0, 0, 0], opacity: 0 },
+    from: { position: [0, 0, 0], rotation: [0, Math.PI, 0], scale: 0.01, opacity: 0 },
+    enter: { position: [0, 0, 0], rotation: [0, 0, 0], scale: 1, opacity: 1 },
+    leave: { position: [0, 0, 0], rotation: [0, -Math.PI, 0], scale: 0.01, opacity: 0 },
     config: config.molasses
   })
 
