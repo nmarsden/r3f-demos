@@ -5,9 +5,9 @@ Files: public/hand/robohand-2.glb [68.43MB] > robohand-2-transformed.glb [2.57MB
 */
 
 import * as THREE from 'three'
-import {Outlines, useGLTF} from '@react-three/drei'
+import {useGLTF} from '@react-three/drei'
 import {GLTF} from 'three-stdlib'
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {animated, config, useSprings} from '@react-spring/three'
 
 type GLTFResult = GLTF & {
@@ -43,33 +43,40 @@ type GLTFResult = GLTF & {
 
 type Positions = { position: number[], displacement: number[] };
 
-export function Robohand2Model(props: JSX.IntrinsicElements['group']) {
+export function Robohand2Model(props: JSX.IntrinsicElements['group'] & { opacity: number }) {
   const [hovered, hover] = useState(false);
   const [exploded, setExploded] = useState(false);
   const { nodes, materials } = useGLTF('/hand/robohand-2-transformed.glb') as GLTFResult
-  const targetMap: Map<string, Positions> = new Map<string, Positions>();
-  const explosionCenter = new THREE.Vector3(0, 0, 0);
-  const explosionFactor = 0.5;
 
-  Object.keys(nodes).forEach(nodeKey => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const mesh: THREE.Mesh = nodes[nodeKey];
-    if (mesh.name.startsWith('Object')) {
+  const { targetMap, positions } = useMemo(
+    () => {
+      const targetMap: Map<string, Positions> = new Map<string, Positions>();
+      const explosionCenter = new THREE.Vector3(0, 0, 0);
+      const explosionFactor = 0.5;
 
-      const position: THREE.Vector3 = mesh.position;
+      Object.keys(nodes).forEach(nodeKey => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const mesh: THREE.Mesh = nodes[nodeKey];
+        if (mesh.name.startsWith('Object')) {
 
-      const vector = position.clone().sub(explosionCenter).normalize();
-      const displacement = position.clone().add(
-        vector.multiplyScalar(
-          position.distanceTo(explosionCenter) * explosionFactor
-        )
-      );
-      targetMap.set(mesh.name, { position: [ position.x, position.y, position.z ], displacement: [ displacement.x, displacement.y, displacement.z ] } );
-    }
-  })
+          const position: THREE.Vector3 = mesh.position;
 
-  const positions: Positions[] = Array.from(targetMap.values());
+          const vector = position.clone().sub(explosionCenter).normalize();
+          const displacement = position.clone().add(
+            vector.multiplyScalar(
+              position.distanceTo(explosionCenter) * explosionFactor
+            )
+          );
+          targetMap.set(mesh.name, { position: [ position.x, position.y, position.z ], displacement: [ displacement.x, displacement.y, displacement.z ] } );
+        }
+      })
+      const positions: Positions[] = Array.from(targetMap.values());
+
+      return { targetMap, positions };
+    },
+    []
+  );
 
   const [springs, api] = useSprings(
     targetMap.size,
@@ -100,9 +107,10 @@ export function Robohand2Model(props: JSX.IntrinsicElements['group']) {
            dispose={null}
            onPointerOver={() => hover(true)}
            onPointerOut={() => hover(false)}
-           onClick={() => {
+           onClick={(event) => {
              setExploded(!exploded);
-           } }
+             event.stopPropagation();
+           }}
     >
       {
         [...targetMap.keys()].map((meshName, index) => {
@@ -112,23 +120,19 @@ export function Robohand2Model(props: JSX.IntrinsicElements['group']) {
           return <animated.mesh
             key={meshName}
             geometry={mesh.geometry}
-            material={materials.Default}
             castShadow={true}
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             position={springs[index].position}
             rotation={[-Math.PI / 2, 0, 0]}
           >
-            {hovered && (
-              <Outlines
-                thickness={0.12}
-                color="white"
-                angle={Math.PI}
-                screenspace={false}
-                opacity={1}
-                transparent={false}
-              />
-            )}
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore */}
+            <animated.meshStandardMaterial
+              {...materials.Default}
+              transparent={true}
+              opacity={props.opacity}
+            />
           </animated.mesh>
         })
       }

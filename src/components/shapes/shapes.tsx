@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   OrbitControls,
-  Environment,
   Outlines,
   Decal,
   useTexture,
@@ -13,9 +12,8 @@ import {
 } from "@react-three/drei";
 import {useEffect, useRef, useState, ReactNode} from "react";
 import {useSpring, animated, config, AnimationResult} from '@react-spring/three'
-import {EffectComposer, Vignette} from "@react-three/postprocessing";
 import * as THREE from "three";
-import {useThree, ThreeEvent} from "@react-three/fiber";
+import {useThree, ThreeEvent, useFrame} from "@react-three/fiber";
 import {OrbitControls as OrbitControlsRef} from 'three-stdlib'
 // import {Leva, useControls} from "leva";
 
@@ -24,9 +22,10 @@ type Shape = {
   renderFn: () => ReactNode
 }
 
-const uiColor = "brown";
+const uiColor = "#DDDDDD";
 
 const shapes: Shape[] = [
+  { name: 'TORUS\n KNOT',    renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
   { name: 'SPHERE',          renderFn: () => <sphereGeometry args={[0.5, 64, 32]}/> },
   { name: 'MODEL',           renderFn: () => <ModelGeometry /> },
   { name: 'BOX',             renderFn: () => <boxGeometry args={[0.75, 0.75, 0.75]}/> },
@@ -34,7 +33,6 @@ const shapes: Shape[] = [
   { name: 'CONE',            renderFn: () => <coneGeometry args={[0.5, 0.5, 62]} /> },
   { name: 'TORUS',           renderFn: () => <torusGeometry args={[0.3, 0.15]} /> },
   { name: 'CYLINDER',        renderFn: () => <cylinderGeometry args={[0.5, 0.5, 0.5]}/> },
-  { name: 'TORUS\n KNOT',    renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
 ]
 
 useGLTF.preload('/shapes/Suzanne.gltf')
@@ -46,15 +44,7 @@ const ModelGeometry = () => {
   return <bufferGeometry attach="geometry" {...geometry} />
 }
 
-const Lights = () => {
-  const spotLight = useRef<THREE.SpotLight>(null!);
-  return <>
-    <ambientLight intensity={0.25} />
-    <spotLight ref={spotLight} angle={0.25} intensity={100} castShadow={true} position={[0, 10, 0]} />
-  </>
-}
-
-const Heading = () => {
+const Heading = ({ opacity }: { opacity: number }) => {
   return <Billboard
     follow={true}
     lockX={false}
@@ -74,14 +64,21 @@ const Heading = () => {
         font="/shapes/Inter_Bold.json"
       >
         {"SHAPES"}
-        <meshStandardMaterial metalness={0.0} roughness={0.25} color={uiColor}/>
+        {/* @ts-ignore */}
+        <animated.meshStandardMaterial
+          metalness={0.0}
+          roughness={0.25}
+          color={uiColor}
+          transparent={true}
+          opacity={opacity}
+        />
       </Text3D>
     </Center>
   </Billboard>
 }
 
 // @ts-ignore
-const Shape = ({ shape }) => {
+const Shape = ({ shape, opacity }: { shape: Shape, opacity: number }) => {
   const boxMesh = useRef<THREE.Mesh>(null!)
   const texture = useTexture('/shapes/cross.png')
   const [hovered, hover] = useState(false)
@@ -150,8 +147,17 @@ const Shape = ({ shape }) => {
       onPointerOut={() => hover(false)}
     >
       {shape.renderFn()}
-      <meshStandardMaterial metalness={0.75} roughness={0.15} color={0x2176AE}/>
-      {shape.name === 'SPHERE' && <Decal map={texture} />}
+      {/* @ts-ignore */}
+      <animated.meshStandardMaterial
+        metalness={0.75}
+        roughness={0.15}
+        color={0x2176AE}
+        transparent={true}
+        opacity={opacity}
+      />
+      {shape.name === 'SPHERE' && <Decal mesh={boxMesh}>
+          <animated.meshBasicMaterial map={texture} transparent={true} opacity={opacity} polygonOffset={true} polygonOffsetFactor={-1} />
+      </Decal>}
       {hovered && <Outlines
           thickness={0.01}
           color="orange"
@@ -161,15 +167,13 @@ const Shape = ({ shape }) => {
           transparent={false}
       />}
     </animated.mesh>
-    <mesh position={[0, -1.3, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
-      <planeGeometry args={[1000,1000]}/>
-      <shadowMaterial opacity={1} />
-    </mesh>
   </>
 }
 
 // @ts-ignore
-const CurvedText = ({ color, text, position, onClicked }) => {
+const CurvedText = ({ color, text, position, onClicked, opacity }) => {
+  // TODO fix bug where the rotation of the text is sometimes incorrect
+  // TODO fix bug where the sometimes the text and capsule do not show at all
   const [hovered, hover] = useState(false)
   const text3D = useRef<THREE.Mesh>(null!)
 
@@ -189,7 +193,11 @@ const CurvedText = ({ color, text, position, onClicked }) => {
     text3D.current.rotateOnAxis(new THREE.Vector3(0,1,0), Math.PI)
     // rotate to face 45 degrees upwards
     text3D.current.rotateOnAxis(new THREE.Vector3(1,0,0), -Math.PI * 0.25);
-  }, [])
+
+    // if (text === 'TORUS\n KNOT') {
+    //   console.info(text + ': rotation=', text3D.current.rotation);
+    // }
+  }, [text3D])
 
   return <>
     <Text3D
@@ -215,10 +223,22 @@ const CurvedText = ({ color, text, position, onClicked }) => {
       position={position}
     >
       {text}
-      <meshStandardMaterial metalness={0.25} roughness={0.45} color={color}/>
+      <animated.meshStandardMaterial
+        metalness={0.25}
+        roughness={0.45}
+        color={color}
+        transparent={true}
+        opacity={opacity}
+      />
       <mesh position-z={-0.25} rotation-z={Math.PI*0.5} name={"curvedText"} castShadow={true} >
         <capsuleGeometry args={[0.3, 1, 4, 16]} />
-        <meshStandardMaterial metalness={0.0} roughness={0.25} color={uiColor}/>
+        <animated.meshStandardMaterial
+          metalness={0.0}
+          roughness={0.25}
+          color={uiColor}
+          transparent={true}
+          opacity={opacity}
+        />
         {hovered && (
           <Outlines
             thickness={0.02}
@@ -236,7 +256,7 @@ const CurvedText = ({ color, text, position, onClicked }) => {
 
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
+const ShapeSelector = ({ selectedShapeIndex, onSelected, opacity }) => {
   // TODO auto-select shape when idle and text is facing the camera (use @react-corekit/use-idle to detect idle)
   const numRadsPerShape = (Math.PI * 2) / shapes.length;
   const radius = 2.5;
@@ -252,12 +272,13 @@ const ShapeSelector = ({ selectedShapeIndex, onSelected }) => {
       {shapes.map((shape, shapeIndex) =>
         <CurvedText
           key={shape.name}
-          color={shapeIndex === selectedShapeIndex ? "orange" : "white"}
+          color={shapeIndex === selectedShapeIndex ? "orange" : 0x888888}
           text={shape.name}
           position={positionPerShape[shapeIndex]}
           onClicked={(event: ThreeEvent<MouseEvent>) => {
             onSelected({ shapeIndex, shapeTextObject: event.object })
           }}
+          opacity={opacity}
         />
       )}
     </>
@@ -279,8 +300,11 @@ const angleBetween = (camera: THREE.Camera, object: THREE.Object3D): number => {
   return Math.acos(camPos.dot(objectPos));
 };
 
-const isRotateClockwise = (camera: THREE.Camera, object: THREE.Object3D): boolean => {
-  const camPos = normalizedPositionOnXZPlane(camera);
+const isRotateClockwise = (_camera: THREE.Camera, object: THREE.Object3D): boolean => {
+  // TODO assume camera position is [0, 2, 4.5]
+  const camPos = new THREE.Vector3(0,2,4.5).setY(0).normalize();
+  // const camPos = normalizedPositionOnXZPlane(camera);
+
   const objectPos = normalizedPositionOnXZPlane(object);
 
   const crossProduct = new THREE.Vector3(0,0,0);
@@ -290,15 +314,21 @@ const isRotateClockwise = (camera: THREE.Camera, object: THREE.Object3D): boolea
   return (crossProduct.dot(yAxis) > 0);
 };
 
-const Shapes = () => {
+const Shapes = ({ opacity }: { opacity: number }) => {
   const [selectedShapeIndex, setSelectedShapeIndex] = useState(0);
   const orbitControls = useRef<OrbitControlsRef>(null!)
-  const camera = useThree((state) => state.camera)
+  const { camera, events } = useThree();
   const [{ rotationY }, api] = useSpring(() => ({
     from: { rotationY: 0 },
     config: config.wobbly,
     immediate: false
   }))
+
+  useFrame(() => {
+    // Ensure that the mouse events are also triggered when camera rotation changes and mouse does not move
+    // @ts-ignore
+    events.update()
+  })
 
   // @ts-ignore
   const onShapeSelected = ({ shapeIndex, shapeTextObject }) => {
@@ -317,16 +347,11 @@ const Shapes = () => {
     <>
       {/*<Leva />*/}
       <Bvh firstHitOnly>
-        <Lights />
-        <Heading />
+        <Heading opacity={opacity}/>
         <animated.group rotation-y={rotationY}>
-          <Shape shape={shapes[selectedShapeIndex]} />
-          <ShapeSelector selectedShapeIndex={selectedShapeIndex} onSelected={onShapeSelected}/>
+          <Shape shape={shapes[selectedShapeIndex]} opacity={opacity}/>
+          <ShapeSelector selectedShapeIndex={selectedShapeIndex} onSelected={onShapeSelected} opacity={opacity}/>
         </animated.group>
-        <EffectComposer>
-          <Vignette eskil={false} offset={0} darkness={0.7} />
-        </EffectComposer>
-        <Environment preset={'warehouse'} background blur={1}/>
         <OrbitControls
           ref={orbitControls}
           makeDefault={true}

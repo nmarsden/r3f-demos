@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   OrbitControls,
-  Environment,
   Billboard,
   Text3D,
   Center,
@@ -9,21 +8,13 @@ import {
   Bvh
 } from "@react-three/drei";
 import {useRef} from "react";
-import * as THREE from "three";
 import {OrbitControls as OrbitControlsRef} from 'three-stdlib'
 import {Robohand2Model} from "./robohand2Model";
+import {animated} from "@react-spring/three";
 
-const uiColor = "#c35d20";
+const uiColor = "#DDDDDD";
 
-const Lights = () => {
-  const spotLight = useRef<THREE.SpotLight>(null!);
-  return <>
-    <ambientLight intensity={0.25} />
-    <spotLight ref={spotLight} angle={0.51} intensity={100} castShadow={true} position={[0, 10, 0]} />
-  </>
-}
-
-const Heading = () => {
+const Heading = ({ opacity }: { opacity: number }) => {
   return <Billboard
     follow={true}
     lockX={false}
@@ -43,7 +34,14 @@ const Heading = () => {
         font="/shapes/Inter_Bold.json"
       >
         {"HAND"}
-        <meshStandardMaterial metalness={0.0} roughness={0.25} color={uiColor}/>
+        {/* @ts-ignore */}
+        <animated.meshStandardMaterial
+          metalness={0.0}
+          roughness={0.25}
+          color={uiColor}
+          transparent={true}
+          opacity={opacity}
+        />
       </Text3D>
     </Center>
   </Billboard>
@@ -51,20 +49,14 @@ const Heading = () => {
 
 useGLTF.preload('/hand/scene.gltf')
 
-const Hand = () => {
+const Hand = ({ opacity }: { opacity: number }) => {
   const orbitControls = useRef<OrbitControlsRef>(null!)
 
   return (
     <>
       <Bvh firstHitOnly>
-        <Lights />
-        <Heading />
-        <Robohand2Model scale={0.12} position={[0, 0.5, 0]} rotation={[0, -Math.PI * 0.05, -Math.PI/4]}/>
-        <mesh position={[0, -1.3, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
-          <planeGeometry args={[1000,1000]}/>
-          <shadowMaterial opacity={1} />
-        </mesh>
-        <Environment preset={'warehouse'} background blur={1}/>
+        <Heading opacity={opacity}/>
+        <Robohand2Model scale={0.12} position={[0, 0.5, 0]} rotation={[0, -Math.PI * 0.05, -Math.PI/4]} opacity={opacity}/>
         <OrbitControls
           ref={orbitControls}
           makeDefault={true}
