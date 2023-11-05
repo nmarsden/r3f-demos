@@ -3,11 +3,11 @@ import {
   Text3D,
   Center, Float
 } from "@react-three/drei";
-import {animated} from "@react-spring/three";
+import {animated, SpringValue} from "@react-spring/three";
 
 const uiColor = 0x2176AE;
 
-const Heading = ({ opacity }: { opacity: number }) => {
+const Heading = ({ opacity }: { opacity: SpringValue }) => {
   return <>
     <Center position={[0, 1, 0]}>
       <Text3D
@@ -60,7 +60,7 @@ const Heading = ({ opacity }: { opacity: number }) => {
   </>
 }
 
-const Home = ({ opacity }: { opacity: number }) => {
+const Home = ({ opacity }: { opacity: SpringValue }) => {
   return (
     <>
       <Float>

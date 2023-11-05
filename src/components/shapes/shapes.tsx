@@ -8,7 +8,7 @@ import {
   useGLTF
 } from "@react-three/drei";
 import {useEffect, useRef, useState, ReactNode} from "react";
-import {useSpring, animated, config, AnimationResult} from '@react-spring/three'
+import {useSpring, animated, config, AnimationResult, SpringValue} from '@react-spring/three'
 import * as THREE from "three";
 import {useThree, ThreeEvent, useFrame} from "@react-three/fiber";
 // import {Leva, useControls} from "leva";
@@ -16,6 +16,11 @@ import {useThree, ThreeEvent, useFrame} from "@react-three/fiber";
 type Shape = {
   name: string;
   renderFn: () => ReactNode
+}
+
+type ShapeSelectedEvent = {
+  shapeIndex: number;
+  shapeTextObject: THREE.Object3D;
 }
 
 const uiColor = "#555555";
@@ -49,8 +54,7 @@ const ModelGeometry = () => {
   return <bufferGeometry attach="geometry" {...geometry} />
 }
 
-// @ts-ignore
-const Shape = ({ shape, opacity }: { shape: Shape, opacity: number }) => {
+const Shape = ({ shape, opacity }: { shape: Shape, opacity: SpringValue }) => {
   const boxMesh = useRef<THREE.Mesh>(null!)
   const texture = useTexture('/shapes/cross.png')
   const [hovered, hover] = useState(false)
@@ -142,8 +146,13 @@ const Shape = ({ shape, opacity }: { shape: Shape, opacity: number }) => {
   </>
 }
 
-// @ts-ignore
-const CurvedText = ({ color, text, position, onClicked, opacity }) => {
+const CurvedText = ({ color, text, position, onClicked, opacity }: {
+  color: THREE.Color,
+  text: string,
+  position: THREE.Vector3,
+  onClicked: (event: ThreeEvent<MouseEvent>) => void,
+  opacity: SpringValue
+}) => {
   const [hovered, hover] = useState(false)
   const text3D = useRef<THREE.Mesh>(null!)
 
@@ -220,16 +229,14 @@ const CurvedText = ({ color, text, position, onClicked, opacity }) => {
   </>
 }
 
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ShapeSelector = ({ selectedShapeIndex, onSelected, opacity }) => {
+const ShapeSelector = ({ selectedShapeIndex, onSelected, opacity }: { selectedShapeIndex: number, onSelected: (event: ShapeSelectedEvent) => void, opacity: SpringValue }) => {
   // TODO auto-select shape when idle and text is facing the camera (use @react-corekit/use-idle to detect idle)
   return (
     <>
       {shapes.map((shape, shapeIndex) =>
         <CurvedText
           key={shape.name}
-          color={shapeIndex === selectedShapeIndex ? "orange" : 0xBBBBBB}
+          color={new THREE.Color(shapeIndex === selectedShapeIndex ? "orange" : 0xBBBBBB)}
           text={shape.name}
           position={positionPerShape[shapeIndex]}
           onClicked={(event: ThreeEvent<MouseEvent>) => {
@@ -268,8 +275,7 @@ const isRotateClockwise = (camera: THREE.Camera, object: THREE.Object3D): boolea
   return (crossProduct.dot(yAxis) > 0);
 };
 
-// TODO fix Shape selectedShapeIndex being remembered after navigating away from /shape
-const Shapes = ({ opacity }: { opacity: number }) => {
+const Shapes = ({ opacity }: { opacity: SpringValue }) => {
   const [selectedShapeIndex, setSelectedShapeIndex] = useState(0);
   const { camera, events } = useThree();
   const [{ rotationY }, api] = useSpring(() => ({
@@ -277,6 +283,13 @@ const Shapes = ({ opacity }: { opacity: number }) => {
     config: config.wobbly,
     immediate: false
   }))
+  const isTransitioning = opacity.isAnimating;
+
+  // Reset selected shape if necessary when transitioning in/out
+  if (isTransitioning && selectedShapeIndex !== 0) {
+    setSelectedShapeIndex(0);
+    api.start({ rotationY: 0, immediate: true })
+  }
 
   useFrame(() => {
     // Ensure that the mouse events are also triggered when camera rotation changes and mouse does not move
@@ -284,8 +297,7 @@ const Shapes = ({ opacity }: { opacity: number }) => {
     events.update()
   })
 
-  // @ts-ignore
-  const onShapeSelected = ({ shapeIndex, shapeTextObject }) => {
+  const onShapeSelected = ({ shapeIndex, shapeTextObject }: ShapeSelectedEvent): void => {
     // Animate rotationY so that shape text is aligned with the camera
     const theta = angleBetween(camera, shapeTextObject);
     const isRotateClockWise = isRotateClockwise(camera, shapeTextObject);

@@ -8,7 +8,7 @@ import * as THREE from 'three'
 import {useGLTF} from '@react-three/drei'
 import {GLTF} from 'three-stdlib'
 import {useEffect, useMemo, useState} from "react";
-import {animated, config, useSprings} from '@react-spring/three'
+import {animated, config, SpringValue, useSprings} from '@react-spring/three'
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -43,10 +43,16 @@ type GLTFResult = GLTF & {
 
 type Positions = { position: number[], displacement: number[] };
 
-export function Robohand2Model(props: JSX.IntrinsicElements['group'] & { opacity: number }) {
+export function Robohand2Model({ opacity, ...props}: JSX.IntrinsicElements['group'] & { opacity: SpringValue }) {
   const [hovered, hover] = useState(false);
   const [exploded, setExploded] = useState(false);
   const { nodes, materials } = useGLTF('/hand/robohand-2-transformed.glb') as GLTFResult
+  const isTransitioning = opacity.isAnimating;
+
+  // Reset exploded if necessary when transitioning in/out
+  if (isTransitioning && exploded) {
+    setExploded(false);
+  }
 
   const { targetMap, positions } = useMemo(
     () => {
@@ -131,7 +137,7 @@ export function Robohand2Model(props: JSX.IntrinsicElements['group'] & { opacity
             <animated.meshStandardMaterial
               {...materials.Default}
               transparent={true}
-              opacity={props.opacity}
+              opacity={opacity}
             />
           </animated.mesh>
         })
