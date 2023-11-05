@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {Link} from "wouter";
+import {Link, useLocation} from "wouter";
 import {ReactNode} from "react";
 import "./menu.css";
 
@@ -11,6 +11,8 @@ export type Page = {
 }
 
 const Menu = ({ pages }: { pages: Page[] }) => {
+  const [location] = useLocation();
+
   return (
     <div className='menu'>
       { pages.map(page =>
@@ -18,7 +20,7 @@ const Menu = ({ pages }: { pages: Page[] }) => {
           key={page.name}
           href={page.path}
         >
-          <a className='menuItem'>{page.name}</a>
+          <a className={location === page.path ? 'menuItem selected' : 'menuItem'}>{page.name}</a>
         </Link>) }
     </div>
   )

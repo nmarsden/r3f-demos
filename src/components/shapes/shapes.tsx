@@ -4,9 +4,7 @@ import {
   Outlines,
   Decal,
   useTexture,
-  Billboard,
   Text3D,
-  Center,
   Bvh,
   useGLTF
 } from "@react-three/drei";
@@ -51,39 +49,6 @@ const ModelGeometry = () => {
   const geometry = (scene.children[0] as THREE.Mesh).geometry.clone().scale(0.5, 0.5, 0.5).rotateY(Math.PI * 0.25)
 
   return <bufferGeometry attach="geometry" {...geometry} />
-}
-
-const Heading = ({ opacity }: { opacity: number }) => {
-  return <Billboard
-    follow={true}
-    lockX={false}
-    lockY={false}
-    lockZ={false} // Lock the rotation on the z axis (default=false)
-  >
-    <Center position={[0, 12, -15]}>
-      <Text3D
-        curveSegments={32}
-        bevelEnabled
-        bevelSize={0.3}
-        bevelThickness={0.15}
-        height={0.5}
-        lineHeight={0.5}
-        letterSpacing={0.15}
-        size={2.5}
-        font="/shapes/Inter_Bold.json"
-      >
-        {"SHAPES"}
-        {/* @ts-ignore */}
-        <animated.meshStandardMaterial
-          metalness={0.0}
-          roughness={0.25}
-          color={uiColor}
-          transparent={true}
-          opacity={opacity}
-        />
-      </Text3D>
-    </Center>
-  </Billboard>
 }
 
 // @ts-ignore
@@ -295,7 +260,7 @@ const angleBetween = (camera: THREE.Camera, object: THREE.Object3D): number => {
 };
 
 const isRotateClockwise = (_camera: THREE.Camera, object: THREE.Object3D): boolean => {
-  // TODO assume camera position is [0, 2, 4.5]
+  // assume camera position is [0, 2, 4.5]
   const camPos = new THREE.Vector3(0,2,4.5).setY(0).normalize();
   // const camPos = normalizedPositionOnXZPlane(camera);
 
@@ -341,7 +306,6 @@ const Shapes = ({ opacity }: { opacity: number }) => {
     <>
       {/*<Leva />*/}
       <Bvh firstHitOnly>
-        <Heading opacity={opacity}/>
         <animated.group rotation-y={rotationY}>
           <Shape shape={shapes[selectedShapeIndex]} opacity={opacity}/>
           <ShapeSelector selectedShapeIndex={selectedShapeIndex} onSelected={onShapeSelected} opacity={opacity}/>

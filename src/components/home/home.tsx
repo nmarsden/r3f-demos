@@ -8,28 +8,52 @@ import {useRef} from "react";
 import {OrbitControls as OrbitControlsRef} from 'three-stdlib'
 import {animated} from "@react-spring/three";
 
-const uiColor = "#DDDDDD";
+const uiColor = 0x2176AE;
 
 const Heading = ({ opacity }: { opacity: number }) => {
   return <>
-    <Center position={[0, 0, 0]}>
+    <Center position={[0, 1, 0]}>
       <Text3D
         castShadow={true}
-        curveSegments={8}
+        curveSegments={20}
         bevelEnabled
         bevelSize={0.02}
-        bevelThickness={1}
+        bevelThickness={0.1}
         height={0.25}
-        lineHeight={0.6}
-        letterSpacing={0.1}
+        lineHeight={0.75}
+        letterSpacing={0.001}
         size={0.75}
         font="/shapes/Inter_Bold.json"
       >
-        {"        R3F\nExperiments"}
+        {"R3F"}
         {/* @ts-ignore */}
         <animated.meshStandardMaterial
-          roughness={0.25}
           metalness={0.75}
+          roughness={0.15}
+          color={uiColor}
+          transparent={true}
+          opacity={opacity}
+        />
+      </Text3D>
+    </Center>
+    <Center position={[0, 0, 0]}>
+      <Text3D
+        castShadow={true}
+        curveSegments={20}
+        bevelEnabled
+        bevelSize={0.02}
+        bevelThickness={0.1}
+        height={0.25}
+        lineHeight={0.75}
+        letterSpacing={0.001}
+        size={0.75}
+        font="/shapes/Inter_Bold.json"
+      >
+        {"DEMO"}
+        {/* @ts-ignore */}
+        <animated.meshStandardMaterial
+          metalness={0.75}
+          roughness={0.15}
           color={uiColor}
           transparent={true}
           opacity={opacity}
@@ -50,7 +74,7 @@ const Home = ({ opacity }: { opacity: number }) => {
       <OrbitControls
         ref={orbitControls}
         makeDefault={true}
-        maxPolarAngle={Math.PI / 1}
+        maxPolarAngle={Math.PI / 2}
         autoRotate={false}
         autoRotateSpeed={0.25}
         enableZoom={false}
