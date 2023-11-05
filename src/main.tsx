@@ -5,7 +5,7 @@ import {Menu, Page} from "./components/menu/menu";
 import {Home} from "./components/home/home";
 import {Hand} from "./components/hand/hand";
 import {Shapes} from "./components/shapes/shapes";
-import {Environment, Loader} from "@react-three/drei";
+import {Environment, Loader, OrbitControls} from "@react-three/drei";
 import {useLocation, Route, Switch} from "wouter";
 import {useTransition, animated, config} from "@react-spring/three";
 // import {Test} from "./components/test/test";
@@ -57,21 +57,17 @@ const App = () => {
     from: { position: [0, 0, 0], rotation: [0, Math.PI, 0], scale: 0.01, opacity: 0 },
     enter: { position: [0, 0, 0], rotation: [0, 0, 0], scale: 1, opacity: 1 },
     leave: { position: [0, 0, 0], rotation: [0, -Math.PI, 0], scale: 0.01, opacity: 0 },
-    config: config.molasses
+    config: config.molasses,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    onRest: () => {
+      setResetCamera(false)
+    }
   })
 
   useEffect(() => {
-    const onPointerUp = () => { setResetCamera(true) }
-    const onPointerDown = () => { setResetCamera(false) }
-
-    container.current.addEventListener('pointerup', onPointerUp)
-    container.current.addEventListener('pointerdown', onPointerDown)
-
-    return () => {
-      container.current.removeEventListener('pointerup', onPointerUp)
-      container.current.removeEventListener('pointerdown', onPointerDown)
-    }
-  }, [])
+    setResetCamera(true)
+  }, [location])
 
   return (
     <>
@@ -105,6 +101,15 @@ const App = () => {
             </animated.group>
           )) }
           <Environment preset={'warehouse'} background blur={1}/>
+          <OrbitControls
+            makeDefault={true}
+            maxPolarAngle={Math.PI / 2}
+            autoRotate={false}
+            autoRotateSpeed={0.25}
+            enableZoom={false}
+            enablePan={false}
+            enableRotate={!resetCamera}
+          />
         </Canvas>
       </div>
       <Loader />

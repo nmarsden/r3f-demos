@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
-  OrbitControls,
   Outlines,
   Decal,
   useTexture,
@@ -12,7 +11,6 @@ import {useEffect, useRef, useState, ReactNode} from "react";
 import {useSpring, animated, config, AnimationResult} from '@react-spring/three'
 import * as THREE from "three";
 import {useThree, ThreeEvent, useFrame} from "@react-three/fiber";
-import {OrbitControls as OrbitControlsRef} from 'three-stdlib'
 // import {Leva, useControls} from "leva";
 
 type Shape = {
@@ -20,7 +18,7 @@ type Shape = {
   renderFn: () => ReactNode
 }
 
-const uiColor = "#DDDDDD";
+const uiColor = "#555555";
 
 const shapes: Shape[] = [
   { name: 'TORUS\n KNOT',    renderFn: () => <torusKnotGeometry args={[0.3, 0.13, 100, 16]}/> },
@@ -231,7 +229,7 @@ const ShapeSelector = ({ selectedShapeIndex, onSelected, opacity }) => {
       {shapes.map((shape, shapeIndex) =>
         <CurvedText
           key={shape.name}
-          color={shapeIndex === selectedShapeIndex ? "orange" : 0x888888}
+          color={shapeIndex === selectedShapeIndex ? "orange" : 0xBBBBBB}
           text={shape.name}
           position={positionPerShape[shapeIndex]}
           onClicked={(event: ThreeEvent<MouseEvent>) => {
@@ -259,11 +257,8 @@ const angleBetween = (camera: THREE.Camera, object: THREE.Object3D): number => {
   return Math.acos(camPos.dot(objectPos));
 };
 
-const isRotateClockwise = (_camera: THREE.Camera, object: THREE.Object3D): boolean => {
-  // assume camera position is [0, 2, 4.5]
-  const camPos = new THREE.Vector3(0,2,4.5).setY(0).normalize();
-  // const camPos = normalizedPositionOnXZPlane(camera);
-
+const isRotateClockwise = (camera: THREE.Camera, object: THREE.Object3D): boolean => {
+  const camPos = normalizedPositionOnXZPlane(camera);
   const objectPos = normalizedPositionOnXZPlane(object);
 
   const crossProduct = new THREE.Vector3(0,0,0);
@@ -273,9 +268,9 @@ const isRotateClockwise = (_camera: THREE.Camera, object: THREE.Object3D): boole
   return (crossProduct.dot(yAxis) > 0);
 };
 
+// TODO fix Shape selectedShapeIndex being remembered after navigating away from /shape
 const Shapes = ({ opacity }: { opacity: number }) => {
   const [selectedShapeIndex, setSelectedShapeIndex] = useState(0);
-  const orbitControls = useRef<OrbitControlsRef>(null!)
   const { camera, events } = useThree();
   const [{ rotationY }, api] = useSpring(() => ({
     from: { rotationY: 0 },
@@ -310,14 +305,6 @@ const Shapes = ({ opacity }: { opacity: number }) => {
           <Shape shape={shapes[selectedShapeIndex]} opacity={opacity}/>
           <ShapeSelector selectedShapeIndex={selectedShapeIndex} onSelected={onShapeSelected} opacity={opacity}/>
         </animated.group>
-        <OrbitControls
-          ref={orbitControls}
-          makeDefault={true}
-          maxPolarAngle={Math.PI / 2}
-          autoRotate={false}
-          autoRotateSpeed={0.25}
-          enableZoom={false}
-        />
       </Bvh>
     </>
   )

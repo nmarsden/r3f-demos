@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
-  OrbitControls,
   Text3D,
   Center, Float
 } from "@react-three/drei";
-import {useRef} from "react";
-import {OrbitControls as OrbitControlsRef} from 'three-stdlib'
 import {animated} from "@react-spring/three";
 
 const uiColor = "#DDDDDD";
@@ -42,22 +39,11 @@ const Heading = ({ text, opacity }: { text: string, opacity: number }) => {
 }
 
 const Test = ({ text, opacity }: { text: string, opacity: number }) => {
-  const orbitControls = useRef<OrbitControlsRef>(null!)
-
   return (
     <>
       <Float>
         <Heading text={text} opacity={opacity}/>
       </Float>
-      <OrbitControls
-        ref={orbitControls}
-        makeDefault={true}
-        maxPolarAngle={Math.PI / 1}
-        autoRotate={false}
-        autoRotateSpeed={0.25}
-        enableZoom={false}
-        enablePan={false}
-      />
     </>
   )
 }
