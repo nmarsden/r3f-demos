@@ -16,8 +16,8 @@ const BOX_POS_Y = 0;
 const BOX_HOVERED_POS_Y = 0.25;
 const BOX_HOVERED_SECONDARY_POS_Y = 0.125;
 
-const BOX_ROTATE_Y = 0;
-const BOX_SELECTED_ROTATE_Y = Math.PI;
+const BOX_ROTATE = 0;
+const BOX_NOT_SELECTED_ROTATE = Math.PI / 2;
 
 const BOX_SIZE = 0.25;
 const BOX_GAP = 0.125;
@@ -54,9 +54,15 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
     () => ({
       scale: BOX_SCALE,
       posY: BOX_POS_Y,
-      rotateY: BOX_ROTATE_Y,
+      rotate: BOX_ROTATE,
       color: BOX_COLOR,
-      config: (key) => key !== 'color' ? config.wobbly : config.gentle,
+      config: (key) => {
+        switch(key) {
+          case 'rotate': return config.molasses;
+          case 'color': return config.gentle;
+          default: return config.wobbly;
+        }
+      },
     })
   );
   const dummy = useMemo(() => new THREE.Object3D(), []);
@@ -83,12 +89,12 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
       const isSelected = selected[index];
       return {
         from: {
-          rotateY: BOX_ROTATE_Y,
+          rotate: BOX_ROTATE,
         },
         to: {
-          rotateY: isSelected ? BOX_SELECTED_ROTATE_Y : BOX_ROTATE_Y,
+          rotate: isSelected ? BOX_ROTATE : BOX_NOT_SELECTED_ROTATE,
         },
-        loop: isSelected
+        loop: !isSelected
       }
     })
   }, [selected]);
@@ -99,10 +105,10 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
         const scale = springs[index].scale.get();
         const posY = springs[index].posY.get();
         const color = springs[index].color.get();
-        const rotateY = springs[index].rotateY.get();
+        const rotate = springs[index].rotate.get();
 
         dummy.position.set(position.x, posY, position.z);
-        dummy.rotation.y = rotateY;
+        dummy.rotation.set(rotate, rotate, rotate);
         dummy.scale.set(scale, scale, scale);
         dummy.updateMatrix();
 
@@ -136,6 +142,13 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
     }));
     event.stopPropagation();
   }, []);
+
+  const isTransitioning = opacity.isAnimating;
+
+  // Reset selected if necessary when transitioning in/out
+  if (isTransitioning && selected.some(s => s)) {
+    setSelected(prevState => prevState.map(() => false));
+  }
 
   return (
     <Instances
