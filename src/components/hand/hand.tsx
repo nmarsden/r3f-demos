@@ -1,13 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {
-  useGLTF,
-  Bvh
-} from "@react-three/drei";
+import {Bvh} from "@react-three/drei";
 import {Robohand2Model} from "./robohand2Model";
 import {SpringValue} from "@react-spring/three";
 import {useFrame, useThree} from "@react-three/fiber";
-
-useGLTF.preload('/hand/scene.gltf')
 
 const Hand = ({ opacity }: { opacity: SpringValue }) => {
   const { events } = useThree();
