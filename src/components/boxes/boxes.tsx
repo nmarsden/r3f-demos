@@ -4,7 +4,18 @@ import {animated, config, SpringValue, useSprings} from "@react-spring/three";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
-const BOX_COLOR = '#2176AE';
+const BOX_COLOR = '#FFFFFF';
+const BOX_SELECTED_COLOR = '#2176AE';
+const BOX_SELECTED_SECONDARY_COLOR = '#93bfe7';
+
+const BOX_SCALE = 1;
+const BOX_SELECTED_SCALE = 1.5;
+const BOX_SELECTED_SECONDARY_SCALE = 1.25;
+
+const BOX_POS_Y = 0;
+const BOX_SELECTED_POS_Y = 0.25;
+const BOX_SELECTED_SECONDARY_POS_Y = 0.125;
+
 const BOX_SIZE = 0.25;
 const BOX_GAP = 0.125;
 const NUM_ROWS = 20;
@@ -37,10 +48,10 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const [springs, api] = useSprings(
     POSITIONS.length,
     () => ({
-      scale: 1,
-      posY: 0,
+      scale: BOX_SCALE,
+      posY: BOX_POS_Y,
       color: BOX_COLOR,
-      config: config.gentle
+      config: (key) => key !== 'color' ? config.wobbly : config.gentle,
     })
   );
   const dummy = useMemo(() => new THREE.Object3D(), []);
@@ -51,11 +62,12 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
     const selectedIndex = selected.findIndex(s => s);
 
     api.start(index => {
-      const isSelected = toRow(selectedIndex) === toRow(index) || toColumn(selectedIndex) === toColumn(index);
+      const isSelected = selected[index];
+      const isSelectedSecondary = toRow(selectedIndex) === toRow(index) || toColumn(selectedIndex) === toColumn(index);
       return {
-        scale: isSelected ? 1.5 : 1,
-        posY: isSelected ? 0.25 : 0,
-        color: isSelected ? '#FFFFFF':BOX_COLOR
+        scale: isSelected ? BOX_SELECTED_SCALE: (isSelectedSecondary ? BOX_SELECTED_SECONDARY_SCALE : BOX_SCALE),
+        posY: isSelected ? BOX_SELECTED_POS_Y: (isSelectedSecondary ? BOX_SELECTED_SECONDARY_POS_Y : BOX_POS_Y),
+        color: isSelected ? BOX_SELECTED_COLOR: (isSelectedSecondary ? BOX_SELECTED_SECONDARY_COLOR : BOX_COLOR),
       }
     })
     setHovered(selected.some(s => s))
