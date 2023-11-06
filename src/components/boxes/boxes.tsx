@@ -23,6 +23,13 @@ for (let row=0; row<NUM_ROWS; row++) {
   }
 }
 
+const toRow = (index: number): number => {
+  return Math.floor(index / NUM_COLUMNS);
+}
+const toColumn = (index: number): number => {
+  return Math.floor(index % NUM_COLUMNS);
+}
+
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
   const [selected, setSelected] = useState([...POSITIONS].map(() => false));
@@ -41,11 +48,16 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   useCursor(hovered)
 
   useEffect(() => {
-    api.start(index => ({
-      scale: selected[index] ? 1.5 : 1,
-      posY: selected[index] ? 0.25 : 0,
-      color: selected[index] ? '#FFFFFF':BOX_COLOR
-    }))
+    const selectedIndex = selected.findIndex(s => s);
+
+    api.start(index => {
+      const isSelected = toRow(selectedIndex) === toRow(index) || toColumn(selectedIndex) === toColumn(index);
+      return {
+        scale: isSelected ? 1.5 : 1,
+        posY: isSelected ? 0.25 : 0,
+        color: isSelected ? '#FFFFFF':BOX_COLOR
+      }
+    })
     setHovered(selected.some(s => s))
   }, [selected]);
 
