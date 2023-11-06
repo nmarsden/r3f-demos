@@ -5,16 +5,19 @@ import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
 const BOX_COLOR = '#FFFFFF';
-const BOX_SELECTED_COLOR = '#2176AE';
-const BOX_SELECTED_SECONDARY_COLOR = '#93bfe7';
+const BOX_HOVERED_COLOR = '#DDA522';
+const BOX_HOVERED_SECONDARY_COLOR = '#93bfe7';
 
 const BOX_SCALE = 1;
-const BOX_SELECTED_SCALE = 1.5;
-const BOX_SELECTED_SECONDARY_SCALE = 1.25;
+const BOX_HOVERED_SCALE = 1.5;
+const BOX_HOVERED_SECONDARY_SCALE = 1.25;
 
 const BOX_POS_Y = 0;
-const BOX_SELECTED_POS_Y = 0.25;
-const BOX_SELECTED_SECONDARY_POS_Y = 0.125;
+const BOX_HOVERED_POS_Y = 0.25;
+const BOX_HOVERED_SECONDARY_POS_Y = 0.125;
+
+const BOX_ROTATE_Y = 0;
+const BOX_SELECTED_ROTATE_Y = Math.PI;
 
 const BOX_SIZE = 0.25;
 const BOX_GAP = 0.125;
@@ -43,34 +46,51 @@ const toColumn = (index: number): number => {
 
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
+  const [hovered, setHovered] = useState([...POSITIONS].map(() => false));
   const [selected, setSelected] = useState([...POSITIONS].map(() => false));
-  const [hovered, setHovered] = useState(false)
+  const [anyHover, setAnyHover] = useState(false)
   const [springs, api] = useSprings(
     POSITIONS.length,
     () => ({
       scale: BOX_SCALE,
       posY: BOX_POS_Y,
+      rotateY: BOX_ROTATE_Y,
       color: BOX_COLOR,
       config: (key) => key !== 'color' ? config.wobbly : config.gentle,
     })
   );
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  useCursor(hovered)
+  useCursor(anyHover)
 
   useEffect(() => {
-    const selectedIndex = selected.findIndex(s => s);
+    const hoveredIndex = hovered.findIndex(s => s);
 
     api.start(index => {
-      const isSelected = selected[index];
-      const isSelectedSecondary = toRow(selectedIndex) === toRow(index) || toColumn(selectedIndex) === toColumn(index);
+      const isHovered = hovered[index];
+      const isHoveredSecondary = toRow(hoveredIndex) === toRow(index) || toColumn(hoveredIndex) === toColumn(index);
       return {
-        scale: isSelected ? BOX_SELECTED_SCALE: (isSelectedSecondary ? BOX_SELECTED_SECONDARY_SCALE : BOX_SCALE),
-        posY: isSelected ? BOX_SELECTED_POS_Y: (isSelectedSecondary ? BOX_SELECTED_SECONDARY_POS_Y : BOX_POS_Y),
-        color: isSelected ? BOX_SELECTED_COLOR: (isSelectedSecondary ? BOX_SELECTED_SECONDARY_COLOR : BOX_COLOR),
+        scale: isHovered ? BOX_HOVERED_SCALE : (isHoveredSecondary ? BOX_HOVERED_SECONDARY_SCALE : BOX_SCALE),
+        posY: isHovered ? BOX_HOVERED_POS_Y : (isHoveredSecondary ? BOX_HOVERED_SECONDARY_POS_Y : BOX_POS_Y),
+        color: isHovered ? BOX_HOVERED_COLOR : (isHoveredSecondary ? BOX_HOVERED_SECONDARY_COLOR : BOX_COLOR),
       }
     })
-    setHovered(selected.some(s => s))
+    setAnyHover(hoveredIndex >= 0)
+  }, [hovered]);
+
+  useEffect(() => {
+    api.start(index => {
+      const isSelected = selected[index];
+      return {
+        from: {
+          rotateY: BOX_ROTATE_Y,
+        },
+        to: {
+          rotateY: isSelected ? BOX_SELECTED_ROTATE_Y : BOX_ROTATE_Y,
+        },
+        loop: isSelected
+      }
+    })
   }, [selected]);
 
   useFrame(() => {
@@ -79,8 +99,10 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
         const scale = springs[index].scale.get();
         const posY = springs[index].posY.get();
         const color = springs[index].color.get();
+        const rotateY = springs[index].rotateY.get();
 
         dummy.position.set(position.x, posY, position.z);
+        dummy.rotation.y = rotateY;
         dummy.scale.set(scale, scale, scale);
         dummy.updateMatrix();
 
@@ -96,13 +118,22 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   });
   const onPointerOver = useCallback((event: ThreeEvent<MouseEvent>): void => {
     const index = event.object.userData.index;
-    setSelected(prevState => prevState.map((item, idx) => idx === index ? true : item));
+    setHovered(prevState => prevState.map((item, idx) => idx === index ? true : item));
     event.stopPropagation();
   }, []);
 
   const onPointerOut = useCallback((event: ThreeEvent<MouseEvent>): void => {
     const index = event.object.userData.index;
-    setSelected(prevState => prevState.map((item, idx) => idx === index ? false : item));
+    setHovered(prevState => prevState.map((item, idx) => idx === index ? false : item));
+    event.stopPropagation();
+  }, []);
+
+  const onClick = useCallback((event: ThreeEvent<MouseEvent>): void => {
+    const index = event.object.userData.index;
+    setSelected(prevState => prevState.map((item, idx) => {
+      const isToggle = (idx === index) || toRow(idx) === toRow(index) || toColumn(idx) === toColumn(index)
+      return isToggle ? !item : item
+    }));
     event.stopPropagation();
   }, []);
 
@@ -131,6 +162,7 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
           userData={{ index }}
           onPointerOver={onPointerOver}
           onPointerOut={onPointerOut}
+          onClick={onClick}
         />
       )}
     </Instances>
