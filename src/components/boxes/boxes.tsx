@@ -3,19 +3,15 @@ import {Instance, Instances, useCursor} from "@react-three/drei";
 import {animated, config, SpringValue, useSprings} from "@react-spring/three";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {PAINTS, PaintSelectedEvent, Palette} from "./palette";
+import {Paint, PAINTS, PaintSelectedEvent, Palette} from "./palette";
 
-const BOX_COLOR = '#DDDDDD';
-const BOX_HOVERED_COLOR = '#DDA522';
-const BOX_HOVERED_SECONDARY_COLOR = '#93bfe7';
+const BOX_COLOR = (PAINTS.find(p => p.name === 'white') as Paint).color;
 
 const BOX_SCALE = 1;
-const BOX_HOVERED_SCALE = 1.5;
-const BOX_HOVERED_SECONDARY_SCALE = 1.25;
+const BOX_HOVERED_SCALE = 1.25;
 
 const BOX_POS_Y = 0;
-const BOX_HOVERED_POS_Y = 0.25;
-const BOX_HOVERED_SECONDARY_POS_Y = 0.125;
+const BOX_HOVERED_POS_Y = 0.125;
 
 const BOX_ROTATE = 0;
 const BOX_NOT_SELECTED_ROTATE = 0;
@@ -46,10 +42,12 @@ const isPointInCircle = (point: THREE.Vector3, center: THREE.Vector3, radius: nu
   return lhs <= rhs;
 }
 
+// TODO draw when dragging on mouse down
+// TODO show animation on click
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
   const [selectedPaint, setSelectedPaint] = useState(PAINTS[0])
-  const [color, setColor] = useState([...POSITIONS].map(() => PAINTS[0].color));
+  const [color, setColor] = useState([...POSITIONS].map(() => BOX_COLOR));
   const [hovered, setHovered] = useState([...POSITIONS].map(() => false));
   const [selected, setSelected] = useState([...POSITIONS].map(() => false));
   const [hoveredPosition, setHoveredPosition] = useState(new THREE.Vector3(0,0,0))
@@ -81,16 +79,15 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
     setHoveredPosition(hoveredPos);
 
     api.start(index => {
-      const isHovered = hovered[index];
-      const isHoveredSecondary = isPointInCircle(POSITIONS[index], hoveredPos, SELECTOR_RADIUS);
+      const isHovered = isPointInCircle(POSITIONS[index], hoveredPos, SELECTOR_RADIUS);
       return {
-        scale: isHovered ? BOX_HOVERED_SCALE : (isHoveredSecondary ? BOX_HOVERED_SECONDARY_SCALE : BOX_SCALE),
-        posY: isHovered ? BOX_HOVERED_POS_Y : (isHoveredSecondary ? BOX_HOVERED_SECONDARY_POS_Y : BOX_POS_Y),
-        color: isHovered ? BOX_HOVERED_COLOR : (isHoveredSecondary ? BOX_HOVERED_SECONDARY_COLOR : BOX_COLOR),
+        scale: isHovered ? BOX_HOVERED_SCALE : BOX_SCALE,
+        posY: isHovered ? BOX_HOVERED_POS_Y : BOX_POS_Y,
+        color: isHovered ? selectedPaint.color : color[index]
       }
     })
     setAnyHover(hoveredIndex >= 0)
-  }, [hovered]);
+  }, [hovered, color]);
 
   useEffect(() => {
     api.start(index => {
@@ -110,13 +107,9 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   useFrame(() => {
     if (mesh.current !== null) {
       POSITIONS.forEach((position, index) => {
-        const isSelected = selected[index];
-
         const scale = springs[index].scale.get();
         const posY = springs[index].posY.get();
-
-        // TODO combine selected color and animated color
-        const boxColor = isSelected ? color[index] : springs[index].color.get();
+        const boxColor: THREE.Color = new THREE.Color(springs[index].color.get());
         const rotate = springs[index].rotate.get();
 
         dummy.position.set(position.x, posY, position.z);
@@ -125,7 +118,7 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
         dummy.updateMatrix();
 
         mesh.current.setMatrixAt(index, dummy.matrix);
-        mesh.current.setColorAt(index, new THREE.Color(boxColor));
+        mesh.current.setColorAt(index, boxColor);
       });
 
       mesh.current.instanceMatrix.needsUpdate = true;
@@ -165,9 +158,14 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
 
   const isTransitioning = opacity.isAnimating;
 
-  // Reset selected if necessary when transitioning in/out
-  if (isTransitioning && selected.some(s => s)) {
-    setSelected(prevState => prevState.map(() => false));
+  // Reset state if necessary when transitioning in/out
+  if (isTransitioning && (selectedPaint !== PAINTS[0] || hoveredPosition.x !== 0 || hoveredPosition.z !== 0)) {
+    setSelectedPaint(PAINTS[0])
+    setColor([...POSITIONS].map(() => BOX_COLOR));
+    setHovered([...POSITIONS].map(() => false));
+    setSelected([...POSITIONS].map(() => false));
+    setHoveredPosition(new THREE.Vector3(0,0,0))
+    setAnyHover(false)
   }
 
   return (

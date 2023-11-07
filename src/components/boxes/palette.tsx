@@ -3,7 +3,7 @@ import {SpringValue} from "@react-spring/three";
 import {useState} from "react";
 import "./palette.css";
 
-type Paint = {
+export type Paint = {
   name: string;
   color: string
 }
@@ -18,7 +18,7 @@ export const PAINTS: Paint[] = [
   { name: 'green', color: '#3CAEA3' },
   { name: 'yellow', color: '#F6D55C' },
   { name: 'red', color: '#ED553B' },
-  { name: 'black', color: '#000000' },
+  { name: 'black', color: '#222222' },
   { name: 'white', color: '#DDDDDD' },
 ]
 
