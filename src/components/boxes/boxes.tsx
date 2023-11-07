@@ -3,8 +3,9 @@ import {Instance, Instances, useCursor} from "@react-three/drei";
 import {animated, config, SpringValue, useSprings} from "@react-spring/three";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {PAINTS, PaintSelectedEvent, Palette} from "./palette";
 
-const BOX_COLOR = '#FFFFFF';
+const BOX_COLOR = '#DDDDDD';
 const BOX_HOVERED_COLOR = '#DDA522';
 const BOX_HOVERED_SECONDARY_COLOR = '#93bfe7';
 
@@ -17,7 +18,7 @@ const BOX_HOVERED_POS_Y = 0.25;
 const BOX_HOVERED_SECONDARY_POS_Y = 0.125;
 
 const BOX_ROTATE = 0;
-const BOX_NOT_SELECTED_ROTATE = Math.PI / 2;
+const BOX_NOT_SELECTED_ROTATE = 0;
 
 const BOX_SIZE = 0.25;
 const BOX_GAP = 0.125;
@@ -47,6 +48,8 @@ const isPointInCircle = (point: THREE.Vector3, center: THREE.Vector3, radius: nu
 
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
+  const [selectedPaint, setSelectedPaint] = useState(PAINTS[0])
+  const [color, setColor] = useState([...POSITIONS].map(() => PAINTS[0].color));
   const [hovered, setHovered] = useState([...POSITIONS].map(() => false));
   const [selected, setSelected] = useState([...POSITIONS].map(() => false));
   const [hoveredPosition, setHoveredPosition] = useState(new THREE.Vector3(0,0,0))
@@ -107,9 +110,13 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   useFrame(() => {
     if (mesh.current !== null) {
       POSITIONS.forEach((position, index) => {
+        const isSelected = selected[index];
+
         const scale = springs[index].scale.get();
         const posY = springs[index].posY.get();
-        const color = springs[index].color.get();
+
+        // TODO combine selected color and animated color
+        const boxColor = isSelected ? color[index] : springs[index].color.get();
         const rotate = springs[index].rotate.get();
 
         dummy.position.set(position.x, posY, position.z);
@@ -118,7 +125,7 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
         dummy.updateMatrix();
 
         mesh.current.setMatrixAt(index, dummy.matrix);
-        mesh.current.setColorAt(index, new THREE.Color(color));
+        mesh.current.setColorAt(index, new THREE.Color(boxColor));
       });
 
       mesh.current.instanceMatrix.needsUpdate = true;
@@ -142,11 +149,19 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const onClick = useCallback((event: ThreeEvent<MouseEvent>): void => {
     const index = event.object.userData.index;
     setSelected(prevState => prevState.map((item, idx) => {
-      const isToggle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
-      return isToggle ? !item : item
+      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
+      return isInCircle ? true : item;
+    }));
+    setColor(prevState => prevState.map((item, idx) => {
+      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
+      return isInCircle ? selectedPaint.color : item;
     }));
     event.stopPropagation();
-  }, []);
+  }, [selectedPaint]);
+
+  const onPaintSelected = useCallback((event: PaintSelectedEvent): void => {
+    setSelectedPaint(event.selectedPaint);
+  }, [])
 
   const isTransitioning = opacity.isAnimating;
 
@@ -156,34 +171,37 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   }
 
   return (
-    <Instances
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      ref={mesh}
-      castShadow={true}
-      limit={1000} // Optional: max amount of items (for calculating buffer size)
-      range={1000} // Optional: draw-range
-    >
-      <boxGeometry args={[BOX_SIZE, BOX_SIZE, BOX_SIZE]}/>
-      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-      {/* @ts-ignore */}
-      <animated.meshStandardMaterial
-        metalness={0.75}
-        roughness={0.15}
-        color={BOX_COLOR}
-        transparent={true}
-        opacity={opacity}
-      />
-      {POSITIONS.map((_position, index) =>
-        <Instance
-          key={index}
-          userData={{ index }}
-          onPointerOver={onPointerOver}
-          onPointerOut={onPointerOut}
-          onClick={onClick}
+    <>
+      <Instances
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        ref={mesh}
+        castShadow={true}
+        limit={1000} // Optional: max amount of items (for calculating buffer size)
+        range={1000} // Optional: draw-range
+      >
+        <boxGeometry args={[BOX_SIZE, BOX_SIZE, BOX_SIZE]}/>
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        <animated.meshStandardMaterial
+          metalness={0.15}
+          roughness={0.75}
+          color={BOX_COLOR}
+          transparent={true}
+          opacity={opacity}
         />
-      )}
-    </Instances>
+        {POSITIONS.map((_position, index) =>
+          <Instance
+            key={index}
+            userData={{ index }}
+            onPointerOver={onPointerOver}
+            onPointerOut={onPointerOut}
+            onClick={onClick}
+          />
+        )}
+      </Instances>
+      <Palette opacity={opacity} selectedPaint={selectedPaint} onPaintSelected={onPaintSelected} />
+    </>
   )
 }
 

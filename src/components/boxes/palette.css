@@ -1,0 +1,35 @@
+.palette {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    padding: 1rem;
+    font-size: 20px;
+    line-height: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: rgb(85 85 85 / 0.8);
+    opacity: 0;
+    transition: opacity 1s;
+    display: flex;
+    gap: 0.6rem;
+}
+
+.palette.isShown {
+    opacity: 1;
+}
+
+.paint {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid black;
+    opacity: 1;
+}
+.paint:hover {
+    border-color: orange;
+    cursor: pointer;
+}
+.paint.selected {
+    border-color: orange;
+}
