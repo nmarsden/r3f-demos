@@ -21,11 +21,13 @@ const BOX_NOT_SELECTED_ROTATE = Math.PI / 2;
 
 const BOX_SIZE = 0.25;
 const BOX_GAP = 0.125;
-const NUM_ROWS = 20;
-const NUM_COLUMNS = 20;
+const NUM_ROWS = 21;
+const NUM_COLUMNS = 21;
 
 const X_WIDTH = (NUM_COLUMNS * BOX_SIZE) + ((NUM_COLUMNS - 1) * BOX_GAP);
 const Y_WIDTH = (NUM_ROWS * BOX_SIZE) + ((NUM_ROWS - 1) * BOX_GAP);
+
+const SELECTOR_RADIUS = (4 * BOX_SIZE) + (3 * BOX_GAP) - (0.5 * BOX_SIZE);
 
 const POSITIONS: THREE.Vector3[] = new Array(NUM_ROWS * NUM_COLUMNS);
 for (let row=0; row<NUM_ROWS; row++) {
@@ -37,17 +39,17 @@ for (let row=0; row<NUM_ROWS; row++) {
   }
 }
 
-const toRow = (index: number): number => {
-  return Math.floor(index / NUM_COLUMNS);
-}
-const toColumn = (index: number): number => {
-  return Math.floor(index % NUM_COLUMNS);
+const isPointInCircle = (point: THREE.Vector3, center: THREE.Vector3, radius: number): boolean => {
+  const lhs = Math.pow(center.x - point.x, 2) + Math.pow(center.z - point.z, 2);
+  const rhs = Math.pow(radius, 2);
+  return lhs <= rhs;
 }
 
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
   const [hovered, setHovered] = useState([...POSITIONS].map(() => false));
   const [selected, setSelected] = useState([...POSITIONS].map(() => false));
+  const [hoveredPosition, setHoveredPosition] = useState(new THREE.Vector3(0,0,0))
   const [anyHover, setAnyHover] = useState(false)
   const [springs, api] = useSprings(
     POSITIONS.length,
@@ -72,9 +74,12 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   useEffect(() => {
     const hoveredIndex = hovered.findIndex(s => s);
 
+    const hoveredPos = hoveredIndex >= 0 ? POSITIONS[hoveredIndex] : hoveredPosition;
+    setHoveredPosition(hoveredPos);
+
     api.start(index => {
       const isHovered = hovered[index];
-      const isHoveredSecondary = toRow(hoveredIndex) === toRow(index) || toColumn(hoveredIndex) === toColumn(index);
+      const isHoveredSecondary = isPointInCircle(POSITIONS[index], hoveredPos, SELECTOR_RADIUS);
       return {
         scale: isHovered ? BOX_HOVERED_SCALE : (isHoveredSecondary ? BOX_HOVERED_SECONDARY_SCALE : BOX_SCALE),
         posY: isHovered ? BOX_HOVERED_POS_Y : (isHoveredSecondary ? BOX_HOVERED_SECONDARY_POS_Y : BOX_POS_Y),
@@ -137,7 +142,7 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const onClick = useCallback((event: ThreeEvent<MouseEvent>): void => {
     const index = event.object.userData.index;
     setSelected(prevState => prevState.map((item, idx) => {
-      const isToggle = (idx === index) || toRow(idx) === toRow(index) || toColumn(idx) === toColumn(index)
+      const isToggle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
       return isToggle ? !item : item
     }));
     event.stopPropagation();
