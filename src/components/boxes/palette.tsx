@@ -23,15 +23,17 @@ export const PAINTS: Paint[] = [
 ]
 
 const Palette = ({ opacity, selectedPaint, onPaintSelected }: { opacity: SpringValue, selectedPaint: Paint, onPaintSelected: (event: PaintSelectedEvent) => void }) => {
-  const [isShown, setIsShown] = useState(false);
+  const [isEntering, setIsEntering] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
-  if (opacity.isAnimating && !isShown && opacity.goal === 1) {
-    setIsShown(true);
+  if (opacity.isAnimating && !isEntering && opacity.goal === 1) {
+    setIsEntering(true);
+    setIsLeaving(false);
   }
-  if (opacity.isAnimating && isShown && opacity.goal === 0) {
-    setIsShown(false);
+  if (opacity.isAnimating && !isLeaving && opacity.goal === 0) {
+    setIsEntering(false);
+    setIsLeaving(true);
   }
-
   return (
     <Html
       fullscreen={true}
@@ -39,7 +41,7 @@ const Palette = ({ opacity, selectedPaint, onPaintSelected }: { opacity: SpringV
       zIndexRange={[100, 0]}
     >
       <div
-        className={isShown ? 'palette isShown' : 'palette'}
+        className={`palette ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`}
         onPointerDown={(event) => {
           const targetId = (event.target as Element).id;
           const selectedPaint = (PAINTS.find(paint => paint.name === targetId) as Paint);

@@ -10,14 +10,14 @@ const BOX_COLOR = (PAINTS.find(p => p.name === 'white') as Paint).color;
 const BOX_SCALE = 1;
 const BOX_HOVERED_SCALE = 1.25;
 
-const BOX_POS_Y = 0;
-const BOX_HOVERED_POS_Y = 0.125;
+const BOX_POS_Y = 1;
+const BOX_HOVERED_POS_Y = 1.125;
 
 const BOX_ROTATE = 0;
 const BOX_NOT_SELECTED_ROTATE = 0;
 
-const BOX_SIZE = 0.25;
-const BOX_GAP = 0.125;
+const BOX_SIZE = 0.125;
+const BOX_GAP = 0.05;
 const NUM_ROWS = 21;
 const NUM_COLUMNS = 21;
 
@@ -44,6 +44,8 @@ const isPointInCircle = (point: THREE.Vector3, center: THREE.Vector3, radius: nu
 
 // TODO draw when dragging on mouse down
 // TODO show animation on click
+// TODO disable orbit controls when painting
+// TODO can the orbit controls in main be accessed here using context or passing a ref?
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
   const [selectedPaint, setSelectedPaint] = useState(PAINTS[0])
@@ -169,7 +171,7 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   }
 
   return (
-    <>
+    <group rotation-x={Math.PI/4}>
       <Instances
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -199,7 +201,7 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
         )}
       </Instances>
       <Palette opacity={opacity} selectedPaint={selectedPaint} onPaintSelected={onPaintSelected} />
-    </>
+    </group>
   )
 }
 
