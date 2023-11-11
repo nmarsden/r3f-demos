@@ -10,8 +10,10 @@ import {Environment, Loader, OrbitControls} from "@react-three/drei";
 import {useLocation, Route, Switch} from "wouter";
 import {useTransition, animated, config} from "@react-spring/three";
 // import {Test} from "./components/test/test";
-import {useEffect, useRef, useState} from "react";
+import {RefObject, useEffect, useRef, useState} from "react";
 import * as THREE from "three";
+import {OrbitControlsContext} from "./context";
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 
 const pages: Page[ ] = [
   { name: 'Home', path: '/', renderFn: (props) => <Home {...props} /> },
@@ -22,12 +24,15 @@ const pages: Page[ ] = [
   // { name: 'Test_B', path: '/test-b', renderFn: (props) => <Test text='TEST B' {...props} /> }
 ];
 
-const CameraAnimation = ({ reset }: { reset: boolean }) => {
+const CameraAnimation = ({ reset, controls }: { reset: boolean, controls: RefObject<OrbitControlsImpl> }) => {
   const vec = new THREE.Vector3();
 
   useFrame(state => {
     if (reset) {
       state.camera.position.lerp(vec.set(0, 2, 4.5), 0.05)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      controls.current.reset()
     } return null
   })
   return null;
@@ -52,6 +57,7 @@ const Floor = ({ position }) => {
 
 const App = () => {
   const container = useRef<HTMLDivElement>(null!);
+  const controls = useRef<OrbitControlsImpl>(null!);
   const [resetCamera, setResetCamera] = useState(false)
 
   const [location] = useLocation();
@@ -79,39 +85,44 @@ const App = () => {
           shadows={true}
           camera={{ position: [0, 2, 4.5], fov: 70 }}
         >
-          <CameraAnimation reset={resetCamera}/>
-          <Lights/>
-          <Floor position={[0, -1.3, 0]}/>
+          <OrbitControlsContext.Provider value={{ controls: controls }}>
+            <CameraAnimation reset={resetCamera} controls={controls} />
+            <Lights/>
+            <Floor position={[0, -1.3, 0]}/>
 
-          { transition(({ position, rotation, scale, opacity }, location) => (
-            <animated.group
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              position={position}
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              rotation={rotation}
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              scale={scale}
-            >
-              <Switch location={location}>
-                {pages.map(page => <Route key={page.name} path={page.path}>
-                  {page.renderFn({ opacity })}
-                </Route>)}
-              </Switch>
-            </animated.group>
-          )) }
-          <Environment preset={'warehouse'} background blur={1}/>
-          <OrbitControls
-            makeDefault={true}
-            maxPolarAngle={Math.PI / 2}
-            autoRotate={false}
-            autoRotateSpeed={0.25}
-            enableZoom={false}
-            enablePan={false}
-            enableRotate={!resetCamera}
-          />
+            { transition(({ position, rotation, scale, opacity }, location) => (
+              <animated.group
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                position={position}
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                rotation={rotation}
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                scale={scale}
+              >
+                <Switch location={location}>
+                  {pages.map(page => <Route key={page.name} path={page.path}>
+                    {page.renderFn({ opacity })}
+                  </Route>)}
+                </Switch>
+              </animated.group>
+            )) }
+            <Environment preset={'warehouse'} background blur={1}/>
+            <OrbitControls
+              ref={controls}
+              makeDefault={true}
+              maxPolarAngle={Math.PI / 2}
+              autoRotate={false}
+              autoRotateSpeed={0.25}
+              minDistance={3}
+              maxDistance={10}
+              enableZoom={!resetCamera}
+              enablePan={false}
+              enableRotate={!resetCamera}
+            />
+          </OrbitControlsContext.Provider>
         </Canvas>
       </div>
       <Loader />

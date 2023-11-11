@@ -2,8 +2,9 @@ import * as THREE from 'three'
 import {Instance, Instances, useCursor} from "@react-three/drei";
 import {animated, config, SpringValue, useSprings} from "@react-spring/three";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState, useContext} from "react";
 import {Paint, PAINTS, PaintSelectedEvent, Palette} from "./palette";
+import {OrbitControlsContext} from "../../context";
 
 const BOX_COLOR = (PAINTS.find(p => p.name === 'white') as Paint).color;
 
@@ -17,7 +18,7 @@ const BOX_ROTATE = 0;
 const BOX_NOT_SELECTED_ROTATE = 0;
 
 const BOX_SIZE = 0.125;
-const BOX_GAP = 0.05;
+const BOX_GAP = 0.03;
 const NUM_ROWS = 21;
 const NUM_COLUMNS = 21;
 
@@ -42,18 +43,39 @@ const isPointInCircle = (point: THREE.Vector3, center: THREE.Vector3, radius: nu
   return lhs <= rhs;
 }
 
-// TODO draw when dragging on mouse down
+type Painting = {
+  prevIndex: number;
+  currentIndex: number;
+}
+
+// TODO rename Boxes to Paint
 // TODO show animation on click
-// TODO disable orbit controls when painting
-// TODO can the orbit controls in main be accessed here using context or passing a ref?
+// TODO allow resetting controls, to get of the situation where controls cannot be used when the boxes cover the whole screen
+// TODO do not show hover when pointer outside boxes
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
+  const controlsContext = useContext(OrbitControlsContext)
   const [selectedPaint, setSelectedPaint] = useState(PAINTS[0])
   const [color, setColor] = useState([...POSITIONS].map(() => BOX_COLOR));
   const [hovered, setHovered] = useState([...POSITIONS].map(() => false));
   const [selected, setSelected] = useState([...POSITIONS].map(() => false));
   const [hoveredPosition, setHoveredPosition] = useState(new THREE.Vector3(0,0,0))
   const [anyHover, setAnyHover] = useState(false)
+  const [painting, setPainting] = useState<Painting>({ prevIndex: -1, currentIndex: -1 });
+
+  const paint = useCallback((event: ThreeEvent<MouseEvent>, selectedPaint: Paint): void => {
+    const index = event.object.userData.index;
+    setSelected(prevState => prevState.map((item, idx) => {
+      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
+      return isInCircle ? true : item;
+    }));
+    setColor(prevState => prevState.map((item, idx) => {
+      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
+      return isInCircle ? selectedPaint.color : item;
+    }));
+    event.stopPropagation();
+  }, []);
+
   const [springs, api] = useSprings(
     POSITIONS.length,
     () => ({
@@ -129,29 +151,47 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
       mesh.current.instanceColor.needsUpdate = true;
     }
   });
-  const onPointerOver = useCallback((event: ThreeEvent<MouseEvent>): void => {
+  const onBoxesPointerOver = useCallback((): void => {
+    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
+      controlsContext.controls.current.enabled = false;
+    }
+  }, []);
+
+  const onBoxesPointerOut = useCallback((): void => {
+    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
+      controlsContext.controls.current.enabled = true;
+    }
+  }, []);
+
+  const onBoxPointerOver = useCallback((event: ThreeEvent<MouseEvent>): void => {
     const index = event.object.userData.index;
     setHovered(prevState => prevState.map((item, idx) => idx === index ? true : item));
     event.stopPropagation();
   }, []);
 
-  const onPointerOut = useCallback((event: ThreeEvent<MouseEvent>): void => {
+  const onBoxPointerOut = useCallback((event: ThreeEvent<MouseEvent>): void => {
     const index = event.object.userData.index;
     setHovered(prevState => prevState.map((item, idx) => idx === index ? false : item));
     event.stopPropagation();
   }, []);
 
-  const onClick = useCallback((event: ThreeEvent<MouseEvent>): void => {
+  const onBoxPointerDown = useCallback((event: ThreeEvent<MouseEvent>): void => {
     const index = event.object.userData.index;
-    setSelected(prevState => prevState.map((item, idx) => {
-      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
-      return isInCircle ? true : item;
-    }));
-    setColor(prevState => prevState.map((item, idx) => {
-      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
-      return isInCircle ? selectedPaint.color : item;
-    }));
-    event.stopPropagation();
+    setPainting(prevState => ({ prevIndex: prevState.currentIndex, currentIndex: index }));
+  }, []);
+
+  const onBoxPointerUp = useCallback((): void => {
+    setPainting(prevState => ({ prevIndex: prevState.currentIndex, currentIndex: -1 }));
+  }, []);
+
+  const onBoxPointerMove = useCallback((event: ThreeEvent<MouseEvent>): void => {
+    if (painting.currentIndex > 0 && painting.currentIndex !== painting.prevIndex) {
+      paint(event, selectedPaint);
+    }
+  }, [painting, selectedPaint]);
+
+  const onBoxClick = useCallback((event: ThreeEvent<MouseEvent>): void => {
+    paint(event, selectedPaint);
   }, [selectedPaint]);
 
   const onPaintSelected = useCallback((event: PaintSelectedEvent): void => {
@@ -171,37 +211,57 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   }
 
   return (
-    <group rotation-x={Math.PI/4}>
-      <Instances
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        ref={mesh}
-        castShadow={true}
-        limit={1000} // Optional: max amount of items (for calculating buffer size)
-        range={1000} // Optional: draw-range
+    <>
+      <group
+        rotation-x={Math.PI/4}
       >
-        <boxGeometry args={[BOX_SIZE, BOX_SIZE, BOX_SIZE]}/>
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        <animated.meshStandardMaterial
-          metalness={0.15}
-          roughness={0.75}
-          color={BOX_COLOR}
-          transparent={true}
-          opacity={opacity}
-        />
-        {POSITIONS.map((_position, index) =>
-          <Instance
-            key={index}
-            userData={{ index }}
-            onPointerOver={onPointerOver}
-            onPointerOut={onPointerOut}
-            onClick={onClick}
+        <mesh
+          visible={false}
+          position-y={BOX_POS_Y + BOX_SIZE/2}
+          onPointerOver={onBoxesPointerOver}
+          onPointerOut={onBoxesPointerOut}
+        >
+          <boxGeometry args={[X_WIDTH, BOX_SIZE*3, Y_WIDTH]}/>
+        </mesh>
+        <Instances
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          ref={mesh}
+          castShadow={true}
+          limit={1000} // Optional: max amount of items (for calculating buffer size)
+          range={1000} // Optional: draw-range
+        >
+          <boxGeometry args={[BOX_SIZE, BOX_SIZE, BOX_SIZE]}/>
+          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+          {/* @ts-ignore */}
+          <animated.meshStandardMaterial
+            metalness={0.15}
+            roughness={0.75}
+            color={BOX_COLOR}
+            transparent={true}
+            opacity={opacity}
           />
-        )}
-      </Instances>
-      <Palette opacity={opacity} selectedPaint={selectedPaint} onPaintSelected={onPaintSelected} />
-    </group>
+          {POSITIONS.map((_position, index) =>
+            <Instance
+              key={index}
+              userData={{ index }}
+              onPointerOver={onBoxPointerOver}
+              onPointerOut={onBoxPointerOut}
+              onPointerDown={onBoxPointerDown}
+              onPointerUp={onBoxPointerUp}
+              onPointerMove={onBoxPointerMove}
+              onClick={onBoxClick}
+            />
+          )}
+        </Instances>
+        <Palette
+          opacity={opacity}
+          selectedPaint={selectedPaint}
+          onPaintSelected={onPaintSelected}
+          onPointerUp={onBoxPointerUp}
+        />
+      </group>
+    </>
   )
 }
 

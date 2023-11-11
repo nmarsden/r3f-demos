@@ -22,7 +22,7 @@ export const PAINTS: Paint[] = [
   { name: 'white', color: '#DDDDDD' },
 ]
 
-const Palette = ({ opacity, selectedPaint, onPaintSelected }: { opacity: SpringValue, selectedPaint: Paint, onPaintSelected: (event: PaintSelectedEvent) => void }) => {
+const Palette = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { opacity: SpringValue, selectedPaint: Paint, onPaintSelected: (event: PaintSelectedEvent) => void, onPointerUp: () => void }) => {
   const [isEntering, setIsEntering] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -41,23 +41,30 @@ const Palette = ({ opacity, selectedPaint, onPaintSelected }: { opacity: SpringV
       zIndexRange={[100, 0]}
     >
       <div
-        className={`palette ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`}
-        onPointerDown={(event) => {
-          const targetId = (event.target as Element).id;
-          const selectedPaint = (PAINTS.find(paint => paint.name === targetId) as Paint);
-          if (selectedPaint) {
-            onPaintSelected({ selectedPaint });
-          }
+        className={'overlay'}
+        onPointerUp={() => {
+          onPointerUp()
         }}
       >
-        {PAINTS.map(paint =>
-          <div
-            key={paint.name}
-            id={paint.name}
-            className={selectedPaint.name === paint.name ? 'paint selected' : 'paint'}
-            style={{ backgroundColor: paint.color }}
-          />
-        )}
+        <div
+          className={`palette ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`}
+          onPointerDown={(event) => {
+            const targetId = (event.target as Element).id;
+            const selectedPaint = (PAINTS.find(paint => paint.name === targetId) as Paint);
+            if (selectedPaint) {
+              onPaintSelected({ selectedPaint });
+            }
+          }}
+        >
+          {PAINTS.map(paint =>
+            <div
+              key={paint.name}
+              id={paint.name}
+              className={selectedPaint.name === paint.name ? 'paint selected' : 'paint'}
+              style={{ backgroundColor: paint.color }}
+            />
+          )}
+        </div>
       </div>
     </Html>
   )
