@@ -3,7 +3,7 @@ import {Instance, Instances, useCursor} from "@react-three/drei";
 import {animated, config, SpringValue, useSprings} from "@react-spring/three";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {useCallback, useEffect, useMemo, useRef, useState, useContext} from "react";
-import {PaintColor, PAINTS, PaintSelectedEvent, Palette} from "./palette";
+import {PaintColor, PAINTS, PaintSelectedEvent, Overlay} from "./overlay";
 import {OrbitControlsContext} from "../../context";
 
 const BOX_COLOR = (PAINTS.find(p => p.name === 'white') as PaintColor).color;
@@ -249,7 +249,7 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
             />
           )}
         </Instances>
-        <Palette
+        <Overlay
           opacity={opacity}
           selectedPaint={selectedPaint}
           onPaintSelected={onPaintSelected}

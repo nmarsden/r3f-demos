@@ -6,7 +6,7 @@
     right: 0;
 }
 
-.palette {
+.toolbar {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -21,10 +21,10 @@
     gap: 0.6rem;
 }
 
-.palette.isEntering {
+.toolbar.isEntering {
     animation: fade-in 1s forwards;
 }
-.palette.isLeaving {
+.toolbar.isLeaving {
     animation: fade-out 1s forwards;
 }
 

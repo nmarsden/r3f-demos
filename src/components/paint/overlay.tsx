@@ -1,7 +1,7 @@
 import {Html} from "@react-three/drei";
 import {SpringValue} from "@react-spring/three";
 import {useState} from "react";
-import "./palette.css";
+import "./overlay.css";
 
 export type PaintColor = {
   name: string;
@@ -22,7 +22,7 @@ export const PAINTS: PaintColor[] = [
   { name: 'white', color: '#DDDDDD' },
 ]
 
-const Palette = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { opacity: SpringValue, selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void, onPointerUp: () => void }) => {
+const Overlay = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { opacity: SpringValue, selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void, onPointerUp: () => void }) => {
   const [isEntering, setIsEntering] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -46,22 +46,13 @@ const Palette = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { op
           onPointerUp()
         }}
       >
-        <div
-          className={`palette ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`}
-          onPointerDown={(event) => {
-            const targetId = (event.target as Element).id;
-            const selectedPaint = (PAINTS.find(paint => paint.name === targetId) as PaintColor);
-            if (selectedPaint) {
-              onPaintSelected({ selectedPaint });
-            }
-          }}
-        >
+        <div className={`toolbar ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`} >
           {PAINTS.map(paint =>
             <div
               key={paint.name}
-              id={paint.name}
               className={selectedPaint.name === paint.name ? 'paint selected' : 'paint'}
               style={{ backgroundColor: paint.color }}
+              onPointerDown={() => onPaintSelected({ selectedPaint: paint })}
             />
           )}
         </div>
@@ -70,4 +61,4 @@ const Palette = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { op
   )
 }
 
-export { Palette }
+export { Overlay }
