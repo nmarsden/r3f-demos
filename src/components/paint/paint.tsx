@@ -3,10 +3,10 @@ import {Instance, Instances, useCursor} from "@react-three/drei";
 import {animated, config, SpringValue, useSprings} from "@react-spring/three";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {useCallback, useEffect, useMemo, useRef, useState, useContext} from "react";
-import {Paint, PAINTS, PaintSelectedEvent, Palette} from "./palette";
+import {PaintColor, PAINTS, PaintSelectedEvent, Palette} from "./palette";
 import {OrbitControlsContext} from "../../context";
 
-const BOX_COLOR = (PAINTS.find(p => p.name === 'white') as Paint).color;
+const BOX_COLOR = (PAINTS.find(p => p.name === 'white') as PaintColor).color;
 
 const BOX_SCALE = 1;
 const BOX_HOVERED_SCALE = 1.25;
@@ -52,7 +52,7 @@ type Painting = {
 // TODO show animation on click
 // TODO allow resetting controls, to get of the situation where controls cannot be used when the boxes cover the whole screen
 // TODO do not show hover when pointer outside boxes
-const Boxes = ({ opacity }: { opacity: SpringValue }) => {
+const Paint = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
   const controlsContext = useContext(OrbitControlsContext)
   const [selectedPaint, setSelectedPaint] = useState(PAINTS[0])
@@ -63,7 +63,7 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const [anyHover, setAnyHover] = useState(false)
   const [painting, setPainting] = useState<Painting>({ prevIndex: -1, currentIndex: -1 });
 
-  const paint = useCallback((event: ThreeEvent<MouseEvent>, selectedPaint: Paint): void => {
+  const paint = useCallback((event: ThreeEvent<MouseEvent>, selectedPaint: PaintColor): void => {
     const index = event.object.userData.index;
     setSelected(prevState => prevState.map((item, idx) => {
       const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
@@ -265,4 +265,4 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   )
 }
 
-export { Boxes }
+export { Paint }

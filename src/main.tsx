@@ -5,7 +5,7 @@ import {Menu, Page} from "./components/menu/menu";
 import {Home} from "./components/home/home";
 import {Hand} from "./components/hand/hand";
 import {Shapes} from "./components/shapes/shapes";
-import {Boxes} from "./components/boxes/boxes";
+import {Paint} from "./components/paint/paint";
 import {Environment, Loader, OrbitControls} from "@react-three/drei";
 import {useLocation, Route, Switch} from "wouter";
 import {useTransition, animated, config} from "@react-spring/three";
@@ -19,7 +19,7 @@ const pages: Page[ ] = [
   { name: 'Home', path: '/', renderFn: (props) => <Home {...props} /> },
   { name: 'Shapes', path: '/shapes', renderFn: (props) => <Shapes {...props} /> },
   { name: 'Hand', path: '/hand', renderFn: (props) => <Hand {...props} /> },
-  { name: 'Boxes', path: '/boxes', renderFn: (props) => <Boxes {...props} /> },
+  { name: 'Paint', path: '/paint', renderFn: (props) => <Paint {...props} /> },
   // { name: 'Test_A', path: '/test-a', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', renderFn: (props) => <Test text='TEST B' {...props} /> }
 ];

@@ -3,16 +3,16 @@ import {SpringValue} from "@react-spring/three";
 import {useState} from "react";
 import "./palette.css";
 
-export type Paint = {
+export type PaintColor = {
   name: string;
   color: string
 }
 
 export type PaintSelectedEvent = {
-  selectedPaint: Paint;
+  selectedPaint: PaintColor;
 }
 
-export const PAINTS: Paint[] = [
+export const PAINTS: PaintColor[] = [
   { name: 'dark-blue', color: '#173F5F' },
   { name: 'blue', color: '#20639B' },
   { name: 'green', color: '#3CAEA3' },
@@ -22,7 +22,7 @@ export const PAINTS: Paint[] = [
   { name: 'white', color: '#DDDDDD' },
 ]
 
-const Palette = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { opacity: SpringValue, selectedPaint: Paint, onPaintSelected: (event: PaintSelectedEvent) => void, onPointerUp: () => void }) => {
+const Palette = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { opacity: SpringValue, selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void, onPointerUp: () => void }) => {
   const [isEntering, setIsEntering] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -50,7 +50,7 @@ const Palette = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { op
           className={`palette ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`}
           onPointerDown={(event) => {
             const targetId = (event.target as Element).id;
-            const selectedPaint = (PAINTS.find(paint => paint.name === targetId) as Paint);
+            const selectedPaint = (PAINTS.find(paint => paint.name === targetId) as PaintColor);
             if (selectedPaint) {
               onPaintSelected({ selectedPaint });
             }
