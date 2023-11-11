@@ -48,10 +48,9 @@ type Painting = {
   currentIndex: number;
 }
 
-// TODO rename Boxes to Paint
+// TODO allow the brush size to be changed
 // TODO show animation on click
 // TODO allow resetting controls, to get of the situation where controls cannot be used when the boxes cover the whole screen
-// TODO do not show hover when pointer outside boxes
 const Paint = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
   const controlsContext = useContext(OrbitControlsContext)
@@ -59,7 +58,6 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
   const [color, setColor] = useState([...POSITIONS].map(() => BOX_COLOR));
   const [hovered, setHovered] = useState([...POSITIONS].map(() => false));
   const [selected, setSelected] = useState([...POSITIONS].map(() => false));
-  const [hoveredPosition, setHoveredPosition] = useState(new THREE.Vector3(0,0,0))
   const [anyHover, setAnyHover] = useState(false)
   const [painting, setPainting] = useState<Painting>({ prevIndex: -1, currentIndex: -1 });
 
@@ -98,12 +96,10 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
 
   useEffect(() => {
     const hoveredIndex = hovered.findIndex(s => s);
-
-    const hoveredPos = hoveredIndex >= 0 ? POSITIONS[hoveredIndex] : hoveredPosition;
-    setHoveredPosition(hoveredPos);
+    const hoveredPos = hoveredIndex >= 0 ? POSITIONS[hoveredIndex] : null;
 
     api.start(index => {
-      const isHovered = isPointInCircle(POSITIONS[index], hoveredPos, SELECTOR_RADIUS);
+      const isHovered = hoveredPos !== null ? isPointInCircle(POSITIONS[index], hoveredPos, SELECTOR_RADIUS) : false;
       return {
         scale: isHovered ? BOX_HOVERED_SCALE : BOX_SCALE,
         posY: isHovered ? BOX_HOVERED_POS_Y : BOX_POS_Y,
@@ -201,12 +197,11 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
   const isTransitioning = opacity.isAnimating;
 
   // Reset state if necessary when transitioning in/out
-  if (isTransitioning && (selectedPaint !== PAINTS[0] || hoveredPosition.x !== 0 || hoveredPosition.z !== 0)) {
+  if (isTransitioning && (selectedPaint !== PAINTS[0] || anyHover)) {
     setSelectedPaint(PAINTS[0])
     setColor([...POSITIONS].map(() => BOX_COLOR));
     setHovered([...POSITIONS].map(() => false));
     setSelected([...POSITIONS].map(() => false));
-    setHoveredPosition(new THREE.Vector3(0,0,0))
     setAnyHover(false)
   }
 
