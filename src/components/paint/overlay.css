@@ -4,6 +4,9 @@
     bottom: 0;
     left: 0;
     right: 0;
+    font-size: 20px;
+    line-height: 20px;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .toolbar {
@@ -12,10 +15,7 @@
     left: 0;
     right: 0;
     padding: 1rem;
-    font-size: 20px;
-    line-height: 20px;
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: rgb(85 85 85 / 0.8);
+    background-color: rgb(85 85 85);
     opacity: 0;
     display: flex;
     gap: 0.6rem;
@@ -38,33 +38,47 @@
     to { opacity: 0 }
 }
 
-.paint {
+.paintColorButton {
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 0.5rem;
     border: 2px solid black;
 }
-.paint:hover {
+/* Note: this is to the hide the transition of the paintColorMenu */
+.paintColorButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4.5rem;
+    height: 5rem;
+    background-color: rgb(85 85 85);
+    z-index: -1;
+}
+
+.paintColorButton:hover {
     border-color: orange;
     cursor: pointer;
 }
-.paint.selected {
+.paintColorButton.selected {
     border-color: orange;
 }
 
-.paintMenu {
+.paintColorMenu {
     position: absolute;
-    bottom: 4.5rem;
+    bottom: -25rem;
     left: 0;
     padding: 1rem;
-    background-color: rgb(85 85 85 / 0.8);
+    background-color: rgb(85 85 85);
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
-    opacity: 0;
-    transition: opacity 300ms;
+    opacity: 0.1;
+    transition: all 400ms;
+    z-index: -2;
 }
 
-.paintMenu.open {
+.paintColorMenu.open {
     opacity: 1;
+    bottom: 5.5rem;
 }

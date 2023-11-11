@@ -8,11 +8,11 @@ export type PaintColor = {
   color: string
 }
 
-export type PaintSelectedEvent = {
-  selectedPaint: PaintColor;
+export type PaintColorSelectedEvent = {
+  selectedPaintColor: PaintColor;
 }
 
-export const PAINTS: PaintColor[] = [
+export const PAINT_COLORS: PaintColor[] = [
   { name: 'dark-blue', color: '#173F5F' },
   { name: 'blue', color: '#20639B' },
   { name: 'green', color: '#3CAEA3' },
@@ -22,7 +22,7 @@ export const PAINTS: PaintColor[] = [
   { name: 'white', color: '#DDDDDD' },
 ]
 
-type OpenMenu = 'NONE' | 'PAINT';
+type OpenMenu = 'NONE' | 'PAINT_COLOR';
 
 type MenuOpenChangeEvent = {
   isOpen: boolean;
@@ -47,38 +47,41 @@ const Toolbar = ({ opacity, children } : { opacity: SpringValue, children: React
   )
 }
 
-const PaintButton = ({ paint, isSelected, onSelected }: { paint: PaintColor, isSelected: boolean, onSelected: () => void }) => {
+const PaintColorButton = ({ paintColor, isSelected, onSelected }: { paintColor: PaintColor, isSelected: boolean, onSelected: () => void }) => {
   return (
     <div
-      className={isSelected ? 'paint selected' : 'paint'}
-      style={{ backgroundColor: paint.color }}
+      className={isSelected ? 'paintColorButton selected' : 'paintColorButton'}
+      style={{ backgroundColor: paintColor.color }}
       onPointerDown={onSelected}
     />
   )
 }
-const PaintSelector = ({ selectedPaint, onPaintSelected, isMenuOpen, onMenuOpenChange } : { selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void, isMenuOpen: boolean, onMenuOpenChange: (event: MenuOpenChangeEvent) => void }) => {
+const PaintColorSelector = ({ selectedPaintColor, onPaintColorSelected, isMenuOpen, onMenuOpenChange } : { selectedPaintColor: PaintColor, onPaintColorSelected: (event: PaintColorSelectedEvent) => void, isMenuOpen: boolean, onMenuOpenChange: (event: MenuOpenChangeEvent) => void }) => {
   return (
     <>
-      <PaintButton
-        paint={selectedPaint}
-        isSelected={isMenuOpen}
-        onSelected={() => onMenuOpenChange({ isOpen: !isMenuOpen })}
-      />
-      <div className={isMenuOpen ? 'paintMenu open' : 'paintMenu'} >
-        {PAINTS.map(paint =>
-          <PaintButton
-            key={paint.name}
-            paint={paint}
-            isSelected={selectedPaint.name === paint.name}
-            onSelected={() => onPaintSelected({ selectedPaint: paint })}
+      <div className={isMenuOpen ? 'paintColorMenu open' : 'paintColorMenu'} >
+        {PAINT_COLORS.map(paintColor =>
+          <PaintColorButton
+            key={paintColor.name}
+            paintColor={paintColor}
+            isSelected={selectedPaintColor.name === paintColor.name}
+            onSelected={() => {
+              onPaintColorSelected({ selectedPaintColor: paintColor })
+              onMenuOpenChange({ isOpen: !isMenuOpen })
+            }}
           />
         )}
       </div>
+      <PaintColorButton
+        paintColor={selectedPaintColor}
+        isSelected={isMenuOpen}
+        onSelected={() => onMenuOpenChange({ isOpen: !isMenuOpen })}
+      />
     </>
   )
 }
 
-const Overlay = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { opacity: SpringValue, selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void, onPointerUp: () => void }) => {
+const Overlay = ({ opacity, selectedPaintColor, onPaintColorSelected, onPointerUp } : { opacity: SpringValue, selectedPaintColor: PaintColor, onPaintColorSelected: (event: PaintColorSelectedEvent) => void, onPointerUp: () => void }) => {
   const [openMenu, setOpenMenu] = useState<OpenMenu>('NONE');
 
   const onMenuOpenChange = useCallback((menu: OpenMenu, event: MenuOpenChangeEvent) => {
@@ -97,11 +100,11 @@ const Overlay = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { op
     >
       <div className={'overlay'} onPointerUp={() => onPointerUp()}>
         <Toolbar opacity={opacity}>
-          <PaintSelector
-            selectedPaint={selectedPaint}
-            onPaintSelected={onPaintSelected}
-            isMenuOpen={openMenu === 'PAINT'}
-            onMenuOpenChange={event => onMenuOpenChange('PAINT', event)}
+          <PaintColorSelector
+            selectedPaintColor={selectedPaintColor}
+            onPaintColorSelected={onPaintColorSelected}
+            isMenuOpen={openMenu === 'PAINT_COLOR'}
+            onMenuOpenChange={event => onMenuOpenChange('PAINT_COLOR', event)}
           />
         </Toolbar>
       </div>

@@ -3,22 +3,23 @@ import {Instance, Instances, useCursor} from "@react-three/drei";
 import {animated, config, SpringValue, useSprings} from "@react-spring/three";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {useCallback, useEffect, useMemo, useRef, useState, useContext} from "react";
-import {PaintColor, PAINTS, PaintSelectedEvent, Overlay} from "./overlay";
+import {PaintColor, PAINT_COLORS, PaintColorSelectedEvent, Overlay} from "./overlay";
 import {OrbitControlsContext} from "../../context";
 
-const BOX_COLOR = (PAINTS.find(p => p.name === 'white') as PaintColor).color;
+const BOX_COLOR = (PAINT_COLORS.find(p => p.name === 'white') as PaintColor).color;
+
+const BOX_SIZE = 0.125;
+const BOX_GAP = 0.03;
 
 const BOX_SCALE = 1;
-const BOX_HOVERED_SCALE = 1.25;
+const BOX_HOVERED_SCALE = 1 + (BOX_GAP / BOX_SIZE);
 
 const BOX_POS_Y = 1;
-const BOX_HOVERED_POS_Y = 1.125;
+const BOX_HOVERED_POS_Y = 1;
 
 const BOX_ROTATE = 0;
 const BOX_NOT_SELECTED_ROTATE = 0;
 
-const BOX_SIZE = 0.125;
-const BOX_GAP = 0.03;
 const NUM_ROWS = 21;
 const NUM_COLUMNS = 21;
 
@@ -54,7 +55,7 @@ type Painting = {
 const Paint = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
   const controlsContext = useContext(OrbitControlsContext)
-  const [selectedPaint, setSelectedPaint] = useState(PAINTS[0])
+  const [selectedPaintColor, setSelectedPaintColor] = useState(PAINT_COLORS[0])
   const [color, setColor] = useState([...POSITIONS].map(() => BOX_COLOR));
   const [hovered, setHovered] = useState([...POSITIONS].map(() => false));
   const [selected, setSelected] = useState([...POSITIONS].map(() => false));
@@ -103,7 +104,7 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
       return {
         scale: isHovered ? BOX_HOVERED_SCALE : BOX_SCALE,
         posY: isHovered ? BOX_HOVERED_POS_Y : BOX_POS_Y,
-        color: isHovered ? selectedPaint.color : color[index]
+        color: isHovered ? selectedPaintColor.color : color[index]
       }
     })
     setAnyHover(hoveredIndex >= 0)
@@ -182,23 +183,23 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
 
   const onBoxPointerMove = useCallback((event: ThreeEvent<MouseEvent>): void => {
     if (painting.currentIndex > 0 && painting.currentIndex !== painting.prevIndex) {
-      paint(event, selectedPaint);
+      paint(event, selectedPaintColor);
     }
-  }, [painting, selectedPaint]);
+  }, [painting, selectedPaintColor]);
 
   const onBoxClick = useCallback((event: ThreeEvent<MouseEvent>): void => {
-    paint(event, selectedPaint);
-  }, [selectedPaint]);
+    paint(event, selectedPaintColor);
+  }, [selectedPaintColor]);
 
-  const onPaintSelected = useCallback((event: PaintSelectedEvent): void => {
-    setSelectedPaint(event.selectedPaint);
+  const onPaintColorSelected = useCallback((event: PaintColorSelectedEvent): void => {
+    setSelectedPaintColor(event.selectedPaintColor);
   }, [])
 
   const isTransitioning = opacity.isAnimating;
 
   // Reset state if necessary when transitioning in/out
-  if (isTransitioning && (selectedPaint !== PAINTS[0] || anyHover)) {
-    setSelectedPaint(PAINTS[0])
+  if (isTransitioning && (selectedPaintColor !== PAINT_COLORS[0] || anyHover)) {
+    setSelectedPaintColor(PAINT_COLORS[0])
     setColor([...POSITIONS].map(() => BOX_COLOR));
     setHovered([...POSITIONS].map(() => false));
     setSelected([...POSITIONS].map(() => false));
@@ -208,6 +209,7 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
   return (
     <>
       <group
+        position-z={-0.65}
         rotation-x={Math.PI/4}
       >
         <mesh
@@ -249,13 +251,13 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
             />
           )}
         </Instances>
-        <Overlay
-          opacity={opacity}
-          selectedPaint={selectedPaint}
-          onPaintSelected={onPaintSelected}
-          onPointerUp={onBoxPointerUp}
-        />
       </group>
+      <Overlay
+        opacity={opacity}
+        selectedPaintColor={selectedPaintColor}
+        onPaintColorSelected={onPaintColorSelected}
+        onPointerUp={onBoxPointerUp}
+      />
     </>
   )
 }
