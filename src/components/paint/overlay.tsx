@@ -1,6 +1,6 @@
 import {Html} from "@react-three/drei";
 import {SpringValue} from "@react-spring/three";
-import {useState} from "react";
+import {ReactNode, useState} from "react";
 import "./overlay.css";
 
 export type PaintColor = {
@@ -22,7 +22,7 @@ export const PAINTS: PaintColor[] = [
   { name: 'white', color: '#DDDDDD' },
 ]
 
-const Overlay = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { opacity: SpringValue, selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void, onPointerUp: () => void }) => {
+const Toolbar = ({ opacity, children } : { opacity: SpringValue, children: ReactNode }) => {
   const [isEntering, setIsEntering] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -35,27 +35,38 @@ const Overlay = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { op
     setIsLeaving(true);
   }
   return (
+      <div className={`toolbar ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`} >
+        {children}
+      </div>
+  )
+}
+
+const PaintSelector = ({ selectedPaint, onPaintSelected } : { selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void }) => {
+  return (
+    <>
+      {PAINTS.map(paint =>
+        <div
+          key={paint.name}
+          className={selectedPaint.name === paint.name ? 'paint selected' : 'paint'}
+          style={{ backgroundColor: paint.color }}
+          onPointerDown={() => onPaintSelected({ selectedPaint: paint })}
+        />
+      )}
+    </>
+  )
+}
+
+const Overlay = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { opacity: SpringValue, selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void, onPointerUp: () => void }) => {
+  return (
     <Html
       fullscreen={true}
       occlude={false}
       zIndexRange={[100, 0]}
     >
-      <div
-        className={'overlay'}
-        onPointerUp={() => {
-          onPointerUp()
-        }}
-      >
-        <div className={`toolbar ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`} >
-          {PAINTS.map(paint =>
-            <div
-              key={paint.name}
-              className={selectedPaint.name === paint.name ? 'paint selected' : 'paint'}
-              style={{ backgroundColor: paint.color }}
-              onPointerDown={() => onPaintSelected({ selectedPaint: paint })}
-            />
-          )}
-        </div>
+      <div className={'overlay'} onPointerUp={() => onPointerUp()}>
+        <Toolbar opacity={opacity}>
+          <PaintSelector selectedPaint={selectedPaint} onPaintSelected={onPaintSelected} />
+        </Toolbar>
       </div>
     </Html>
   )
