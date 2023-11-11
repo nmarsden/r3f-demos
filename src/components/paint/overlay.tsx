@@ -1,6 +1,6 @@
 import {Html} from "@react-three/drei";
 import {SpringValue} from "@react-spring/three";
-import {ReactNode, useState} from "react";
+import {ReactNode, useCallback, useState} from "react";
 import "./overlay.css";
 
 export type PaintColor = {
@@ -22,6 +22,12 @@ export const PAINTS: PaintColor[] = [
   { name: 'white', color: '#DDDDDD' },
 ]
 
+type OpenMenu = 'NONE' | 'PAINT';
+
+type MenuOpenChangeEvent = {
+  isOpen: boolean;
+}
+
 const Toolbar = ({ opacity, children } : { opacity: SpringValue, children: ReactNode }) => {
   const [isEntering, setIsEntering] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -41,22 +47,48 @@ const Toolbar = ({ opacity, children } : { opacity: SpringValue, children: React
   )
 }
 
-const PaintSelector = ({ selectedPaint, onPaintSelected } : { selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void }) => {
+const PaintButton = ({ paint, isSelected, onSelected }: { paint: PaintColor, isSelected: boolean, onSelected: () => void }) => {
+  return (
+    <div
+      className={isSelected ? 'paint selected' : 'paint'}
+      style={{ backgroundColor: paint.color }}
+      onPointerDown={onSelected}
+    />
+  )
+}
+const PaintSelector = ({ selectedPaint, onPaintSelected, isMenuOpen, onMenuOpenChange } : { selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void, isMenuOpen: boolean, onMenuOpenChange: (event: MenuOpenChangeEvent) => void }) => {
   return (
     <>
-      {PAINTS.map(paint =>
-        <div
-          key={paint.name}
-          className={selectedPaint.name === paint.name ? 'paint selected' : 'paint'}
-          style={{ backgroundColor: paint.color }}
-          onPointerDown={() => onPaintSelected({ selectedPaint: paint })}
-        />
-      )}
+      <PaintButton
+        paint={selectedPaint}
+        isSelected={isMenuOpen}
+        onSelected={() => onMenuOpenChange({ isOpen: !isMenuOpen })}
+      />
+      <div className={isMenuOpen ? 'paintMenu open' : 'paintMenu'} >
+        {PAINTS.map(paint =>
+          <PaintButton
+            key={paint.name}
+            paint={paint}
+            isSelected={selectedPaint.name === paint.name}
+            onSelected={() => onPaintSelected({ selectedPaint: paint })}
+          />
+        )}
+      </div>
     </>
   )
 }
 
 const Overlay = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { opacity: SpringValue, selectedPaint: PaintColor, onPaintSelected: (event: PaintSelectedEvent) => void, onPointerUp: () => void }) => {
+  const [openMenu, setOpenMenu] = useState<OpenMenu>('NONE');
+
+  const onMenuOpenChange = useCallback((menu: OpenMenu, event: MenuOpenChangeEvent) => {
+    setOpenMenu(event.isOpen ? menu : 'NONE')
+  }, [])
+
+  if (opacity.isAnimating && openMenu !== 'NONE') {
+    setOpenMenu('NONE')
+  }
+
   return (
     <Html
       fullscreen={true}
@@ -65,7 +97,12 @@ const Overlay = ({ opacity, selectedPaint, onPaintSelected, onPointerUp } : { op
     >
       <div className={'overlay'} onPointerUp={() => onPointerUp()}>
         <Toolbar opacity={opacity}>
-          <PaintSelector selectedPaint={selectedPaint} onPaintSelected={onPaintSelected} />
+          <PaintSelector
+            selectedPaint={selectedPaint}
+            onPaintSelected={onPaintSelected}
+            isMenuOpen={openMenu === 'PAINT'}
+            onMenuOpenChange={event => onMenuOpenChange('PAINT', event)}
+          />
         </Toolbar>
       </div>
     </Html>
