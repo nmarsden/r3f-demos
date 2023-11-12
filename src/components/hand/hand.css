@@ -1,0 +1,30 @@
+.annotation-wrapper {
+    pointer-events: none;
+}
+
+.annotation {
+    width: 15rem;
+    transform: translate(-7.5rem, -15rem);
+    text-align: center;
+    background: white;
+    opacity: 0;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transform-origin: bottom;
+    transition: opacity 500ms;
+    color: black;
+}
+
+.annotation::before {
+    content: "";
+    position: absolute;
+    left: 7.5rem;
+    bottom: -13rem;
+    height: 13rem;
+    width: 1px;
+    background: white;
+}
+
+.annotation.show {
+    opacity: 1;
+}

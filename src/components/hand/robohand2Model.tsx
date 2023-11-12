@@ -5,10 +5,11 @@ Files: public/hand/robohand-2.glb [68.43MB] > robohand-2-transformed.glb [2.57MB
 */
 
 import * as THREE from 'three'
-import {useGLTF} from '@react-three/drei'
+import {Html, useGLTF} from '@react-three/drei'
 import {GLTF} from 'three-stdlib'
 import {useEffect, useMemo, useState} from "react";
 import {animated, config, SpringValue, useSprings} from '@react-spring/three'
+import "./hand.css"
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -41,12 +42,40 @@ type GLTFResult = GLTF & {
   }
 }
 
+const MESH_NAMES = new Map<string, string>();
+MESH_NAMES.set('Object_10', 'Upper Arm');
+MESH_NAMES.set('Object_10001', 'Finger Two');
+MESH_NAMES.set('Object_10002', 'Shoulder');
+MESH_NAMES.set('Object_11', 'Finger Two');
+MESH_NAMES.set('Object_12', 'Thumb');
+MESH_NAMES.set('Object_13', 'Thumb');
+MESH_NAMES.set('Object_14', 'Thumb');
+MESH_NAMES.set('Object_15', 'Upper Arm');
+MESH_NAMES.set('Object_16', 'Upper Arm');
+MESH_NAMES.set('Object_16001', 'Finger One');
+MESH_NAMES.set('Object_17', 'Upper Arm');
+MESH_NAMES.set('Object_2001', 'Finger Two');
+MESH_NAMES.set('Object_3', 'Forearm');
+MESH_NAMES.set('Object_4', 'Elbow');
+MESH_NAMES.set('Object_4001', 'Finger One');
+MESH_NAMES.set('Object_4002', 'Wrist');
+MESH_NAMES.set('Object_4003', 'Forearm');
+MESH_NAMES.set('Object_4004', 'Forearm Heatsink');
+MESH_NAMES.set('Object_5', 'Palm');
+MESH_NAMES.set('Object_6', 'Finger One');
+MESH_NAMES.set('Object_7', 'Finger Three');
+MESH_NAMES.set('Object_8', 'Finger Three');
+MESH_NAMES.set('Object_9', 'Finger Three');
+
+const NODE_NAMES = [...MESH_NAMES.keys()];
+
 type Positions = { position: number[], displacement: number[] };
 
 export function Robohand2Model({ opacity, ...props}: JSX.IntrinsicElements['group'] & { opacity: SpringValue }) {
-  const [hovered, hover] = useState(false);
+  const [anyHovered, setAnyHovered] = useState(false);
+  const [hoveredMesh, setHoveredMesh] = useState([...NODE_NAMES].map(() => false));
   const [exploded, setExploded] = useState(false);
-  const { nodes, materials } = useGLTF('/hand/robohand-2-transformed.glb') as GLTFResult
+  const {nodes, materials} = useGLTF('/hand/robohand-2-transformed.glb') as GLTFResult
   const isTransitioning = opacity.isAnimating;
 
   // Reset exploded if necessary when transitioning in/out
@@ -102,35 +131,48 @@ export function Robohand2Model({ opacity, ...props}: JSX.IntrinsicElements['grou
   }, [exploded]);
 
   useEffect(() => {
-    document.body.style.cursor = hovered ? 'pointer' : 'auto'
+    document.body.style.cursor = anyHovered ? 'pointer' : 'auto'
     return () => {
       document.body.style.cursor = 'auto';
     }
-  }, [hovered])
+  }, [anyHovered])
+
+  useEffect(() => {
+    setAnyHovered(hoveredMesh.some(h => h))
+  }, [hoveredMesh])
 
   return (
     <group {...props}
            dispose={null}
-           onPointerOver={() => hover(true)}
-           onPointerOut={() => hover(false)}
            onClick={(event) => {
              setExploded(!exploded);
              event.stopPropagation();
            }}
     >
       {
-        [...targetMap.keys()].map((meshName, index) => {
+        [...NODE_NAMES].map((nodeName, index) => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          const mesh: THREE.Mesh = nodes[meshName];
+          const mesh: THREE.Mesh = nodes[nodeName];
           return <animated.mesh
-            key={meshName}
+            key={nodeName}
             geometry={mesh.geometry}
             castShadow={true}
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             position={springs[index].position}
             rotation={[-Math.PI / 2, 0, 0]}
+            onPointerOver={(event) => {
+              setHoveredMesh(prevState => prevState.map((item, idx) => {
+                return (index === idx) ? true : item;
+              }));
+              event.stopPropagation();
+            }}
+            onPointerOut={() => {
+              setHoveredMesh(prevState => prevState.map((item, idx) => {
+                return (index === idx) ? false : item;
+              }));
+            }}
           >
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore */}
@@ -139,6 +181,9 @@ export function Robohand2Model({ opacity, ...props}: JSX.IntrinsicElements['grou
               transparent={true}
               opacity={opacity}
             />
+            <Html wrapperClass={'annotation-wrapper'}>
+              <div className={`annotation ${hoveredMesh[index] ? 'show' : ''}`}>{MESH_NAMES.get(nodeName)}</div>
+            </Html>
           </animated.mesh>
         })
       }
