@@ -3,8 +3,19 @@ import {Instance, Instances, useCursor} from "@react-three/drei";
 import {animated, config, SpringValue, useSprings} from "@react-spring/three";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {useCallback, useEffect, useMemo, useRef, useState, useContext} from "react";
-import {PaintColor, PAINT_COLORS, PaintColorSelectedEvent, Overlay} from "./overlay";
+import {
+  PaintColor,
+  PAINT_COLORS,
+  PaintColorSelectedEvent,
+  Overlay,
+  PAINT_BRUSHES,
+  PaintBrushSelectedEvent,
+  PaintBrush
+} from "./overlay";
 import {OrbitControlsContext} from "../../context";
+
+const DEFAULT_PAINT_COLOR = PAINT_COLORS[0];
+const DEFAULT_PAINT_BRUSH = PAINT_BRUSHES[1];
 
 const BOX_COLOR = (PAINT_COLORS.find(p => p.name === 'white') as PaintColor).color;
 
@@ -25,8 +36,6 @@ const NUM_COLUMNS = 21;
 
 const X_WIDTH = (NUM_COLUMNS * BOX_SIZE) + ((NUM_COLUMNS - 1) * BOX_GAP);
 const Y_WIDTH = (NUM_ROWS * BOX_SIZE) + ((NUM_ROWS - 1) * BOX_GAP);
-
-const SELECTOR_RADIUS = (4 * BOX_SIZE) + (3 * BOX_GAP) - (0.5 * BOX_SIZE);
 
 const POSITIONS: THREE.Vector3[] = new Array(NUM_ROWS * NUM_COLUMNS);
 for (let row=0; row<NUM_ROWS; row++) {
@@ -49,13 +58,18 @@ type Painting = {
   currentIndex: number;
 }
 
-// TODO allow the brush size to be changed
+const calcPaintBrushRadius = (paintBrush: PaintBrush): number => {
+  return (paintBrush.size * BOX_SIZE) + ((paintBrush.size - 1) * BOX_GAP) - (0.5 * BOX_SIZE)
+}
+
 // TODO show animation on click
 // TODO allow resetting controls, to get of the situation where controls cannot be used when the boxes cover the whole screen
 const Paint = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
   const controlsContext = useContext(OrbitControlsContext)
-  const [selectedPaintColor, setSelectedPaintColor] = useState(PAINT_COLORS[0])
+  const [selectedPaintColor, setSelectedPaintColor] = useState(DEFAULT_PAINT_COLOR)
+  const [selectedPaintBrush, setSelectedPaintBrush] = useState(DEFAULT_PAINT_BRUSH)
+  const [paintBrushRadius, setPaintBrushRadius] = useState(calcPaintBrushRadius(DEFAULT_PAINT_BRUSH))
   const [color, setColor] = useState([...POSITIONS].map(() => BOX_COLOR));
   const [hovered, setHovered] = useState([...POSITIONS].map(() => false));
   const [selected, setSelected] = useState([...POSITIONS].map(() => false));
@@ -65,15 +79,15 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
   const paint = useCallback((event: ThreeEvent<MouseEvent>, selectedPaint: PaintColor): void => {
     const index = event.object.userData.index;
     setSelected(prevState => prevState.map((item, idx) => {
-      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
+      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], paintBrushRadius);
       return isInCircle ? true : item;
     }));
     setColor(prevState => prevState.map((item, idx) => {
-      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], SELECTOR_RADIUS);
+      const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], paintBrushRadius);
       return isInCircle ? selectedPaint.color : item;
     }));
     event.stopPropagation();
-  }, []);
+  }, [paintBrushRadius]);
 
   const [springs, api] = useSprings(
     POSITIONS.length,
@@ -96,11 +110,15 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
   useCursor(anyHover)
 
   useEffect(() => {
+    setPaintBrushRadius(calcPaintBrushRadius(selectedPaintBrush))
+  }, [selectedPaintBrush])
+
+  useEffect(() => {
     const hoveredIndex = hovered.findIndex(s => s);
     const hoveredPos = hoveredIndex >= 0 ? POSITIONS[hoveredIndex] : null;
 
     api.start(index => {
-      const isHovered = hoveredPos !== null ? isPointInCircle(POSITIONS[index], hoveredPos, SELECTOR_RADIUS) : false;
+      const isHovered = hoveredPos !== null ? isPointInCircle(POSITIONS[index], hoveredPos, paintBrushRadius) : false;
       return {
         scale: isHovered ? BOX_HOVERED_SCALE : BOX_SCALE,
         posY: isHovered ? BOX_HOVERED_POS_Y : BOX_POS_Y,
@@ -108,7 +126,7 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
       }
     })
     setAnyHover(hoveredIndex >= 0)
-  }, [hovered, color]);
+  }, [hovered, color, paintBrushRadius]);
 
   useEffect(() => {
     api.start(index => {
@@ -195,11 +213,16 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
     setSelectedPaintColor(event.selectedPaintColor);
   }, [])
 
+  const onPaintBrushSelected = useCallback((event: PaintBrushSelectedEvent): void => {
+    setSelectedPaintBrush(event.selectedPaintBrush);
+  }, [])
+
   const isTransitioning = opacity.isAnimating;
 
   // Reset state if necessary when transitioning in/out
-  if (isTransitioning && (selectedPaintColor !== PAINT_COLORS[0] || anyHover)) {
-    setSelectedPaintColor(PAINT_COLORS[0])
+  if (isTransitioning && (selectedPaintColor !== DEFAULT_PAINT_COLOR || selectedPaintBrush !== DEFAULT_PAINT_BRUSH || anyHover)) {
+    setSelectedPaintColor(DEFAULT_PAINT_COLOR)
+    setSelectedPaintBrush(DEFAULT_PAINT_BRUSH)
     setColor([...POSITIONS].map(() => BOX_COLOR));
     setHovered([...POSITIONS].map(() => false));
     setSelected([...POSITIONS].map(() => false));
@@ -255,7 +278,9 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
       <Overlay
         opacity={opacity}
         selectedPaintColor={selectedPaintColor}
+        selectedPaintBrush={selectedPaintBrush}
         onPaintColorSelected={onPaintColorSelected}
+        onPaintBrushSelected={onPaintBrushSelected}
         onPointerUp={onBoxPointerUp}
       />
     </>
