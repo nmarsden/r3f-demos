@@ -40,7 +40,7 @@
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 0.5rem;
-    border: 2px solid black;
+    border: 2px solid white;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -73,7 +73,7 @@
     content: '';
     position: absolute;
     aspect-ratio: 1;
-    background-color: black;
+    background-color: white;
     border-radius: 50%;
 }
 
