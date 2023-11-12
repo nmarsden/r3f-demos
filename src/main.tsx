@@ -77,6 +77,13 @@ const App = () => {
     setResetCamera(true)
   }, [location])
 
+  useEffect(() => {
+    document.body.style.cursor = resetCamera ? 'wait' : 'auto'
+    return () => {
+      document.body.style.cursor = 'auto';
+    }
+  }, [resetCamera])
+
   return (
     <>
       <Menu pages={pages}/>
