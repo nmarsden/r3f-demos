@@ -55,6 +55,7 @@ const Floor = ({ position }) => {
   </animated.mesh>
 }
 
+// TODO rename Hand to Arm
 const App = () => {
   const container = useRef<HTMLDivElement>(null!);
   const controls = useRef<OrbitControlsImpl>(null!);
