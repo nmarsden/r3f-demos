@@ -58,7 +58,7 @@ const Floor = ({ position }) => {
 const App = () => {
   const container = useRef<HTMLDivElement>(null!);
   const controls = useRef<OrbitControlsImpl>(null!);
-  const [resetCamera, setResetCamera] = useState(false)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   const [location] = useLocation();
   const transition = useTransition(location, {
@@ -69,20 +69,21 @@ const App = () => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     onRest: () => {
-      setResetCamera(false)
+      setIsTransitioning(false)
     }
   })
 
   useEffect(() => {
-    setResetCamera(true)
+    setIsTransitioning(true)
   }, [location])
 
   useEffect(() => {
-    document.body.style.cursor = resetCamera ? 'wait' : 'auto'
+    // Set cursor
+    document.body.style.cursor = isTransitioning ? 'wait' : 'auto'
     return () => {
       document.body.style.cursor = 'auto';
     }
-  }, [resetCamera])
+  }, [isTransitioning])
 
   return (
     <>
@@ -93,7 +94,7 @@ const App = () => {
           camera={{ position: [0, 2, 4.5], fov: 70 }}
         >
           <OrbitControlsContext.Provider value={{ controls: controls }}>
-            <CameraAnimation reset={resetCamera} controls={controls} />
+            <CameraAnimation reset={isTransitioning} controls={controls} />
             <Lights/>
             <Floor position={[0, -1.3, 0]}/>
 
@@ -125,9 +126,9 @@ const App = () => {
               autoRotateSpeed={0.25}
               minDistance={3}
               maxDistance={10}
-              enableZoom={!resetCamera}
+              enableZoom={!isTransitioning}
               enablePan={false}
-              enableRotate={!resetCamera}
+              enableRotate={!isTransitioning}
             />
           </OrbitControlsContext.Provider>
         </Canvas>
