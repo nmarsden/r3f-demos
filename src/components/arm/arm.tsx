@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {Bvh} from "@react-three/drei";
-import {Robohand2Model} from "./robohand2Model";
+import {ArmModel} from "./armModel";
 import {SpringValue} from "@react-spring/three";
 import {useFrame, useThree} from "@react-three/fiber";
 
-const Hand = ({ opacity }: { opacity: SpringValue }) => {
+const Arm = ({ opacity }: { opacity: SpringValue }) => {
   const { events } = useThree();
 
   useFrame(() => {
@@ -16,10 +16,10 @@ const Hand = ({ opacity }: { opacity: SpringValue }) => {
   return (
     <>
       <Bvh firstHitOnly>
-        <Robohand2Model scale={0.12} position={[0, 0.5, 0]} rotation={[0, -Math.PI * 0.05, -Math.PI/4]} opacity={opacity}/>
+        <ArmModel scale={0.12} position={[0, 0.5, 0]} rotation={[0, -Math.PI * 0.05, -Math.PI/4]} opacity={opacity}/>
       </Bvh>
     </>
   )
 }
 
-export { Hand }
+export { Arm }

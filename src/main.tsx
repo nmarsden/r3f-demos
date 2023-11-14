@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client'
 import {Canvas, useFrame} from '@react-three/fiber'
 import {Menu, Page} from "./components/menu/menu";
 import {Home} from "./components/home/home";
-import {Hand} from "./components/hand/hand";
+import {Arm} from "./components/arm/arm";
 import {Shapes} from "./components/shapes/shapes";
 import {Paint} from "./components/paint/paint";
 import {Environment, Loader, OrbitControls} from "@react-three/drei";
@@ -18,7 +18,7 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 const pages: Page[ ] = [
   { name: 'Home', path: '/', renderFn: (props) => <Home {...props} /> },
   { name: 'Shapes', path: '/shapes', renderFn: (props) => <Shapes {...props} /> },
-  { name: 'Hand', path: '/hand', renderFn: (props) => <Hand {...props} /> },
+  { name: 'Arm', path: '/arm', renderFn: (props) => <Arm {...props} /> },
   { name: 'Paint', path: '/paint', renderFn: (props) => <Paint {...props} /> },
   // { name: 'Test_A', path: '/test-a', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', renderFn: (props) => <Test text='TEST B' {...props} /> }
@@ -55,7 +55,6 @@ const Floor = ({ position }) => {
   </animated.mesh>
 }
 
-// TODO rename Hand to Arm
 const App = () => {
   const container = useRef<HTMLDivElement>(null!);
   const controls = useRef<OrbitControlsImpl>(null!);

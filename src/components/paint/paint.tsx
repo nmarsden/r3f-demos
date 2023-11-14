@@ -62,6 +62,7 @@ const calcPaintBrushRadius = (paintBrush: PaintBrush): number => {
   return (paintBrush.size * BOX_SIZE) + ((paintBrush.size - 1) * BOX_GAP) - (0.5 * BOX_SIZE)
 }
 
+// TODO when dragging to rotate view, do not stop rotating when the pointer is over the boxes
 // TODO show animation on click
 // TODO allow resetting controls, to get of the situation where controls cannot be used when the boxes cover the whole screen
 const Paint = ({ opacity }: { opacity: SpringValue }) => {
