@@ -3,13 +3,13 @@ import {
   Text3D,
   Center,
   Lathe,
-  useCursor,
-  Box
+  useCursor
 } from "@react-three/drei";
 import {animated, config, SpringValue, useSpring} from "@react-spring/three";
 import * as THREE from 'three'
 import {Suspense, useCallback, useMemo, useState} from "react";
 import {Physics, RigidBody, CuboidCollider} from "@react-three/rapier";
+import {GrabbableBox, GrabbedChangeEvent} from "./grabbableBox";
 
 const uiColor = 0x2176AE;
 
@@ -96,7 +96,7 @@ const ButtonBase = ({ opacity }: { opacity: SpringValue }) => {
   )
 }
 
-const PushButton = ({ opacity, onButtonClicked }: { opacity: SpringValue, onButtonClicked: () => void }) => {
+const PushButton = ({ opacity, onButtonClicked, enabled }: { opacity: SpringValue, onButtonClicked: () => void, enabled: boolean }) => {
   const [hovered, setHovered] = useState(false);
   const [{ positionY }, api] = useSpring(() => ({
     from: { positionY: 0.5 },
@@ -104,6 +104,33 @@ const PushButton = ({ opacity, onButtonClicked }: { opacity: SpringValue, onButt
   }))
 
   useCursor(hovered);
+
+  const onPointerOver = useCallback(() => {
+    if (!enabled) {
+      return
+    }
+    setHovered(true)
+  }, [enabled])
+
+  const onPointerOut = useCallback(() => {
+    if (!enabled) {
+      return
+    }
+    setHovered(false)
+  }, [enabled])
+
+  const onPointerDown = useCallback(() => {
+    if (!enabled) {
+      return
+    }
+    api.start({
+      to: [
+        { positionY: 0.25 },
+        { positionY: 0.5 }
+      ]
+    })
+    onButtonClicked()
+  }, [enabled])
 
   return <group
       scale={0.25}
@@ -115,17 +142,9 @@ const PushButton = ({ opacity, onButtonClicked }: { opacity: SpringValue, onButt
       position-y={positionY}
       castShadow={true}
       receiveShadow={true}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-      onPointerDown={() => {
-        api.start({
-          to: [
-            { positionY: 0.25 },
-            { positionY: 0.5 }
-          ]
-        })
-        onButtonClicked()
-      }}
+      onPointerOver={onPointerOver}
+      onPointerOut={onPointerOut}
+      onPointerDown={onPointerDown}
     >
       <cylinderGeometry args={[2, 2, 0.5]} />
       {/* @ts-ignore */}
@@ -142,7 +161,7 @@ const PushButton = ({ opacity, onButtonClicked }: { opacity: SpringValue, onButt
 
 const Home = ({ opacity }: { opacity: SpringValue }) => {
   const [isShowBox, setShowBox] = useState(false);
-
+  const [isBoxGrabbed, setBoxGrabbed] = useState(false);
   const onButtonClicked = useCallback(() => {
     setShowBox(false)
     setTimeout(() => setShowBox(true), 200)
@@ -152,6 +171,10 @@ const Home = ({ opacity }: { opacity: SpringValue }) => {
     setShowBox(false)
   }
 
+  const onGrabbedChanged = useCallback((event: GrabbedChangeEvent) => {
+    setBoxGrabbed(event.isGrabbed)
+  }, [])
+
   return (
     <>
       <Suspense>
@@ -159,42 +182,22 @@ const Home = ({ opacity }: { opacity: SpringValue }) => {
 
           {!opacity.isAnimating ? (
             <>
-              {isShowBox ? (
-                <RigidBody>
-                  <Box
-                    position={[0, 5, 0.25]}
-                    args={[0.5, 0.5, 0.5]}
-                    castShadow={true}
-                    receiveShadow={true}
-                  >
-                    {/* @ts-ignore */}
-                    <animated.meshStandardMaterial
-                      metalness={0.75}
-                      roughness={0.15}
-                      color={'white'}
-                      transparent={true}
-                      opacity={opacity}
-                    />
-                  </Box>
-                </RigidBody>
-              ) : (
-                <></>
-              )}
-
-              <CuboidCollider position={[0, -1.5, 0]} args={[20, 0.2, 20]} />
+              <GrabbableBox opacity={opacity} isShown={isShowBox} onGrabbedChanged={onGrabbedChanged}/>
 
               <RigidBody type={'fixed'} colliders={'cuboid'}>
                 <Heading opacity={opacity}/>
               </RigidBody>
 
               <RigidBody type={'fixed'} colliders={'cuboid'}>
-                <PushButton opacity={opacity} onButtonClicked={onButtonClicked}/>
+                <PushButton opacity={opacity} onButtonClicked={onButtonClicked} enabled={!isBoxGrabbed}/>
               </RigidBody>
+
+              <CuboidCollider position={[0, -1.5, 0]} args={[20, 0.2, 20]} />
             </>
           ) : (
             <>
               <Heading opacity={opacity}/>
-              <PushButton opacity={opacity} onButtonClicked={onButtonClicked}/>
+              <PushButton opacity={opacity} onButtonClicked={onButtonClicked} enabled={false}/>
             </>
           )}
         </Physics>
