@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   Html,
-  Lathe,
-  useCursor
+  Lathe
 } from "@react-three/drei";
 import {animated, config, SpringValue, useSpring} from "@react-spring/three";
 import * as THREE from 'three'
 import {Suspense, useCallback, useEffect, useMemo, useState} from "react";
 import {Physics, RigidBody, CuboidCollider} from "@react-three/rapier";
-import {GrabbableBox, GrabbedChangeEvent} from "./grabbableBox";
+import {GrabbableBox, GrabbedChangeEvent, HoveredChangeEvent} from "./grabbableBox";
 import './boxes.css';
 
 const MAX_NUM_BOXES = 100;
@@ -41,27 +40,35 @@ const ButtonBase = ({ opacity }: { opacity: SpringValue }) => {
   )
 }
 
-const PushButton = ({ opacity, onButtonClicked, enabled }: { opacity: SpringValue, onButtonClicked: () => void, enabled: boolean }) => {
-  const [hovered, setHovered] = useState(false);
+type ButtonHoveredChangedEvent = {
+  isHovered: boolean;
+}
+type PushButtonProps = {
+  opacity: SpringValue,
+  onHoveredChanged: (event: ButtonHoveredChangedEvent) => void,
+  onButtonClicked: () => void,
+  enabled: boolean
+}
+
+// TODO extract PushButton to a separate file
+const PushButton = ({ opacity, onHoveredChanged, onButtonClicked, enabled }: PushButtonProps) => {
   const [{ positionY }, api] = useSpring(() => ({
     from: { positionY: 0.5 },
     config: config.stiff
   }))
 
-  useCursor(hovered);
-
   const onPointerOver = useCallback(() => {
     if (!enabled) {
       return
     }
-    setHovered(true)
+    onHoveredChanged({ isHovered: true })
   }, [enabled])
 
   const onPointerOut = useCallback(() => {
     if (!enabled) {
       return
     }
-    setHovered(false)
+    onHoveredChanged({ isHovered: false })
   }, [enabled])
 
   const onPointerDown = useCallback(() => {
@@ -132,17 +139,35 @@ const Counter = ({ opacity, count, maxCount } : { opacity: SpringValue, count: n
   )
 }
 
-// TODO only select one thing when clicking, be it a button or a single box
-// TODO fix: when moving the pointer out of one box to one behind, the cursor changes to 'auto' instead of staying as a 'pointer'
+// TODO animate an explosion before hiding all boxes
+// TODO put a marker on the ground to show where the boxes will drop when the button is pressed
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const [isShowBox, setShowBox] = useState([...Array(MAX_NUM_BOXES)].map(() => false));
+  const [isButtonHovered, setButtonHovered] = useState(false);
+  const [isBoxHovered, setBoxHovered] = useState([...Array(MAX_NUM_BOXES)].map(() => false));
+  const [isAnyBoxHovered, setAnyBoxHovered] = useState(false);
   const [isBoxGrabbed, setBoxGrabbed] = useState([...Array(MAX_NUM_BOXES)].map(() => false));
   const [isAnyBoxGrabbed, setAnyBoxGrabbed] = useState(false);
   const [nextBoxIndex, setNextBoxIndex] = useState(0);
 
   useEffect(() => {
+    document.body.style.cursor = (isButtonHovered || isAnyBoxHovered) ? 'pointer' : isAnyBoxGrabbed ? 'grab' : 'auto'
+    return () => {
+      document.body.style.cursor = 'auto';
+    }
+  }, [isButtonHovered, isAnyBoxHovered, isAnyBoxGrabbed])
+
+  useEffect(() => {
+    setAnyBoxHovered(isBoxHovered.some(item => item));
+  }, [isBoxHovered])
+
+  useEffect(() => {
     setAnyBoxGrabbed(isBoxGrabbed.some(item => item));
   }, [isBoxGrabbed])
+
+  const onButtonHoveredChanged = useCallback((event: ButtonHoveredChangedEvent) => {
+    setButtonHovered(event.isHovered)
+  }, [])
 
   const onButtonClicked = useCallback(() => {
     if (nextBoxIndex === MAX_NUM_BOXES) {
@@ -155,7 +180,11 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
     setNextBoxIndex(nextBoxIndex < (MAX_NUM_BOXES) ? (nextBoxIndex + 1) : 0);
   }, [nextBoxIndex])
 
-  const onGrabbedChanged = useCallback((boxIndex: number, event: GrabbedChangeEvent) => {
+  const onBoxHoveredChanged = useCallback((boxIndex: number, event: HoveredChangeEvent) => {
+    setBoxHovered(prevState => prevState.map((item, idx) => idx === boxIndex ? event.isHovered : item));
+  }, [])
+
+  const onBoxGrabbedChanged = useCallback((boxIndex: number, event: GrabbedChangeEvent) => {
     setBoxGrabbed(prevState => prevState.map((item, idx) => idx === boxIndex ? event.isGrabbed : item));
   }, [])
 
@@ -175,23 +204,25 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
                   return (
                     <GrabbableBox
                       key={`${index}`}
+                      boxId={`box-${index}`}
                       opacity={opacity}
                       isShown={isShown}
                       canGrab={!isAnyBoxGrabbed || isBoxGrabbed[index]}
-                      onGrabbedChanged={(event) => onGrabbedChanged(index, event)}
+                      onHoveredChanged={(event) => onBoxHoveredChanged(index, event)}
+                      onGrabbedChanged={(event) => onBoxGrabbedChanged(index, event)}
                     />
                   );
                 })
               }
               <RigidBody type={'fixed'} colliders={'cuboid'}>
-                <PushButton opacity={opacity} onButtonClicked={onButtonClicked} enabled={!isAnyBoxGrabbed}/>
+                <PushButton opacity={opacity} onHoveredChanged={onButtonHoveredChanged} onButtonClicked={onButtonClicked} enabled={!isAnyBoxGrabbed}/>
               </RigidBody>
 
               <CuboidCollider position={[0, -1.5, 0]} args={[20, 0.2, 20]} />
             </>
           ) : (
             <>
-              <PushButton opacity={opacity} onButtonClicked={onButtonClicked} enabled={false}/>
+              <PushButton opacity={opacity} onHoveredChanged={onButtonHoveredChanged} onButtonClicked={onButtonClicked} enabled={false}/>
             </>
           )}
         </Physics>

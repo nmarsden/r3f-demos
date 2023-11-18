@@ -12,28 +12,41 @@ const grabbedIntersectPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0)
 
 type BoxState = 'NONE' | 'SPAWNED' | 'RISING' | 'FLOATING' | 'FALLING';
 
+export type HoveredChangeEvent = {
+  isHovered: boolean;
+}
+
 export type GrabbedChangeEvent = {
   isGrabbed: boolean;
 }
 
+type GrabbableBoxProps = {
+  boxId: string,
+  opacity: SpringValue,
+  isShown: boolean,
+  canGrab: boolean,
+  onHoveredChanged: (event: HoveredChangeEvent) => void
+  onGrabbedChanged: (event: GrabbedChangeEvent) => void
+}
+
 // TODO ensure desiredPosX is correctly calculated when viewing from above
-const GrabbableBox = ({ opacity, isShown, canGrab, onGrabbedChanged }: { opacity: SpringValue, isShown: boolean, canGrab: boolean, onGrabbedChanged: (event: GrabbedChangeEvent) => void }) => {
+const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGrabbedChanged }: GrabbableBoxProps) => {
   const controlsContext = useContext(OrbitControlsContext)
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const boxRef = useRef<THREE.Mesh>(null!);
   const [isGrabbed, setIsGrabbed] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [boxState, setBoxState] = useState<BoxState>('NONE');
   const [desiredPosX, setDesiredPosX] = useState<number>(0);
 
   const onPointerDown = useCallback((event: ThreeEvent<PointerEvent>): void => {
+    event.stopPropagation();
     if (!canGrab) return;
     if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
       controlsContext.controls.current.enabled = false;
     }
     setIsGrabbed(true)
     setBoxState('RISING')
-    setIsHovered(false)
+    onHoveredChanged({ isHovered: false })
     // @ts-ignore
     event.target.setPointerCapture(event.pointerId)
     onGrabbedChanged({ isGrabbed: true })
@@ -64,21 +77,14 @@ const GrabbableBox = ({ opacity, isShown, canGrab, onGrabbedChanged }: { opacity
   const onPointerOver = useCallback((): void => {
     if (!canGrab) return;
     if (!isGrabbed) {
-      setIsHovered(true)
+      onHoveredChanged({ isHovered: true })
     }
   }, [canGrab, isGrabbed])
 
   const onPointerOut = useCallback((): void => {
     if (!canGrab) return;
-    setIsHovered(false)
+    onHoveredChanged({ isHovered: false })
   }, [canGrab])
-
-  useEffect(() => {
-    document.body.style.cursor = isHovered ? 'pointer' : isGrabbed ? 'grab' : 'auto'
-    return () => {
-      document.body.style.cursor = 'auto';
-    }
-  }, [isHovered, isGrabbed])
 
   useEffect(() => {
     if (isShown) {
@@ -87,7 +93,6 @@ const GrabbableBox = ({ opacity, isShown, canGrab, onGrabbedChanged }: { opacity
       setBoxState('NONE')
     }
     setIsGrabbed(false)
-    setIsHovered(false)
   }, [isShown])
 
   useFrame(() => {
@@ -134,6 +139,7 @@ const GrabbableBox = ({ opacity, isShown, canGrab, onGrabbedChanged }: { opacity
         <RigidBody ref={rigidBodyRef}>
           <Box
             ref={boxRef}
+            userData={{ boxId }}
             position={[0, 0, 0]}
             args={[0.5, 0.5, 0.5]}
             castShadow={true}
