@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as THREE from 'three'
 import {Instance, Instances, useCursor} from "@react-three/drei";
 import {animated, config, SpringValue, useSprings} from "@react-spring/three";
@@ -62,7 +63,6 @@ const calcPaintBrushRadius = (paintBrush: PaintBrush): number => {
   return (paintBrush.size * BOX_SIZE) + ((paintBrush.size - 1) * BOX_GAP) - (0.5 * BOX_SIZE)
 }
 
-// TODO when dragging to rotate view, do not stop rotating when the pointer is over the boxes
 // TODO show animation on click
 // TODO allow resetting controls, to get of the situation where controls cannot be used when the boxes cover the whole screen
 const Paint = ({ opacity }: { opacity: SpringValue }) => {
@@ -77,7 +77,7 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
   const [anyHover, setAnyHover] = useState(false)
   const [painting, setPainting] = useState<Painting>({ prevIndex: -1, currentIndex: -1 });
 
-  const paint = useCallback((event: ThreeEvent<MouseEvent>, selectedPaint: PaintColor): void => {
+  const paint = useCallback((event: ThreeEvent<PointerEvent>, selectedPaint: PaintColor, paintBrushRadius: number): void => {
     const index = event.object.userData.index;
     setSelected(prevState => prevState.map((item, idx) => {
       const isInCircle = isPointInCircle(POSITIONS[idx], POSITIONS[index], paintBrushRadius);
@@ -88,7 +88,7 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
       return isInCircle ? selectedPaint.color : item;
     }));
     event.stopPropagation();
-  }, [paintBrushRadius]);
+  }, []);
 
   const [springs, api] = useSprings(
     POSITIONS.length,
@@ -167,48 +167,41 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
       mesh.current.instanceColor.needsUpdate = true;
     }
   });
-  const onBoxesPointerOver = useCallback((): void => {
-    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
-      controlsContext.controls.current.enabled = false;
-    }
-  }, []);
-
-  const onBoxesPointerOut = useCallback((): void => {
-    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
-      controlsContext.controls.current.enabled = true;
-    }
-  }, []);
-
-  const onBoxPointerOver = useCallback((event: ThreeEvent<MouseEvent>): void => {
+  const onBoxPointerOver = useCallback((event: ThreeEvent<PointerEvent>): void => {
     const index = event.object.userData.index;
     setHovered(prevState => prevState.map((item, idx) => idx === index ? true : item));
     event.stopPropagation();
   }, []);
 
-  const onBoxPointerOut = useCallback((event: ThreeEvent<MouseEvent>): void => {
+  const onBoxPointerOut = useCallback((event: ThreeEvent<PointerEvent>): void => {
     const index = event.object.userData.index;
     setHovered(prevState => prevState.map((item, idx) => idx === index ? false : item));
     event.stopPropagation();
   }, []);
 
-  const onBoxPointerDown = useCallback((event: ThreeEvent<MouseEvent>): void => {
+  const onBoxPointerDown = useCallback((event: ThreeEvent<PointerEvent>): void => {
+    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
+      controlsContext.controls.current.enabled = false;
+    }
+
     const index = event.object.userData.index;
     setPainting(prevState => ({ prevIndex: prevState.currentIndex, currentIndex: index }));
-  }, []);
+    paint(event, selectedPaintColor, paintBrushRadius);
+  }, [selectedPaintColor, paintBrushRadius]);
 
   const onBoxPointerUp = useCallback((): void => {
+    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
+      controlsContext.controls.current.enabled = true;
+    }
+
     setPainting(prevState => ({ prevIndex: prevState.currentIndex, currentIndex: -1 }));
   }, []);
 
-  const onBoxPointerMove = useCallback((event: ThreeEvent<MouseEvent>): void => {
+  const onBoxPointerMove = useCallback((event: ThreeEvent<PointerEvent>): void => {
     if (painting.currentIndex > 0 && painting.currentIndex !== painting.prevIndex) {
-      paint(event, selectedPaintColor);
+      paint(event, selectedPaintColor, paintBrushRadius);
     }
-  }, [painting, selectedPaintColor]);
-
-  const onBoxClick = useCallback((event: ThreeEvent<MouseEvent>): void => {
-    paint(event, selectedPaintColor);
-  }, [selectedPaintColor]);
+  }, [painting, selectedPaintColor, paintBrushRadius]);
 
   const onPaintColorSelected = useCallback((event: PaintColorSelectedEvent): void => {
     setSelectedPaintColor(event.selectedPaintColor);
@@ -236,14 +229,6 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
         position-z={-0.65}
         rotation-x={Math.PI/4}
       >
-        <mesh
-          visible={false}
-          position-y={BOX_POS_Y + BOX_SIZE/2}
-          onPointerOver={onBoxesPointerOver}
-          onPointerOut={onBoxesPointerOut}
-        >
-          <boxGeometry args={[X_WIDTH, BOX_SIZE*3, Y_WIDTH]}/>
-        </mesh>
         <Instances
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -271,7 +256,6 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
               onPointerDown={onBoxPointerDown}
               onPointerUp={onBoxPointerUp}
               onPointerMove={onBoxPointerMove}
-              onClick={onBoxClick}
             />
           )}
         </Instances>
