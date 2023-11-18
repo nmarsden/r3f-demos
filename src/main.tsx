@@ -31,7 +31,7 @@ const CameraAnimation = ({ reset, controls }: { reset: boolean, controls: RefObj
 
   useFrame(state => {
     if (reset) {
-      state.camera.position.lerp(vec.set(0, 2, 4.5), 0.05)
+      state.camera.position.lerp(vec.set(0, 2, 6), 0.05)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       controls.current.reset()
@@ -93,7 +93,7 @@ const App = () => {
       <div className="container" ref={container}>
         <Canvas
           shadows={true}
-          camera={{ position: [0, 2, 4.5], fov: 70 }}
+          camera={{ position: [0, 2, 6], fov: 70 }}
         >
           <OrbitControlsContext.Provider value={{ controls: controls }}>
             <CameraAnimation reset={isTransitioning} controls={controls} />
