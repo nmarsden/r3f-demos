@@ -16,7 +16,8 @@ export type GrabbedChangeEvent = {
   isGrabbed: boolean;
 }
 
-const GrabbableBox = ({ opacity, isShown, onGrabbedChanged }: { opacity: SpringValue, isShown: boolean, onGrabbedChanged: (event: GrabbedChangeEvent) => void }) => {
+// TODO ensure desiredPosX is correctly calculated when viewing from above
+const GrabbableBox = ({ opacity, isShown, canGrab, onGrabbedChanged }: { opacity: SpringValue, isShown: boolean, canGrab: boolean, onGrabbedChanged: (event: GrabbedChangeEvent) => void }) => {
   const controlsContext = useContext(OrbitControlsContext)
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const boxRef = useRef<THREE.Mesh>(null!);
@@ -26,6 +27,7 @@ const GrabbableBox = ({ opacity, isShown, onGrabbedChanged }: { opacity: SpringV
   const [desiredPosX, setDesiredPosX] = useState<number>(0);
 
   const onPointerDown = useCallback((event: ThreeEvent<PointerEvent>): void => {
+    if (!canGrab) return;
     if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
       controlsContext.controls.current.enabled = false;
     }
@@ -36,9 +38,10 @@ const GrabbableBox = ({ opacity, isShown, onGrabbedChanged }: { opacity: SpringV
     event.target.setPointerCapture(event.pointerId)
     onGrabbedChanged({ isGrabbed: true })
 
-  }, [isGrabbed])
+  }, [canGrab, isGrabbed])
 
   const onPointerUp = useCallback((event: ThreeEvent<PointerEvent>): void => {
+    if (!canGrab) return;
     if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
       controlsContext.controls.current.enabled = true;
     }
@@ -48,24 +51,27 @@ const GrabbableBox = ({ opacity, isShown, onGrabbedChanged }: { opacity: SpringV
     event.target.releasePointerCapture(event.pointerId)
     onGrabbedChanged({ isGrabbed: false })
 
-  }, [isGrabbed])
+  }, [canGrab, isGrabbed])
 
   const onPointerMove = useCallback((event: ThreeEvent<PointerEvent>): void => {
+    if (!canGrab) return;
     if (isGrabbed && event.ray.intersectPlane(grabbedIntersectPlane, vector)) {
       vector.clampScalar(-4, 4);
       setDesiredPosX(vector.x);
     }
-  }, [isGrabbed])
+  }, [canGrab, isGrabbed])
 
   const onPointerOver = useCallback((): void => {
+    if (!canGrab) return;
     if (!isGrabbed) {
       setIsHovered(true)
     }
-  }, [isGrabbed])
+  }, [canGrab, isGrabbed])
 
   const onPointerOut = useCallback((): void => {
+    if (!canGrab) return;
     setIsHovered(false)
-  }, [])
+  }, [canGrab])
 
   useEffect(() => {
     document.body.style.cursor = isHovered ? 'pointer' : isGrabbed ? 'grab' : 'auto'
@@ -91,8 +97,8 @@ const GrabbableBox = ({ opacity, isShown, onGrabbedChanged }: { opacity: SpringV
     }
     if (boxState === 'FLOATING') {
       const pos = rigidBodyRef.current.translation();
-      if (pos.z >= 0.26) rigidBodyRef.current.applyImpulse(new THREE.Vector3(0, 0, -0.03), true)
-      if (pos.z <= 0.24) rigidBodyRef.current.applyImpulse(new THREE.Vector3(0, 0, 0.03), true)
+      if (pos.z >= 0.01) rigidBodyRef.current.applyImpulse(new THREE.Vector3(0, 0, -0.03), true)
+      if (pos.z <= -0.01) rigidBodyRef.current.applyImpulse(new THREE.Vector3(0, 0, 0.03), true)
       if (pos.x > desiredPosX + 0.01) rigidBodyRef.current.applyImpulse(new THREE.Vector3(-0.03, 0, 0), true)
       if (pos.x < desiredPosX - 0.01) rigidBodyRef.current.applyImpulse(new THREE.Vector3(0.03, 0, 0), true)
     }
@@ -101,7 +107,8 @@ const GrabbableBox = ({ opacity, isShown, onGrabbedChanged }: { opacity: SpringV
   useEffect(() => {
     switch(boxState) {
       case 'SPAWNED':
-        rigidBodyRef.current.setTranslation(new THREE.Vector3(0,5,0.25), true);
+        rigidBodyRef.current.setTranslation(new THREE.Vector3(0,5,0), true);
+        rigidBodyRef.current.applyTorqueImpulse(new THREE.Vector3(0.01, 0.01, 0.01), true)
         break;
       case 'RISING':
         rigidBodyRef.current.setGravityScale(-1, true)
