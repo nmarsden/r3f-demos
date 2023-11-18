@@ -16,7 +16,7 @@ import {OrbitControlsContext} from "./context";
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 
 const pages: Page[ ] = [
-  { name: 'Home', path: '/', renderFn: (props) => <Home {...props} /> },
+  { name: 'Demos', path: '/', renderFn: (props) => <Home {...props} /> },
   { name: 'Shapes', path: '/shapes', renderFn: (props) => <Shapes {...props} /> },
   { name: 'Arm', path: '/arm', renderFn: (props) => <Arm {...props} /> },
   { name: 'Paint', path: '/paint', renderFn: (props) => <Paint {...props} /> },

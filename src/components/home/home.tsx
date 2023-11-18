@@ -54,7 +54,7 @@ const Heading = ({ opacity }: { opacity: SpringValue }) => {
         size={0.75}
         font="/shapes/Inter_Bold.json"
       >
-        {"DEMO"}
+        {"DEMOS"}
         {/* @ts-ignore */}
         <animated.meshStandardMaterial
           metalness={0.75}
