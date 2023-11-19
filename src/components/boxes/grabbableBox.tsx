@@ -2,7 +2,7 @@
 import * as THREE from "three";
 import {animated, SpringValue} from "@react-spring/three";
 import {useCallback, useContext, useEffect, useRef, useState} from "react";
-import {RapierRigidBody, RigidBody} from "@react-three/rapier";
+import {RapierRigidBody, RigidBody, vec3} from "@react-three/rapier";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {Box} from "@react-three/drei";
 import {OrbitControlsContext} from "../../context";
@@ -10,7 +10,7 @@ import {OrbitControlsContext} from "../../context";
 const vector = new THREE.Vector3()
 const grabbedIntersectPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0)
 
-type BoxState = 'NONE' | 'SPAWNED' | 'RISING' | 'FLOATING' | 'FALLING';
+type BoxState = 'NONE' | 'SPAWNED' | 'RISING' | 'FLOATING' | 'FALLING' | 'EXPLODED';
 
 export type HoveredChangeEvent = {
   isHovered: boolean;
@@ -21,16 +21,17 @@ export type GrabbedChangeEvent = {
 }
 
 type GrabbableBoxProps = {
-  boxId: string,
-  opacity: SpringValue,
-  isShown: boolean,
-  canGrab: boolean,
-  onHoveredChanged: (event: HoveredChangeEvent) => void
-  onGrabbedChanged: (event: GrabbedChangeEvent) => void
+  boxId: string;
+  opacity: SpringValue;
+  isShown: boolean;
+  canGrab: boolean;
+  onHoveredChanged: (event: HoveredChangeEvent) => void;
+  onGrabbedChanged: (event: GrabbedChangeEvent) => void;
+  isExploded: boolean;
 }
 
 // TODO ensure desiredPosX is correctly calculated when viewing from above
-const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGrabbedChanged }: GrabbableBoxProps) => {
+const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGrabbedChanged, isExploded }: GrabbableBoxProps) => {
   const controlsContext = useContext(OrbitControlsContext)
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const boxRef = useRef<THREE.Mesh>(null!);
@@ -95,6 +96,12 @@ const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGr
     setIsGrabbed(false)
   }, [isShown])
 
+  useEffect(() => {
+    if (isExploded) {
+      setBoxState('EXPLODED');
+    }
+  }, [isExploded])
+
   useFrame(() => {
     if (boxState === 'RISING') {
       const pos = rigidBodyRef.current.translation();
@@ -112,6 +119,7 @@ const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGr
   useEffect(() => {
     switch(boxState) {
       case 'SPAWNED':
+        rigidBodyRef.current.resetForces(true);
         rigidBodyRef.current.setTranslation(new THREE.Vector3(0,5,0), true);
         rigidBodyRef.current.applyTorqueImpulse(new THREE.Vector3(0.01, 0.01, 0.01), true)
         break;
@@ -127,6 +135,9 @@ const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGr
       case 'FALLING':
         rigidBodyRef.current.setGravityScale(1, true)
         rigidBodyRef.current.setLinearDamping(0)
+        break;
+      case 'EXPLODED':
+        rigidBodyRef.current.applyImpulse(vec3(rigidBodyRef.current.translation()).addScalar(1).multiplyScalar(2), true)
         break;
       default:
         break;

@@ -8,8 +8,6 @@ import {Counter} from "./counter";
 
 const MAX_NUM_BOXES = 100;
 
-// TODO animate an explosion before hiding all boxes
-// TODO put a marker on the ground to show where the boxes will drop when the button is pressed
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const [isShowBox, setShowBox] = useState([...Array(MAX_NUM_BOXES)].map(() => false));
   const [isButtonHovered, setButtonHovered] = useState(false);
@@ -18,6 +16,7 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const [isBoxGrabbed, setBoxGrabbed] = useState([...Array(MAX_NUM_BOXES)].map(() => false));
   const [isAnyBoxGrabbed, setAnyBoxGrabbed] = useState(false);
   const [nextBoxIndex, setNextBoxIndex] = useState(0);
+  const [isExploded, setExploded] = useState(false);
 
   useEffect(() => {
     document.body.style.cursor = (isButtonHovered || isAnyBoxHovered) ? 'pointer' : isAnyBoxGrabbed ? 'grab' : 'auto'
@@ -40,8 +39,12 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
 
   const onButtonClicked = useCallback(() => {
     if (nextBoxIndex === MAX_NUM_BOXES) {
-      // Hide all boxes
-      setShowBox([...Array(MAX_NUM_BOXES)].map(() => false))
+      setExploded(true)
+      setTimeout(() => {
+        setExploded(false)
+        // Hide all boxes
+        setShowBox([...Array(MAX_NUM_BOXES)].map(() => false))
+      }, 3000)
     } else {
       // Show next box
       setShowBox(prevState => prevState.map((item, idx) => idx === nextBoxIndex ? true : item));
@@ -79,12 +82,13 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
                       canGrab={!isAnyBoxGrabbed || isBoxGrabbed[index]}
                       onHoveredChanged={(event) => onBoxHoveredChanged(index, event)}
                       onGrabbedChanged={(event) => onBoxGrabbedChanged(index, event)}
+                      isExploded={isExploded}
                     />
                   );
                 })
               }
               <RigidBody type={'fixed'} colliders={'cuboid'}>
-                <PushButton opacity={opacity} onHoveredChanged={onButtonHoveredChanged} onButtonClicked={onButtonClicked} enabled={!isAnyBoxGrabbed}/>
+                <PushButton opacity={opacity} onHoveredChanged={onButtonHoveredChanged} onButtonClicked={onButtonClicked} enabled={!isAnyBoxGrabbed && !isExploded}/>
               </RigidBody>
 
               <CuboidCollider position={[0, -1.5, 0]} args={[20, 0.2, 20]} />
