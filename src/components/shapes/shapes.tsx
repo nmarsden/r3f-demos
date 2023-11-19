@@ -56,7 +56,7 @@ const ModelGeometry = () => {
 
 const Shape = ({ shape, opacity }: { shape: Shape, opacity: SpringValue }) => {
   const boxMesh = useRef<THREE.Mesh>(null!)
-  const texture = useTexture('/shapes/cross.png')
+  const texture = useTexture('/cross.png')
   const [hovered, hover] = useState(false)
 
   const INITIAL_ANIMATION = () => ({

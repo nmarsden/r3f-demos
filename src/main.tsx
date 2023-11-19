@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import './index.css'
 import {createRoot} from 'react-dom/client'
 import {Canvas, useFrame} from '@react-three/fiber'
@@ -7,9 +8,9 @@ import {Arm} from "./components/arm/arm";
 import {Shapes} from "./components/shapes/shapes";
 import {Paint} from "./components/paint/paint";
 import {Boxes} from "./components/boxes/boxes";
-import {Environment, Loader, OrbitControls} from "@react-three/drei";
+import {Decal, Environment, Loader, OrbitControls, useTexture} from "@react-three/drei";
 import {useLocation, Route, Switch} from "wouter";
-import {useTransition, animated, config} from "@react-spring/three";
+import {useTransition, animated, config, useSpring} from "@react-spring/three";
 // import {Test} from "./components/test/test";
 import {RefObject, useEffect, useRef, useState} from "react";
 import * as THREE from "three";
@@ -48,13 +49,46 @@ const Lights = () => {
   </>
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-const Floor = ({ position }) => {
-  return <animated.mesh position={position} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true}>
-    <planeGeometry args={[1000,1000]}/>
-    <shadowMaterial color={0x666666}/>
-  </animated.mesh>
+const FLOOR_POSITION = new THREE.Vector3(0, -1.3, 0);
+
+// TODO extract Floor to a separate file
+const Floor = ({ showCross } : { showCross: boolean }) => {
+  const floorMesh = useRef<THREE.Mesh>(null!);
+  const texture = useTexture('/cross.png')
+  const [{ decalScale, opacity }, api] = useSpring(() => ({
+    from: { decalScale: 0, opacity: 0 },
+    config: {
+      duration: 650
+    }
+  }))
+
+  useEffect(() => {
+    api.start({
+      to: [
+        {
+          decalScale: 0,
+          opacity: 0
+        },
+        {
+          decalScale: showCross ? 2 : 0,
+          opacity: 0.6
+        }
+      ]
+    })
+  }, [showCross])
+
+  return (
+    <>
+      <animated.mesh ref={floorMesh} position={FLOOR_POSITION} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={true} renderOrder={-1}>
+        <planeGeometry args={[1000,1000]} />
+        {/* @ts-ignore */}
+        <animated.shadowMaterial opacity={opacity} color={0x000000} depthTest={false}/>
+      </animated.mesh>
+      <animated.group position={FLOOR_POSITION} rotation={[-Math.PI / 2, 0, 0]} scale={decalScale} >
+        <Decal mesh={floorMesh} debug={false} map={texture} position={[0, 0, 0]} rotation={[0,0,0]} renderOrder={-1} />
+      </animated.group>
+    </>
+  )
 }
 
 const App = () => {
@@ -98,8 +132,7 @@ const App = () => {
           <OrbitControlsContext.Provider value={{ controls: controls }}>
             <CameraAnimation reset={isTransitioning} controls={controls} />
             <Lights/>
-            <Floor position={[0, -1.3, 0]}/>
-
+            <Floor showCross={location === '/boxes'}/>
             { transition(({ position, rotation, scale, opacity }, location) => (
               <animated.group
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
