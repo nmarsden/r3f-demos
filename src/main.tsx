@@ -15,25 +15,25 @@ import {useTransition, animated, config} from "@react-spring/three";
 // import {Test} from "./components/test/test";
 import {RefObject, useEffect, useRef, useState} from "react";
 import * as THREE from "three";
-import {OrbitControlsContext} from "./context";
+import {MainContext} from "./mainContext";
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 
-const pages: Page[ ] = [
-  { name: 'Demos', path: '/', renderFn: (props) => <Home {...props} /> },
-  { name: 'Shapes', path: '/shapes', renderFn: (props) => <Shapes {...props} /> },
-  { name: 'Arm', path: '/arm', renderFn: (props) => <Arm {...props} /> },
-  { name: 'Paint', path: '/paint', renderFn: (props) => <Paint {...props} /> },
-  { name: 'Boxes', path: '/boxes', renderFn: (props) => <Boxes {...props} /> },
+const pages: Page[] = [
+  { name: 'Demos', path: '/', screenshot: '', renderFn: (props) => <Home {...props} /> },
+  { name: 'Shapes', path: '/shapes', screenshot: '/screenshot/shapes.png', renderFn: (props) => <Shapes {...props} /> },
+  { name: 'Arm', path: '/arm', screenshot: '/screenshot/arm.png', renderFn: (props) => <Arm {...props} /> },
+  { name: 'Paint', path: '/paint', screenshot: '/screenshot/paint.png', renderFn: (props) => <Paint {...props} /> },
+  { name: 'Boxes', path: '/boxes', screenshot: '/screenshot/boxes.png', renderFn: (props) => <Boxes {...props} /> },
   // { name: 'Test_A', path: '/test-a', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', renderFn: (props) => <Test text='TEST B' {...props} /> }
 ];
 
-const CameraAnimation = ({ reset, controls }: { reset: boolean, controls: RefObject<OrbitControlsImpl> }) => {
-  const vec = new THREE.Vector3();
+const CAMERA_POSITION: THREE.Vector3 = new THREE.Vector3(0, 2, 7);
 
+const CameraAnimation = ({ reset, controls }: { reset: boolean, controls: RefObject<OrbitControlsImpl> }) => {
   useFrame(state => {
     if (reset) {
-      state.camera.position.lerp(vec.set(0, 2, 6), 0.05)
+      state.camera.position.lerp(CAMERA_POSITION, 0.05)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       controls.current.reset()
@@ -86,9 +86,9 @@ const App = () => {
       <div className="container" ref={container}>
         <Canvas
           shadows={true}
-          camera={{ position: [0, 2, 6], fov: 70 }}
+          camera={{ position: CAMERA_POSITION, fov: 70 }}
         >
-          <OrbitControlsContext.Provider value={{ controls: controls }}>
+          <MainContext.Provider value={{ controls: controls, pages: pages }} >
             <CameraAnimation reset={isTransitioning} controls={controls} />
             <Lights/>
             <Floor showCross={location === '/boxes'}/>
@@ -124,7 +124,7 @@ const App = () => {
               enablePan={false}
               enableRotate={!isTransitioning}
             />
-          </OrbitControlsContext.Provider>
+          </MainContext.Provider>
         </Canvas>
       </div>
       <Loader />

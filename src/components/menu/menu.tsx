@@ -6,6 +6,7 @@ import "./menu.css";
 export type Page = {
   name: string;
   path: string;
+  screenshot: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderFn: (props: any) => ReactNode;
 }

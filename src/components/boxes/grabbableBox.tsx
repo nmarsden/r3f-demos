@@ -5,7 +5,7 @@ import {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {RapierRigidBody, RigidBody, vec3} from "@react-three/rapier";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {Box} from "@react-three/drei";
-import {OrbitControlsContext} from "../../context";
+import {MainContext} from "../../mainContext";
 
 const vector = new THREE.Vector3()
 const grabbedIntersectPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0)
@@ -32,7 +32,7 @@ type GrabbableBoxProps = {
 
 // TODO ensure desiredPosX is correctly calculated when viewing from above
 const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGrabbedChanged, isExploded }: GrabbableBoxProps) => {
-  const controlsContext = useContext(OrbitControlsContext)
+  const mainContext = useContext(MainContext)
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const boxRef = useRef<THREE.Mesh>(null!);
   const [isGrabbed, setIsGrabbed] = useState(false);
@@ -42,8 +42,8 @@ const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGr
   const onPointerDown = useCallback((event: ThreeEvent<PointerEvent>): void => {
     event.stopPropagation();
     if (!canGrab) return;
-    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
-      controlsContext.controls.current.enabled = false;
+    if (mainContext.controls !== null && mainContext.controls?.current !== null) {
+      mainContext.controls.current.enabled = false;
     }
     setIsGrabbed(true)
     setBoxState('RISING')
@@ -56,8 +56,8 @@ const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGr
 
   const onPointerUp = useCallback((event: ThreeEvent<PointerEvent>): void => {
     if (!canGrab) return;
-    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
-      controlsContext.controls.current.enabled = true;
+    if (mainContext.controls !== null && mainContext.controls?.current !== null) {
+      mainContext.controls.current.enabled = true;
     }
     setIsGrabbed(false)
     setBoxState('FALLING')
@@ -165,7 +165,7 @@ const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGr
             <animated.meshStandardMaterial
               metalness={0.75}
               roughness={0.15}
-              color={isGrabbed ? 'orange' : 'white'}
+              color={isGrabbed ? 'orange' : 0x2176AE}
               transparent={true}
               opacity={opacity}
             />

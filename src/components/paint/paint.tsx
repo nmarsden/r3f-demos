@@ -13,7 +13,7 @@ import {
   PaintBrushSelectedEvent,
   PaintBrush
 } from "./overlay";
-import {OrbitControlsContext} from "../../context";
+import {MainContext} from "../../mainContext";
 
 const DEFAULT_PAINT_COLOR = PAINT_COLORS[0];
 const DEFAULT_PAINT_BRUSH = PAINT_BRUSHES[1];
@@ -67,7 +67,7 @@ const calcPaintBrushRadius = (paintBrush: PaintBrush): number => {
 // TODO allow resetting controls, to get of the situation where controls cannot be used when the boxes cover the whole screen
 const Paint = ({ opacity }: { opacity: SpringValue }) => {
   const mesh = useRef<THREE.InstancedMesh>(null!);
-  const controlsContext = useContext(OrbitControlsContext)
+  const mainContext = useContext(MainContext)
   const [selectedPaintColor, setSelectedPaintColor] = useState(DEFAULT_PAINT_COLOR)
   const [selectedPaintBrush, setSelectedPaintBrush] = useState(DEFAULT_PAINT_BRUSH)
   const [paintBrushRadius, setPaintBrushRadius] = useState(calcPaintBrushRadius(DEFAULT_PAINT_BRUSH))
@@ -180,8 +180,8 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
   }, []);
 
   const onBoxPointerDown = useCallback((event: ThreeEvent<PointerEvent>): void => {
-    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
-      controlsContext.controls.current.enabled = false;
+    if (mainContext.controls !== null && mainContext.controls?.current !== null) {
+      mainContext.controls.current.enabled = false;
     }
 
     const index = event.object.userData.index;
@@ -190,8 +190,8 @@ const Paint = ({ opacity }: { opacity: SpringValue }) => {
   }, [selectedPaintColor, paintBrushRadius]);
 
   const onBoxPointerUp = useCallback((): void => {
-    if (controlsContext.controls !== null && controlsContext.controls?.current !== null) {
-      controlsContext.controls.current.enabled = true;
+    if (mainContext.controls !== null && mainContext.controls?.current !== null) {
+      mainContext.controls.current.enabled = true;
     }
 
     setPainting(prevState => ({ prevIndex: prevState.currentIndex, currentIndex: -1 }));

@@ -1,0 +1,129 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
+import {animated, SpringValue} from "@react-spring/three";
+import * as THREE from "three";
+import {Demo} from "../../hooks/demos.ts";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {useLocation} from "wouter";
+import {ThreeEvent, useFrame} from "@react-three/fiber";
+import {Box, Outlines} from "@react-three/drei";
+import {RapierRigidBody, RigidBody} from "@react-three/rapier";
+
+export type HoverChangedEvent = {
+  isHovered: boolean;
+};
+
+type DemoBoxProps = {
+  opacity: SpringValue,
+  position: THREE.Vector3,
+  size: number,
+  demo: Demo,
+  onHoverChanged: (event: HoverChangedEvent) => void
+};
+
+const InternalDemoBox = ({ opacity, position, size, demo, onHoverChanged }: DemoBoxProps) => {
+  const [hovered, setHovered] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setLocation] = useLocation();
+
+  const onPointerOver = useCallback((event: ThreeEvent<PointerEvent>) => {
+    event.stopPropagation();
+    setHovered(true);
+    onHoverChanged({ isHovered: true });
+  }, [])
+
+  const onPointerOut = useCallback(() => {
+    setHovered(false);
+    onHoverChanged({ isHovered: false });
+  }, [])
+
+  return (
+    <Box
+      position={position}
+      args={[size, size, size]}
+      castShadow={true}
+      receiveShadow={true}
+      onClick={() => setLocation(demo.path)}
+      onPointerOver={(event) => onPointerOver(event)}
+      onPointerOut={() => onPointerOut()}
+    >
+      {/* @ts-ignore */}
+      <animated.meshStandardMaterial
+        metalness={0.45}
+        roughness={0.75}
+        color={'white'}
+        transparent={true}
+        opacity={opacity}
+        map={demo.texture}
+      />
+      {hovered && (
+        <Outlines
+          thickness={0.02}
+          color="orange"
+          angle={Math.PI}
+          screenspace={false}
+          opacity={1}
+          transparent={true}
+        />
+      )}
+      {/*<Html center={true} transform={true} scale={0.4} occlude={true} position-z={DEMO_BOX_SIZE/2 + 0.01}>*/}
+      {/*  <Link href={demoBox.path}>*/}
+      {/*    <a>{demoBox.label.toUpperCase()}</a>*/}
+      {/*  </Link>*/}
+      {/*</Html>*/}
+    </Box>
+  )
+};
+
+type DemoBoxState = 'GROUNDED' | 'RISING' | 'FLOATING';
+
+const DemoBox = ({ opacity, position, size, demo, onHoverChanged }: DemoBoxProps) => {
+  const rigidBodyRef = useRef<RapierRigidBody>(null!)
+  const [boxState, setBoxState] = useState<DemoBoxState>('GROUNDED');
+
+  useEffect(() => {
+    if (!opacity.isAnimating) {
+      setBoxState('RISING')
+    }
+  }, [opacity.isAnimating])
+
+  useEffect(() => {
+    if (opacity.isAnimating) return;
+
+    switch(boxState) {
+      case 'GROUNDED':
+        rigidBodyRef.current.resetForces(true);
+        rigidBodyRef.current.setGravityScale(1, true);
+        break;
+      case 'RISING':
+        rigidBodyRef.current.setGravityScale(-1, true)
+        rigidBodyRef.current.applyImpulse(new THREE.Vector3(0, 0, 0.05), true)
+        break;
+      case 'FLOATING':
+        rigidBodyRef.current.setGravityScale(0, true)
+        rigidBodyRef.current.setLinearDamping(10)
+        rigidBodyRef.current.applyTorqueImpulse(new THREE.Vector3(0.01, 0.01, 0.01), true)
+        break;
+      default:
+        break;
+    }
+  }, [boxState, opacity.isAnimating])
+
+  useFrame(() => {
+    if (boxState === 'RISING') {
+      const pos = rigidBodyRef?.current.translation();
+      if (pos.y > 2.5) setBoxState('FLOATING')
+    }
+  })
+
+  return opacity.isAnimating ?
+    (
+      <InternalDemoBox opacity={opacity} position={position} size={size} demo={demo} onHoverChanged={onHoverChanged} />
+    ) : (
+      <RigidBody ref={rigidBodyRef}>
+        <InternalDemoBox opacity={opacity} position={position} size={size} demo={demo} onHoverChanged={onHoverChanged} />
+      </RigidBody>
+    )
+}
+
+export { DemoBox }

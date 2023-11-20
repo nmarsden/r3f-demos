@@ -1,74 +1,33 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {
-  Text3D,
-  Center,
-} from "@react-three/drei";
-import {
-  animated,
-  SpringValue,
-} from "@react-spring/three";
-
-const uiColor = 0x2176AE;
-
-const Heading = ({ opacity }: { opacity: SpringValue }) => {
-  return <>
-    <Center position={[0, 1, 0]}>
-      <Text3D
-        castShadow={true}
-        receiveShadow={true}
-        curveSegments={20}
-        bevelEnabled
-        bevelSize={0.02}
-        bevelThickness={0.1}
-        height={0.25}
-        lineHeight={0.75}
-        letterSpacing={0.001}
-        size={0.75}
-        font="/shapes/Inter_Bold.json"
-      >
-        {"R3F"}
-        {/* @ts-ignore */}
-        <animated.meshStandardMaterial
-          metalness={0.75}
-          roughness={0.15}
-          color={uiColor}
-          transparent={true}
-          opacity={opacity}
-        />
-      </Text3D>
-    </Center>
-    <Center position={[0, 0, 0]}>
-      <Text3D
-        castShadow={true}
-        receiveShadow={true}
-        curveSegments={20}
-        bevelEnabled
-        bevelSize={0.02}
-        bevelThickness={0.1}
-        height={0.25}
-        lineHeight={0.75}
-        letterSpacing={0.001}
-        size={0.75}
-        font="/shapes/Inter_Bold.json"
-      >
-        {"DEMOS"}
-        {/* @ts-ignore */}
-        <animated.meshStandardMaterial
-          metalness={0.75}
-          roughness={0.15}
-          color={uiColor}
-          transparent={true}
-          opacity={opacity}
-        />
-      </Text3D>
-    </Center>
-  </>
-}
+import {SpringValue} from "@react-spring/three";
+import {Suspense} from "react";
+import {CuboidCollider, Physics, RigidBody} from "@react-three/rapier";
+import {DemoBoxes} from "./demoBoxes.tsx";
+import {DemoHeading} from "./demoHeading.tsx";
 
 const Home = ({ opacity }: { opacity: SpringValue }) => {
   return (
     <>
-      <Heading opacity={opacity}/>
+      <Suspense>
+        <Physics debug={false}>
+          {opacity.isAnimating ? (
+            <>
+              <DemoHeading opacity={opacity}/>
+              <DemoBoxes opacity={opacity} />
+            </>
+          ) : (
+            <>
+              <RigidBody type={'fixed'} colliders={'cuboid'}>
+                <DemoHeading opacity={opacity}/>
+              </RigidBody>
+
+              <DemoBoxes opacity={opacity} />
+
+              <CuboidCollider position={[0, -1.5, 0]} args={[20, 0.2, 20]} />
+            </>
+          )}
+        </Physics>
+      </Suspense>
     </>
   )
 }
