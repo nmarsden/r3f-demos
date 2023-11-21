@@ -17,11 +17,20 @@ type DemoBoxProps = {
   opacity: SpringValue,
   position: THREE.Vector3,
   size: number,
+  risingDelayMsecs: number,
   demo: Demo,
   onHoverChanged: (event: HoverChangedEvent) => void
 };
 
-const InternalDemoBox = ({ opacity, position, size, demo, onHoverChanged }: DemoBoxProps) => {
+type InternalDemoBoxProps = {
+  opacity: SpringValue,
+  position: THREE.Vector3,
+  size: number,
+  demo: Demo,
+  onHoverChanged: (event: HoverChangedEvent) => void
+};
+
+const InternalDemoBox = ({ opacity, position, size, demo, onHoverChanged }: InternalDemoBoxProps) => {
   const [hovered, setHovered] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setLocation] = useLocation();
@@ -77,13 +86,16 @@ const InternalDemoBox = ({ opacity, position, size, demo, onHoverChanged }: Demo
 
 type DemoBoxState = 'GROUNDED' | 'RISING' | 'FLOATING';
 
-const DemoBox = ({ opacity, position, size, demo, onHoverChanged }: DemoBoxProps) => {
+const DemoBox = ({ opacity, position, size, risingDelayMsecs, demo, onHoverChanged }: DemoBoxProps) => {
   const rigidBodyRef = useRef<RapierRigidBody>(null!)
   const [boxState, setBoxState] = useState<DemoBoxState>('GROUNDED');
+  const [counter, setCounter] = useState(0);
 
   useEffect(() => {
     if (!opacity.isAnimating) {
-      setBoxState('RISING')
+      setTimeout(() => {
+        setBoxState('RISING')
+      }, risingDelayMsecs)
     }
   }, [opacity.isAnimating])
 
@@ -102,17 +114,33 @@ const DemoBox = ({ opacity, position, size, demo, onHoverChanged }: DemoBoxProps
       case 'FLOATING':
         rigidBodyRef.current.setGravityScale(0, true)
         rigidBodyRef.current.setLinearDamping(10)
-        rigidBodyRef.current.applyTorqueImpulse(new THREE.Vector3(0.01, 0.01, 0.01), true)
+        rigidBodyRef.current.applyTorqueImpulse(new THREE.Vector3(0.0, 0.01, 0.0), true)
         break;
       default:
         break;
     }
   }, [boxState, opacity.isAnimating])
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   useFrame(() => {
+    if (opacity.isAnimating) return;
+
     if (boxState === 'RISING') {
       const pos = rigidBodyRef?.current.translation();
-      if (pos.y > 2.5) setBoxState('FLOATING')
+      if (pos.y > 0.8) {
+        setBoxState('FLOATING')
+        setCounter(0)
+      }
+    }
+    if (boxState === 'FLOATING') {
+      setCounter(counter + 1);
+      if (counter === 500) {
+        rigidBodyRef.current.setLinearDamping(3)
+        rigidBodyRef.current.setGravityScale(0.06, true)
+      } else if (counter === 1000) {
+        rigidBodyRef.current.setGravityScale(-0.06, true)
+        setCounter(0)
+      }
     }
   })
 

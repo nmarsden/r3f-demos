@@ -7,8 +7,10 @@ import {useDemos} from "../../hooks/demos.ts";
 import {useCursor} from "@react-three/drei";
 import {DemoBox, HoverChangedEvent} from "./demoBox.tsx";
 
+const DEMO_BOXES_RADIUS = 2.5;
+const DEMO_BOXES_TOTAL_ANGLE = Math.PI * 0.35;
+const DEMO_BOXES_START_ANGLE = -(DEMO_BOXES_TOTAL_ANGLE * 0.5);
 const DEMO_BOX_SIZE = 0.6;
-const DEMO_BOX_GAP = 0.4;
 
 
 const DemoBoxes = ({ opacity }: { opacity: SpringValue }) => {
@@ -19,8 +21,8 @@ const DemoBoxes = ({ opacity }: { opacity: SpringValue }) => {
 
   useCursor(anyHover)
 
-  const totalBoxesWidth = useMemo(() => {
-    return (demos.length * DEMO_BOX_SIZE) + ((demos.length - 1) * DEMO_BOX_GAP);
+  const boxAngleDiff = useMemo(() => {
+    return DEMO_BOXES_TOTAL_ANGLE / (demos.length - 1);
   }, [demos])
 
   const onHoverChanged = useCallback((event: HoverChangedEvent, index: number) => {
@@ -39,10 +41,14 @@ const DemoBoxes = ({ opacity }: { opacity: SpringValue }) => {
   return (
     <>
       {demos.map((demo, index) => {
-        const posX = (index * (DEMO_BOX_SIZE + DEMO_BOX_GAP)) - (totalBoxesWidth / 2) + (DEMO_BOX_SIZE / 2);
-        const position: THREE.Vector3 = new THREE.Vector3(posX, -1, 1.25);
+        const angle = DEMO_BOXES_START_ANGLE + (boxAngleDiff * index);
+        const posX = DEMO_BOXES_RADIUS * Math.sin(angle);
+        const posZ = DEMO_BOXES_RADIUS * Math.cos(angle);
 
-        return <DemoBox key={`${index}`} opacity={opacity} position={position} size={DEMO_BOX_SIZE} demo={demo} onHoverChanged={(event) => onHoverChanged(event, index)}/>
+        const position: THREE.Vector3 = new THREE.Vector3(posX, -1, posZ);
+        const risingDelayMsecs = 0;
+
+        return <DemoBox key={`${index}`} opacity={opacity} position={position} size={DEMO_BOX_SIZE} risingDelayMsecs={risingDelayMsecs} demo={demo} onHoverChanged={(event) => onHoverChanged(event, index)}/>
       })}
     </>
   )

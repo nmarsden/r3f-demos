@@ -6,7 +6,7 @@ const uiColor = 0x2176AE;
 
 const DemoHeading = ({ opacity }: { opacity: SpringValue }) => {
   return <>
-    <Center position={[0, 1, 0]}>
+    <Center position={[0, 1.8, 0]}>
       <Text3D
         castShadow={true}
         receiveShadow={true}
@@ -31,7 +31,7 @@ const DemoHeading = ({ opacity }: { opacity: SpringValue }) => {
         />
       </Text3D>
     </Center>
-    <Center position={[0, 0, 0]}>
+    <Center position={[0, 0.8, 0]}>
       <Text3D
         castShadow={true}
         receiveShadow={true}
