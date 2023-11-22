@@ -15,7 +15,7 @@ const DEMO_BOX_SIZE = 0.6;
 
 const DemoBoxes = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
-  const demos = useDemos(mainContext.pages.filter(page => page.path !== '/'))
+  const demos = useDemos(mainContext.pages.filter(page => page.screenshot !== ''))
   const [hovered, setHovered] = useState<boolean[]>([]);
   const [anyHover, setAnyHover] = useState(false)
 

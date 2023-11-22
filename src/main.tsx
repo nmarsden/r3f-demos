@@ -9,10 +9,10 @@ import {Arm} from "./components/arm/arm";
 import {Shapes} from "./components/shapes/shapes";
 import {Paint} from "./components/paint/paint";
 import {Boxes} from "./components/boxes/boxes";
+import {About} from "./components/about/about.tsx";
 import {Environment, Loader, OrbitControls} from "@react-three/drei";
 import {useLocation, Route, Switch} from "wouter";
 import {useTransition, animated, config} from "@react-spring/three";
-// import {Test} from "./components/test/test";
 import {RefObject, useEffect, useRef, useState} from "react";
 import * as THREE from "three";
 import {MainContext} from "./mainContext";
@@ -24,8 +24,9 @@ const pages: Page[] = [
   { name: 'Arm', path: '/arm', screenshot: '/screenshot/arm.png', renderFn: (props) => <Arm {...props} /> },
   { name: 'Paint', path: '/paint', screenshot: '/screenshot/paint.png', renderFn: (props) => <Paint {...props} /> },
   { name: 'Boxes', path: '/boxes', screenshot: '/screenshot/boxes.png', renderFn: (props) => <Boxes {...props} /> },
-  // { name: 'Test_A', path: '/test-a', renderFn: (props) => <Test text='TEST A' {...props} /> },
-  // { name: 'Test_B', path: '/test-b', renderFn: (props) => <Test text='TEST B' {...props} /> }
+  // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
+  // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
+  { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },
 ];
 
 const CAMERA_POSITION: THREE.Vector3 = new THREE.Vector3(0, 2, 7);
@@ -50,6 +51,8 @@ const Lights = () => {
   </>
 }
 
+// TODO create a demo of a small rube goldberg machine using rapier physics
+// TODO use icons instead of screenshots
 const App = () => {
   const container = useRef<HTMLDivElement>(null!);
   const controls = useRef<OrbitControlsImpl>(null!);

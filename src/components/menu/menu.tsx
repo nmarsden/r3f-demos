@@ -45,11 +45,11 @@ const Menu = ({ pages }: { pages: Page[] }) => {
             href={page.path}
             onClick={() => setDropDownMenuOpen(false)}
           >
-            <a className={location === page.path ? 'menuItem selected' : 'menuItem'} data-content={page.name}>{page.name}</a>
+            <a className={location === page.path ? 'menuItem selected' : 'menuItem'}>{page.name}</a>
           </Link>
         )}
       </div>
-      <div className={isHeadingShown ? 'menuHeading show' : 'menuHeading'}>{selectedPage.name !== 'Demos' ? selectedPage.name : ''}</div>
+      <div className={isHeadingShown ? 'menuHeading show' : 'menuHeading'}>{selectedPage.screenshot !== '' ? selectedPage.name : ''}</div>
     </div>
   )
 }

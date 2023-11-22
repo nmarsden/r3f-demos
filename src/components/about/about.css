@@ -1,0 +1,14 @@
+.infoHeading {
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.info {
+    color: black;
+    width: 14rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

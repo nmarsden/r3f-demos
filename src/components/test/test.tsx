@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   Text3D,
-  Center, Float
+  Center
 } from "@react-three/drei";
 import {animated} from "@react-spring/three";
 
@@ -41,9 +41,7 @@ const Heading = ({ text, opacity }: { text: string, opacity: number }) => {
 const Test = ({ text, opacity }: { text: string, opacity: number }) => {
   return (
     <>
-      <Float>
-        <Heading text={text} opacity={opacity}/>
-      </Float>
+      <Heading text={text} opacity={opacity}/>
     </>
   )
 }
