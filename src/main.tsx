@@ -20,10 +20,10 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 
 const pages: Page[] = [
   { name: 'Demos', path: '/', screenshot: '', renderFn: (props) => <Home {...props} /> },
-  { name: 'Shapes', path: '/shapes', screenshot: '/screenshot/shapes.png', renderFn: (props) => <Shapes {...props} /> },
-  { name: 'Arm', path: '/arm', screenshot: '/screenshot/arm.png', renderFn: (props) => <Arm {...props} /> },
-  { name: 'Paint', path: '/paint', screenshot: '/screenshot/paint.png', renderFn: (props) => <Paint {...props} /> },
-  { name: 'Boxes', path: '/boxes', screenshot: '/screenshot/boxes.png', renderFn: (props) => <Boxes {...props} /> },
+  { name: 'Shapes', path: '/shapes', screenshot: '/home/shapes.png', renderFn: (props) => <Shapes {...props} /> },
+  { name: 'Arm', path: '/arm', screenshot: '/home/arm.png', renderFn: (props) => <Arm {...props} /> },
+  { name: 'Paint', path: '/paint', screenshot: '/home/paint.png', renderFn: (props) => <Paint {...props} /> },
+  { name: 'Boxes', path: '/boxes', screenshot: '/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
   // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
   { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },

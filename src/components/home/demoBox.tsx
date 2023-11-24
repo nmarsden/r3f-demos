@@ -63,6 +63,7 @@ const InternalDemoBox = ({ opacity, position, size, demo, onHoverChanged }: Inte
         color={'white'}
         transparent={true}
         opacity={opacity}
+        emissive={0x2176AE}
         map={demo.texture}
       />
       {hovered && (
