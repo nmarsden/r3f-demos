@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as THREE from "three";
 import {animated, SpringValue} from "@react-spring/three";
-import {Box, Html, RoundedBox} from "@react-three/drei";
+import {
+  Box,
+  Html,
+  RoundedBox,
+  useTexture
+} from "@react-three/drei";
 import {ReactNode, Suspense} from "react";
 import {Physics, RigidBody} from "@react-three/rapier";
 import './about.css';
@@ -23,8 +28,8 @@ const InfoBox = ({ opacity, color, position, rotationX, height, children }: { op
     >
       {/* @ts-ignore */}
       <animated.meshStandardMaterial
-        metalness={0.45}
-        roughness={0.75}
+        metalness={0.75}
+        roughness={0.15}
         color={color}
         transparent={true}
         opacity={opacity}
@@ -62,6 +67,11 @@ const Info = ({ opacity, color, position, rotationX, height, children }: { opaci
 }
 
 const Ramp = ({ opacity, position }: { opacity: SpringValue, position: THREE.Vector3 }) => {
+  const textureProps = useTexture({
+    map: '/about/plywood_diff_1k.jpg',
+    normalMap: '/about/plywood_nor_gl_1k.jpg',
+    roughnessMap: '/about/plywood_rough_1k.jpg',
+  })
   return (
     <Box
       position={position}
@@ -72,16 +82,17 @@ const Ramp = ({ opacity, position }: { opacity: SpringValue, position: THREE.Vec
     >
       {/* @ts-ignore */}
       <animated.meshStandardMaterial
+        {... textureProps}
         metalness={0.45}
         roughness={0.75}
-        color={0xEEEEEE}
+        color={'white'}
         transparent={true}
         opacity={opacity}
       />
       <animated.mesh position-y={0.3} rotation-x={Math.PI * -0.5} receiveShadow={true}>
-        <planeGeometry args={[6,8]} />
+        <planeGeometry args={[6,7]} />
         {/* @ts-ignore */}
-        <animated.shadowMaterial opacity={opacity} color={0x555555}/>
+        <animated.shadowMaterial opacity={0.5} color={0x000000}/>
       </animated.mesh>
       <Box
         position={[0,0.5,3.75]}
@@ -91,6 +102,7 @@ const Ramp = ({ opacity, position }: { opacity: SpringValue, position: THREE.Vec
       >
         {/* @ts-ignore */}
         <animated.meshStandardMaterial
+          {... textureProps}
           metalness={0.45}
           roughness={0.75}
           color={'white'}
