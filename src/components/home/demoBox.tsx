@@ -58,12 +58,11 @@ const InternalDemoBox = ({ opacity, position, size, demo, onHoverChanged }: Inte
     >
       {/* @ts-ignore */}
       <animated.meshStandardMaterial
-        metalness={0.45}
-        roughness={0.75}
-        color={'white'}
+        metalness={0.75}
+        roughness={0.45}
+        color={0x2176AE}
         transparent={true}
         opacity={opacity}
-        emissive={0x2176AE}
         map={demo.texture}
       />
       {hovered && (
