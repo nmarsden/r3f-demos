@@ -19,7 +19,7 @@ const Counter = ({ opacity, count, maxCount } : { opacity: SpringValue, count: n
     <Html
       fullscreen={true}
       occlude={false}
-      zIndexRange={[100, 0]}
+      zIndexRange={[50, 40]}
     >
       <div
         className={`boxCounter ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`}

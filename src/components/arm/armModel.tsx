@@ -181,7 +181,10 @@ export function ArmModel({ opacity, ...props}: JSX.IntrinsicElements['group'] & 
               transparent={true}
               opacity={opacity}
             />
-            <Html wrapperClass={'annotation-wrapper'}>
+            <Html
+              wrapperClass={'annotation-wrapper'}
+              zIndexRange={[50, 40]}
+            >
               <div className={`annotation ${hoveredMesh[index] ? 'show' : ''}`}>{MESH_NAMES.get(nodeName)}</div>
             </Html>
           </animated.mesh>

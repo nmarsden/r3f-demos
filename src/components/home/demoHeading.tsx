@@ -28,12 +28,28 @@ const Heading = ({ opacity, color, position, rotationX, height, children }: { op
         transparent={true}
         opacity={opacity}
       />
-      <Html center={true} transform={true} scale={0.5} occlude={true} position-z={0.5 * 0.5 + 0.01}>
+      <Html
+        center={true}
+        transform={true}
+        scale={0.5}
+        occlude={true}
+        position-z={0.5 * 0.5 + 0.01}
+        zIndexRange={[50, 40]}
+      >
         <div className={'demo-heading'}>
           {children}
         </div>
       </Html>
-      <Html center={true} transform={true} scale={-0.5} occlude={true} position-z={-0.5 * 0.5 - 0.01} rotation-y={Math.PI} rotation-z={Math.PI}>
+      <Html
+        center={true}
+        transform={true}
+        scale={-0.5}
+        occlude={true}
+        position-z={-0.5 * 0.5 - 0.01}
+        rotation-y={Math.PI}
+        rotation-z={Math.PI}
+        zIndexRange={[50, 40]}
+      >
         <div className={'demo-heading'}>
           {children}
         </div>
