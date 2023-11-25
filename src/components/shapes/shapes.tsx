@@ -125,8 +125,8 @@ const Shape = ({ shape, opacity }: { shape: Shape, opacity: SpringValue }) => {
       {shape.renderFn()}
       {/* @ts-ignore */}
       <animated.meshStandardMaterial
-        metalness={0.75}
-        roughness={0.15}
+        metalness={0.45}
+        roughness={0.75}
         color={0x2176AE}
         transparent={true}
         opacity={opacity}
@@ -208,8 +208,8 @@ const CurvedText = ({ color, text, position, onClicked, opacity }: {
       <mesh position-z={-0.25} rotation-z={Math.PI*0.5} name={"curvedText"} castShadow={true} >
         <capsuleGeometry args={[0.3, 1, 4, 16]} />
         <animated.meshStandardMaterial
-          metalness={0.0}
-          roughness={0.25}
+          metalness={0.45}
+          roughness={0.75}
           color={uiColor}
           transparent={true}
           opacity={opacity}

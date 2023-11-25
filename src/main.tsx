@@ -52,7 +52,6 @@ const Lights = () => {
 }
 
 // TODO create a demo of a small rube goldberg machine using rapier physics
-// TODO use icons instead of screenshots
 const App = () => {
   const container = useRef<HTMLDivElement>(null!);
   const controls = useRef<OrbitControlsImpl>(null!);

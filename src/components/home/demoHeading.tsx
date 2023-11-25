@@ -23,8 +23,8 @@ const DemoHeading = ({ opacity }: { opacity: SpringValue }) => {
         {"R3F"}
         {/* @ts-ignore */}
         <animated.meshStandardMaterial
-          metalness={0.75}
-          roughness={0.15}
+          metalness={0.45}
+          roughness={0.75}
           color={uiColor}
           transparent={true}
           opacity={opacity}
@@ -48,8 +48,8 @@ const DemoHeading = ({ opacity }: { opacity: SpringValue }) => {
         {"DEMOS"}
         {/* @ts-ignore */}
         <animated.meshStandardMaterial
-          metalness={0.75}
-          roughness={0.15}
+          metalness={0.45}
+          roughness={0.75}
           color={uiColor}
           transparent={true}
           opacity={opacity}

@@ -7,7 +7,7 @@ import {
   RoundedBox,
   useTexture
 } from "@react-three/drei";
-import {ReactNode, Suspense} from "react";
+import {ReactNode, Suspense, useEffect} from "react";
 import {Physics, RigidBody} from "@react-three/rapier";
 import './about.css';
 
@@ -28,8 +28,8 @@ const InfoBox = ({ opacity, color, position, rotationX, height, children }: { op
     >
       {/* @ts-ignore */}
       <animated.meshStandardMaterial
-        metalness={0.75}
-        roughness={0.15}
+        metalness={0.45}
+        roughness={0.75}
         color={color}
         transparent={true}
         opacity={opacity}
@@ -68,10 +68,13 @@ const Info = ({ opacity, color, position, rotationX, height, children }: { opaci
 
 const Ramp = ({ opacity, position }: { opacity: SpringValue, position: THREE.Vector3 }) => {
   const textureProps = useTexture({
-    map: '/about/plywood_diff_1k.jpg',
-    normalMap: '/about/plywood_nor_gl_1k.jpg',
-    roughnessMap: '/about/plywood_rough_1k.jpg',
+    map: '/about/grid.jpg',
   })
+  useEffect(() => {
+    textureProps.map.repeat.setX(0.3)
+    textureProps.map.repeat.setY(0.7)
+  }, [textureProps.map]);
+
   return (
     <Box
       position={position}
@@ -82,7 +85,6 @@ const Ramp = ({ opacity, position }: { opacity: SpringValue, position: THREE.Vec
     >
       {/* @ts-ignore */}
       <animated.meshStandardMaterial
-        {... textureProps}
         metalness={0.45}
         roughness={0.75}
         color={'white'}
@@ -90,9 +92,18 @@ const Ramp = ({ opacity, position }: { opacity: SpringValue, position: THREE.Vec
         opacity={opacity}
       />
       <animated.mesh position-y={0.3} rotation-x={Math.PI * -0.5} receiveShadow={true}>
-        <planeGeometry args={[6,7]} />
+        <planeGeometry args={[6,8]} />
         {/* @ts-ignore */}
-        <animated.shadowMaterial opacity={0.5} color={0x000000}/>
+        {/*<animated.shadowMaterial opacity={0.5} color={0x000000}/>*/}
+        <animated.meshStandardMaterial
+          {... textureProps}
+          metalness={0.45}
+          roughness={0.75}
+          color={'white'}
+          emissive={uiColor}
+          transparent={true}
+          opacity={opacity}
+        />
       </animated.mesh>
       <Box
         position={[0,0.5,3.75]}
@@ -102,7 +113,6 @@ const Ramp = ({ opacity, position }: { opacity: SpringValue, position: THREE.Vec
       >
         {/* @ts-ignore */}
         <animated.meshStandardMaterial
-          {... textureProps}
           metalness={0.45}
           roughness={0.75}
           color={'white'}
