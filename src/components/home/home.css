@@ -1,0 +1,10 @@
+.demo-heading {
+    width: 20rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    gap: 1rem;
+}
