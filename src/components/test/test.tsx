@@ -22,7 +22,7 @@ const Heading = ({ text, opacity }: { text: string, opacity: number }) => {
         lineHeight={0.6}
         letterSpacing={0.1}
         size={0.75}
-        font="/shapes/Inter_Bold.json"
+        font="/r3f-demos/shapes/Inter_Bold.json"
       >
         {heading}
         {/* @ts-ignore */}

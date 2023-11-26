@@ -93,7 +93,7 @@ const App = () => {
           <MainContext.Provider value={{ controls: controls, pages: pages }} >
             <CameraAnimation reset={isTransitioning} controls={controls} />
             <Lights/>
-            <Floor showCross={location === '/boxes'}/>
+            <Floor showCross={location === '/r3f-demos/boxes'}/>
             { transition(({ position, rotation, scale, opacity }, location) => (
               <animated.group
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -187,7 +187,7 @@ const CurvedText = ({ color, text, position, onClicked, opacity }: {
       lineHeight={0.75}
       letterSpacing={0.02}
       size={0.15}
-      font="/shapes/Inter_Bold.json"
+      font="/r3f-demos/shapes/Inter_Bold.json"
       onClick={(event: ThreeEvent<MouseEvent>) => {
         if (event.object.name === 'curvedText') {
           onClicked(event)
