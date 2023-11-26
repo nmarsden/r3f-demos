@@ -52,7 +52,7 @@ const InternalDemoBox = ({ opacity, position, size, demo, onHoverChanged }: Inte
       args={[size, size, size]}
       castShadow={true}
       receiveShadow={true}
-      onClick={() => setLocation(demo.path)}
+      onClick={() => setLocation(demo.path.replace('/r3f-demos', ''))}
       onPointerOver={(event) => onPointerOver(event)}
       onPointerOut={() => onPointerOut()}
     >
