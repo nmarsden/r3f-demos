@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as THREE from "three";
 import {animated, SpringValue} from "@react-spring/three";
-import {useCallback, useContext, useEffect, useRef, useState} from "react";
+import {useCallback, useContext, useEffect, useLayoutEffect, useRef, useState} from "react";
 import {RapierRigidBody, RigidBody, vec3} from "@react-three/rapier";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {Box} from "@react-three/drei";
@@ -87,7 +87,7 @@ const GrabbableBox = ({ boxId, opacity, isShown, canGrab, onHoveredChanged, onGr
     onHoveredChanged({ isHovered: false })
   }, [canGrab])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isShown) {
       setBoxState('SPAWNED')
     } else {
