@@ -11,7 +11,7 @@ import {Paint} from "./components/paint/paint";
 import {Boxes} from "./components/boxes/boxes";
 import {About} from "./components/about/about.tsx";
 import {Environment, Loader, OrbitControls} from "@react-three/drei";
-import {useLocation, Route, Switch} from "wouter";
+import {useLocation, Route, Switch, Router} from "wouter";
 import {useTransition, animated, config} from "@react-spring/three";
 import {RefObject, useEffect, useRef, useState} from "react";
 import * as THREE from "three";
@@ -19,14 +19,14 @@ import {MainContext} from "./mainContext";
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 
 const pages: Page[] = [
-  { name: 'Demos', path: '/', screenshot: '', renderFn: (props) => <Home {...props} /> },
-  { name: 'Shapes', path: '/shapes', screenshot: '/home/shapes.png', renderFn: (props) => <Shapes {...props} /> },
-  { name: 'Arm', path: '/arm', screenshot: '/home/arm.png', renderFn: (props) => <Arm {...props} /> },
-  { name: 'Paint', path: '/paint', screenshot: '/home/paint.png', renderFn: (props) => <Paint {...props} /> },
-  { name: 'Boxes', path: '/boxes', screenshot: '/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
+  { name: 'Demos', path: '/r3f-demos/', screenshot: '', renderFn: (props) => <Home {...props} /> },
+  { name: 'Shapes', path: '/r3f-demos/shapes', screenshot: '/r3f-demos/home/shapes.png', renderFn: (props) => <Shapes {...props} /> },
+  { name: 'Arm', path: '/r3f-demos/arm', screenshot: '/r3f-demos/home/arm.png', renderFn: (props) => <Arm {...props} /> },
+  { name: 'Paint', path: '/r3f-demos/paint', screenshot: '/r3f-demos/home/paint.png', renderFn: (props) => <Paint {...props} /> },
+  { name: 'Boxes', path: '/r3f-demos/boxes', screenshot: '/r3f-demos/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
   // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
-  { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },
+  { name: 'About', path: '/r3f-demos/about', screenshot: '', renderFn: (props) => <About {...props} /> },
 ];
 
 const CAMERA_POSITION: THREE.Vector3 = new THREE.Vector3(0, 2, 7);
@@ -106,11 +106,13 @@ const App = () => {
                 // @ts-ignore
                 scale={scale}
               >
-                <Switch location={location}>
-                  {pages.map(page => <Route key={page.name} path={page.path}>
-                    {page.renderFn({ opacity })}
-                  </Route>)}
-                </Switch>
+                <Router base="/r3f-demos">
+                  <Switch location={location}>
+                    {pages.map(page => <Route key={page.name} path={page.path}>
+                      {page.renderFn({ opacity })}
+                    </Route>)}
+                  </Switch>
+                </Router>
               </animated.group>
             )) }
             <Environment preset={'warehouse'} background blur={1}/>

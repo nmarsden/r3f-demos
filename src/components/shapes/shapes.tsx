@@ -45,10 +45,10 @@ const positionPerShape: THREE.Vector3[] = shapes.map((_shape, shapeIndex) => {
   return new THREE.Vector3(x, y, z);
 })
 
-useGLTF.preload('/shapes/Suzanne.gltf')
+useGLTF.preload('/r3f-demos/shapes/Suzanne.gltf')
 
 const ModelGeometry = () => {
-  const { scene } = useGLTF('/shapes/Suzanne.gltf')
+  const { scene } = useGLTF('/r3f-demos/shapes/Suzanne.gltf')
   const geometry = (scene.children[0] as THREE.Mesh).geometry.clone().scale(0.5, 0.5, 0.5).rotateY(Math.PI * 0.25)
 
   return <bufferGeometry attach="geometry" {...geometry} />
@@ -56,7 +56,7 @@ const ModelGeometry = () => {
 
 const Shape = ({ shape, opacity }: { shape: Shape, opacity: SpringValue }) => {
   const boxMesh = useRef<THREE.Mesh>(null!)
-  const texture = useTexture('/cross.png')
+  const texture = useTexture('/r3f-demos/cross.png')
   const [hovered, hover] = useState(false)
 
   const INITIAL_ANIMATION = () => ({

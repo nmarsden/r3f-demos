@@ -75,7 +75,7 @@ export function ArmModel({ opacity, ...props}: JSX.IntrinsicElements['group'] & 
   const [anyHovered, setAnyHovered] = useState(false);
   const [hoveredMesh, setHoveredMesh] = useState([...NODE_NAMES].map(() => false));
   const [exploded, setExploded] = useState(false);
-  const {nodes, materials} = useGLTF('/arm/robohand-2-transformed.glb') as GLTFResult
+  const {nodes, materials} = useGLTF('/r3f-demos/arm/robohand-2-transformed.glb') as GLTFResult
   const isTransitioning = opacity.isAnimating;
 
   // Reset exploded if necessary when transitioning in/out
@@ -218,4 +218,4 @@ export function ArmModel({ opacity, ...props}: JSX.IntrinsicElements['group'] & 
   )
 }
 
-useGLTF.preload('/arm/robohand-2-transformed.glb')
+useGLTF.preload('/r3f-demos/arm/robohand-2-transformed.glb')

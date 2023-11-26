@@ -83,7 +83,7 @@ const Info = ({ opacity, color, position, rotationX, height, children }: { opaci
 
 const Ramp = ({ opacity, position }: { opacity: SpringValue, position: THREE.Vector3 }) => {
   const textureProps = useTexture({
-    map: '/about/grid.jpg',
+    map: '/r3f-demos/about/grid.jpg',
   })
   useEffect(() => {
     textureProps.map.repeat.setX(0.3)

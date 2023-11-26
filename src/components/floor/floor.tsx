@@ -8,7 +8,7 @@ const FLOOR_POSITION = new THREE.Vector3(0, -1.3, 0);
 
 const Floor = ({ showCross } : { showCross: boolean }) => {
   const floorMesh = useRef<THREE.Mesh>(null!);
-  const texture = useTexture('/cross.png')
+  const texture = useTexture('/r3f-demos/cross.png')
   const [{ decalScale, opacity }, api] = useSpring(() => ({
     from: { decalScale: 0, opacity: 0 },
     config: {
