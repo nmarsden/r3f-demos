@@ -4,10 +4,10 @@ import {animated, SpringValue} from "@react-spring/three";
 import * as THREE from "three";
 import {Demo} from "../../hooks/demos.ts";
 import {useCallback, useEffect, useRef, useState} from "react";
-import {useLocation} from "wouter";
 import {ThreeEvent, useFrame} from "@react-three/fiber";
 import {Box, Outlines} from "@react-three/drei";
 import {RapierRigidBody, RigidBody} from "@react-three/rapier";
+import {useHashLocation} from "../../hooks/hashLocation.ts";
 
 export type HoverChangedEvent = {
   isHovered: boolean;
@@ -33,7 +33,7 @@ type InternalDemoBoxProps = {
 const InternalDemoBox = ({ opacity, position, size, demo, onHoverChanged }: InternalDemoBoxProps) => {
   const [hovered, setHovered] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setLocation] = useLocation();
+  const [_, hashNavigate] = useHashLocation();
 
   const onPointerOver = useCallback((event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
@@ -52,7 +52,7 @@ const InternalDemoBox = ({ opacity, position, size, demo, onHoverChanged }: Inte
       args={[size, size, size]}
       castShadow={true}
       receiveShadow={true}
-      onClick={() => setLocation(demo.path.replace('/r3f-demos', ''))}
+      onClick={() => hashNavigate(demo.path)}
       onPointerOver={(event) => onPointerOver(event)}
       onPointerOut={() => onPointerOut()}
     >

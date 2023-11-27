@@ -11,22 +11,23 @@ import {Paint} from "./components/paint/paint";
 import {Boxes} from "./components/boxes/boxes";
 import {About} from "./components/about/about.tsx";
 import {Environment, Loader, OrbitControls} from "@react-three/drei";
-import {useLocation, Route, Switch, Router} from "wouter";
+import {Route, Switch, Router} from "wouter";
 import {useTransition, animated, config} from "@react-spring/three";
 import {RefObject, useEffect, useRef, useState} from "react";
 import * as THREE from "three";
 import {MainContext} from "./mainContext";
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
+import {useHashLocation} from "./hooks/hashLocation.ts";
 
 const pages: Page[] = [
-  { name: 'Demos', path: '/r3f-demos/', screenshot: '', renderFn: (props) => <Home {...props} /> },
-  { name: 'Shapes', path: '/r3f-demos/shapes', screenshot: '/r3f-demos/home/shapes.png', renderFn: (props) => <Shapes {...props} /> },
-  { name: 'Arm', path: '/r3f-demos/arm', screenshot: '/r3f-demos/home/arm.png', renderFn: (props) => <Arm {...props} /> },
-  { name: 'Paint', path: '/r3f-demos/paint', screenshot: '/r3f-demos/home/paint.png', renderFn: (props) => <Paint {...props} /> },
-  { name: 'Boxes', path: '/r3f-demos/boxes', screenshot: '/r3f-demos/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
+  { name: 'Demos', path: '/', screenshot: '', renderFn: (props) => <Home {...props} /> },
+  { name: 'Shapes', path: '/shapes', screenshot: '/r3f-demos/home/shapes.png', renderFn: (props) => <Shapes {...props} /> },
+  { name: 'Arm', path: '/arm', screenshot: '/r3f-demos/home/arm.png', renderFn: (props) => <Arm {...props} /> },
+  { name: 'Paint', path: '/paint', screenshot: '/r3f-demos/home/paint.png', renderFn: (props) => <Paint {...props} /> },
+  { name: 'Boxes', path: '/boxes', screenshot: '/r3f-demos/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
   // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
-  { name: 'About', path: '/r3f-demos/about', screenshot: '', renderFn: (props) => <About {...props} /> },
+  { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },
 ];
 
 const CAMERA_POSITION: THREE.Vector3 = new THREE.Vector3(0, 2, 7);
@@ -57,7 +58,7 @@ const App = () => {
   const controls = useRef<OrbitControlsImpl>(null!);
   const [isTransitioning, setIsTransitioning] = useState(false)
 
-  const [location] = useLocation();
+  const [location] = useHashLocation();
   const transition = useTransition(location, {
     from: { position: [0, 0, 0], rotation: [0, Math.PI, 0], scale: 0.01, opacity: 0 },
     enter: { position: [0, 0, 0], rotation: [0, 0, 0], scale: 1, opacity: 1 },
@@ -93,7 +94,7 @@ const App = () => {
           <MainContext.Provider value={{ controls: controls, pages: pages }} >
             <CameraAnimation reset={isTransitioning} controls={controls} />
             <Lights/>
-            <Floor showCross={location === '/r3f-demos/boxes'}/>
+            <Floor showCross={location === '/boxes'}/>
             { transition(({ position, rotation, scale, opacity }, location) => (
               <animated.group
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -106,8 +107,9 @@ const App = () => {
                 // @ts-ignore
                 scale={scale}
               >
-                <Router base="/r3f-demos">
-                  <Switch location={location}>
+                { /* @ts-ignore */ }
+                <Router hook={useHashLocation}>
+                  <Switch location={location as string}>
                     {pages.map(page => <Route key={page.name} path={page.path}>
                       {page.renderFn({ opacity })}
                     </Route>)}

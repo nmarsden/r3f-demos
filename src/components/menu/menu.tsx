@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {Link, useLocation} from "wouter";
+import {Link} from "wouter";
 import {ReactNode, useCallback, useEffect, useState} from "react";
 import "./menu.css";
+import {useHashLocation} from "../../hooks/hashLocation.ts";
 
 export type Page = {
   name: string;
@@ -12,7 +13,7 @@ export type Page = {
 }
 
 const Menu = ({ pages }: { pages: Page[] }) => {
-  const [location] = useLocation();
+  const [location, hashNavigate] = useHashLocation();
   const [isDropDownMenuOpen, setDropDownMenuOpen] = useState(false)
   const [isHeadingShown, setIsHeadingShown] = useState(true)
   const [selectedPage, setSelectedPage] = useState<Page>(pages[0]);
@@ -42,8 +43,11 @@ const Menu = ({ pages }: { pages: Page[] }) => {
         {pages.map(page =>
           <Link
             key={page.name}
-            href={page.path}
-            onClick={() => setDropDownMenuOpen(false)}
+            href={''}
+            onClick={() => {
+              setDropDownMenuOpen(false)
+              hashNavigate(page.path)
+            }}
           >
             <a className={location === page.path ? 'menuItem selected' : 'menuItem'}>{page.name}</a>
           </Link>
