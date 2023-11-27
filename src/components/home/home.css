@@ -4,7 +4,28 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 2rem;
+    font-size: 1rem;
     font-weight: bold;
+    color: #2176AE;
     gap: 1rem;
+    outline: 2px solid #2176AE;
+    opacity: 0;
 }
+
+.demo-heading.isEntering {
+    animation: demo-heading-fade-in 1s forwards;
+}
+.demo-heading.isLeaving {
+    animation: demo-heading-fade-out 1s forwards;
+}
+
+@keyframes demo-heading-fade-in {
+    from { opacity: 0 }
+    to { opacity: 1 }
+}
+
+@keyframes demo-heading-fade-out {
+    from { opacity: 1 }
+    to { opacity: 0 }
+}
+
