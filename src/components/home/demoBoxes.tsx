@@ -8,7 +8,7 @@ import {useCursor} from "@react-three/drei";
 import {DemoBox, HoverChangedEvent} from "./demoBox.tsx";
 
 const DEMO_BOXES_RADIUS = 2.5;
-const DEMO_BOXES_TOTAL_ANGLE = Math.PI * 0.35;
+const DEMO_BOXES_TOTAL_ANGLE = Math.PI * 0.5;
 const DEMO_BOXES_START_ANGLE = -(DEMO_BOXES_TOTAL_ANGLE * 0.5);
 const DEMO_BOX_SIZE = 0.6;
 

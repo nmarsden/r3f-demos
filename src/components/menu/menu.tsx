@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import * as THREE from "three";
 import {Link} from "wouter";
 import {ReactNode, useCallback, useEffect, useState} from "react";
 import "./menu.css";
@@ -10,6 +11,7 @@ export type Page = {
   screenshot: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderFn: (props: any) => ReactNode;
+  cameraPosition?: THREE.Vector3;
 }
 
 const Menu = ({ pages }: { pages: Page[] }) => {

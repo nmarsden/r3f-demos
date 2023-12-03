@@ -9,6 +9,7 @@ import {Arm} from "./components/arm/arm";
 import {Shapes} from "./components/shapes/shapes";
 import {Paint} from "./components/paint/paint";
 import {Boxes} from "./components/boxes/boxes";
+import {Maze} from "./components/maze/maze.tsx";
 import {About} from "./components/about/about.tsx";
 import {Environment, Loader, OrbitControls} from "@react-three/drei";
 import {Route, Switch, Router} from "wouter";
@@ -25,6 +26,7 @@ const pages: Page[] = [
   { name: 'Arm', path: '/arm', screenshot: '/r3f-demos/home/arm.png', renderFn: (props) => <Arm {...props} /> },
   { name: 'Paint', path: '/paint', screenshot: '/r3f-demos/home/paint.png', renderFn: (props) => <Paint {...props} /> },
   { name: 'Boxes', path: '/boxes', screenshot: '/r3f-demos/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
+  { name: 'Maze', path: '/maze', screenshot: '/r3f-demos/home/maze.png', renderFn: (props) => <Maze {...props} />, cameraPosition: new THREE.Vector3(0, 8, 0) },
   // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
   { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },
@@ -32,13 +34,19 @@ const pages: Page[] = [
 
 const CAMERA_POSITION: THREE.Vector3 = new THREE.Vector3(0, 2, 7);
 
-const CameraAnimation = ({ reset, controls }: { reset: boolean, controls: RefObject<OrbitControlsImpl> }) => {
+const CameraAnimation = ({ reset, cameraPosition, controls }: { reset: boolean, cameraPosition: THREE.Vector3, controls: RefObject<OrbitControlsImpl> }) => {
   useFrame(state => {
     if (reset) {
-      state.camera.position.lerp(CAMERA_POSITION, 0.05)
+      state.camera.position.lerp(cameraPosition, 0.05)
+
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      controls.current.reset()
+      if (controls.current) {
+        controls.current.target.setX(0);
+        controls.current.target.setY(0);
+        controls.current.target.setZ(0);
+        controls.current.update();
+      }
     } return null
   })
   return null;
@@ -53,10 +61,12 @@ const Lights = () => {
 }
 
 // TODO create a demo of a small rube goldberg machine using rapier physics
+// TODO do not fetch empty_warehouse_01_1k.hdr from cdn (see Environment)
 const App = () => {
   const container = useRef<HTMLDivElement>(null!);
   const controls = useRef<OrbitControlsImpl>(null!);
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [cameraPosition, setCameraPosition] = useState(CAMERA_POSITION);
 
   const [location] = useHashLocation();
   const transition = useTransition(location, {
@@ -73,6 +83,11 @@ const App = () => {
 
   useEffect(() => {
     setIsTransitioning(true)
+
+    // Set camera position for page
+    const currentPage = pages.find(page => page.path === location) as Page;
+    const cameraPosition: THREE.Vector3 = typeof currentPage.cameraPosition !== 'undefined' ? currentPage.cameraPosition : CAMERA_POSITION;
+    setCameraPosition(cameraPosition);
   }, [location])
 
   useEffect(() => {
@@ -89,10 +104,10 @@ const App = () => {
       <div className="container" ref={container}>
         <Canvas
           shadows={true}
-          camera={{ position: CAMERA_POSITION, fov: 70 }}
+          camera={{ position: cameraPosition, fov: 70 }}
         >
           <MainContext.Provider value={{ controls: controls, pages: pages }} >
-            <CameraAnimation reset={isTransitioning} controls={controls} />
+            <CameraAnimation reset={isTransitioning} cameraPosition={cameraPosition} controls={controls} />
             <Lights/>
             <Floor showCross={location === '/boxes'}/>
             { transition(({ position, rotation, scale, opacity }, location) => (

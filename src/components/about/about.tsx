@@ -207,6 +207,7 @@ const INFOS: InfoType[] = [
 
 const RAMP_POSITION = new THREE.Vector3(0,1.2,0);
 
+// TODO link to @react-three/csg
 const About = ({ opacity }: { opacity: SpringValue }) => {
   return (
     <>

@@ -6,6 +6,7 @@ import './home.css';
 
 const uiColor = 0x2176AE;
 
+// TODO use useTransitionState hook
 const DemoHeading = ({ opacity }: { opacity: SpringValue }) => {
   const [isEntering, setIsEntering] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);

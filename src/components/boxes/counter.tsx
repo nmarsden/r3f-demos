@@ -3,6 +3,7 @@ import {useState} from "react";
 import {Html} from "@react-three/drei";
 import './counter.css';
 
+// TODO use useTransitionState hook
 const Counter = ({ opacity, count, maxCount } : { opacity: SpringValue, count: number, maxCount: number }) => {
   const [isEntering, setIsEntering] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);

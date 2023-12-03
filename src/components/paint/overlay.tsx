@@ -44,6 +44,7 @@ type MenuOpenChangeEvent = {
   isOpen: boolean;
 }
 
+// TODO use useTransitionState hook
 const Toolbar = ({ opacity, children } : { opacity: SpringValue, children: ReactNode }) => {
   const [isEntering, setIsEntering] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
