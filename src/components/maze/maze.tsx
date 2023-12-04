@@ -39,7 +39,7 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
 
   const onCheckPointCompleted = useCallback((checkPointNum: number) => {
     setScore(score + checkPointNum * 100);
-  }, []);
+  }, [score]);
 
   useEffect(() => {
     if (!mainContext.controls.current) return;
