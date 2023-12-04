@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {SpringValue} from "@react-spring/three";
 import {Ball, BallRef} from "./ball.tsx";
-import {MazeBox} from "./mazeBox.tsx";
+import {MazeBox, MazeBoxRef} from "./mazeBox.tsx";
 import {Joystick, JoystickMoveEvent} from "./joystick.tsx";
 import {FloorSensor} from "./floorSensor.tsx";
 import {Suspense, useCallback, useContext, useEffect, useRef, useState} from "react";
@@ -9,14 +9,13 @@ import {Physics} from "@react-three/rapier";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 
-// TODO introduce checkpoints
 // TODO show progress
-// TODO must pass all checkpoints in the correct order to complete the maze
 // TODO reward goal reached
 // TODO have ability to reset once goal is reached
 const Maze = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const ball = useRef<BallRef>(null!);
+  const mazeBox = useRef<MazeBoxRef>(null!);
   const [rotationX, setRotationX] = useState(0);
   const [rotationZ, setRotationZ] = useState(0);
   const transitionState = useTransitionState(opacity);
@@ -31,8 +30,9 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
   }, []);
 
   const onFloorHit = useCallback(() => {
-    if (ball.current) {
+    if (ball.current && mazeBox.current) {
       ball.current.respawn();
+      mazeBox.current.reset();
     }
   }, []);
 
@@ -51,7 +51,7 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
       <Suspense>
         <Physics debug={false}>
           <Ball ref={ball} opacity={opacity}/>
-          <MazeBox opacity={opacity} rotationX={rotationX} rotationZ={rotationZ}/>
+          <MazeBox ref={mazeBox} opacity={opacity} rotationX={rotationX} rotationZ={rotationZ}/>
           <Joystick opacity={opacity} onJoystickMove={onJoystickMove}/>
           <FloorSensor opacity={opacity} onHit={onFloorHit}/>
         </Physics>

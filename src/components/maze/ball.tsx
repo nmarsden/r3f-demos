@@ -31,7 +31,7 @@ const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
       {(opacity.isAnimating || !enabled) ? (
         <></>
       ) : (
-        <RigidBody colliders={'ball'}>
+        <RigidBody name={'Ball'} colliders={'ball'}>
           <Sphere
             args={[BALL_SIZE, 64, 32]}
             position={[0, 0, 0]}
