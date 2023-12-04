@@ -78,10 +78,11 @@ export type MazeBoxRef = {
 type MazeBoxProps = {
   opacity: SpringValue,
   rotationX: number,
-  rotationZ: number
+  rotationZ: number,
+  onCheckPointCompleted: (checkPointNumber: number) => void
 };
 
-const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, rotationX, rotationZ }: MazeBoxProps, ref) => {
+const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, rotationX, rotationZ, onCheckPointCompleted }: MazeBoxProps, ref) => {
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const rigidBodyRotation = useRef(new THREE.Vector3(0,0,0));
   const checkPointsGroupRef = useRef<Group>(null!);
@@ -131,7 +132,7 @@ const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, rotationX, rota
             <InternalMazeBox opacity={opacity} />
           </RigidBody>
           <group ref={checkPointsGroupRef}>
-            <CheckPoints ref={checkPoints} opacity={opacity} />
+            <CheckPoints ref={checkPoints} opacity={opacity} onCheckPointCompleted={onCheckPointCompleted}/>
           </group>
         </>
       )}

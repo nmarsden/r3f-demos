@@ -8,7 +8,7 @@ import {
   NUM_CELLS,
   WALL_HEIGHT
 } from "./mazeConstants.ts";
-import {Box} from "@react-three/drei";
+import {Box, Html} from "@react-three/drei";
 import {RigidBody} from "@react-three/rapier";
 import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
 
@@ -33,7 +33,7 @@ const CHECKPOINTS: CheckpointType[] = CHECKPOINT_CELLS.map((cell, index) => {
   };
 }).filter(checkPoint => checkPoint.checkPointNum > 0);
 
-const CheckPoint = ({ position, completed, onHit } : { position: number[], completed: boolean, onHit: () => void }) => {
+const CheckPoint = ({ checkPointNum, position, completed, onHit } : { checkPointNum: number, position: number[], completed: boolean, onHit: () => void }) => {
   return (
     <RigidBody
       sensor={true}
@@ -60,6 +60,13 @@ const CheckPoint = ({ position, completed, onHit } : { position: number[], compl
           transparent={true}
           opacity={0.5}
         />
+        <Html
+          center={true}
+          transform={true}
+          position-y={CHECKPOINT_HEIGHT * 0.5}
+          rotation-x={Math.PI * -0.5}
+          scale={0.75}
+        >{checkPointNum}</Html>
       </Box>
     </RigidBody>
   );
@@ -70,10 +77,11 @@ export type CheckPointsRef = {
 } | null;
 
 type CheckPointsProps = {
-  opacity: SpringValue,
+  opacity: SpringValue;
+  onCheckPointCompleted: (checkPointNumber: number) => void
 };
 
-const CheckPoints = forwardRef<CheckPointsRef, CheckPointsProps>(({ opacity }: CheckPointsProps, ref) => {
+const CheckPoints = forwardRef<CheckPointsRef, CheckPointsProps>(({ opacity, onCheckPointCompleted }: CheckPointsProps, ref) => {
   const [lastCheckPointReached, setLastCheckPointReached] = useState(0);
   const [checkPoints, setCheckPoints] = useState(CHECKPOINTS);
 
@@ -91,6 +99,7 @@ const CheckPoints = forwardRef<CheckPointsRef, CheckPointsProps>(({ opacity }: C
       setCheckPoints(prevState => prevState.map((checkPoint) => {
         return checkPoint.checkPointNum === checkPointNum ? { ...checkPoint, completed: true } : checkPoint;
       }));
+      onCheckPointCompleted(checkPointNum);
     }
   }, [lastCheckPointReached, checkPoints])
 
@@ -103,6 +112,7 @@ const CheckPoints = forwardRef<CheckPointsRef, CheckPointsProps>(({ opacity }: C
           {checkPoints.map((checkPoint) => {
             return <CheckPoint
                       key={`${checkPoint.checkPointNum}`}
+                      checkPointNum={checkPoint.checkPointNum}
                       position={checkPoint.position}
                       completed={checkPoint.completed}
                       onHit={() => onHit(checkPoint.checkPointNum)}

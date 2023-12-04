@@ -8,9 +8,8 @@ import {Suspense, useCallback, useContext, useEffect, useRef, useState} from "re
 import {Physics} from "@react-three/rapier";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
+import {Score} from "./score.tsx";
 
-// TODO show progress
-// TODO reward goal reached
 // TODO have ability to reset once goal is reached
 const Maze = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
@@ -19,6 +18,7 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
   const [rotationX, setRotationX] = useState(0);
   const [rotationZ, setRotationZ] = useState(0);
   const transitionState = useTransitionState(opacity);
+  const [score, setScore] = useState(0)
 
   const onJoystickMove = useCallback((event: JoystickMoveEvent) => {
     const JOY_LENGTH = 300;
@@ -31,9 +31,14 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
 
   const onFloorHit = useCallback(() => {
     if (ball.current && mazeBox.current) {
+      setScore(0);
       ball.current.respawn();
       mazeBox.current.reset();
     }
+  }, []);
+
+  const onCheckPointCompleted = useCallback((checkPointNum: number) => {
+    setScore(score + checkPointNum * 100);
   }, []);
 
   useEffect(() => {
@@ -50,8 +55,9 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
     <>
       <Suspense>
         <Physics debug={false}>
+          <Score opacity={opacity} score={score} />
           <Ball ref={ball} opacity={opacity}/>
-          <MazeBox ref={mazeBox} opacity={opacity} rotationX={rotationX} rotationZ={rotationZ}/>
+          <MazeBox ref={mazeBox} opacity={opacity} rotationX={rotationX} rotationZ={rotationZ} onCheckPointCompleted={onCheckPointCompleted}/>
           <Joystick opacity={opacity} onJoystickMove={onJoystickMove}/>
           <FloorSensor opacity={opacity} onHit={onFloorHit}/>
         </Physics>
