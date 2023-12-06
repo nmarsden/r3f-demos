@@ -4,22 +4,5 @@
     width: 100%;
     display: flex;
     justify-content: center;
-    opacity: 0;
-}
-
-.joystick.isEntering {
-    animation: joystick-fade-in 4s forwards;
-}
-.joystick.isLeaving {
-    animation: joystick-fade-out 1s forwards;
-}
-
-@keyframes joystick-fade-in {
-    from { opacity: 0 }
-    to { opacity: 1 }
-}
-
-@keyframes joystick-fade-out {
-    from { opacity: 1 }
-    to { opacity: 0 }
+    opacity: 1;
 }

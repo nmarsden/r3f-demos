@@ -1,25 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {animated, SpringValue} from "@react-spring/three";
 import {Center, Html, Text3D} from "@react-three/drei";
-import {useState} from "react";
 import './home.css';
+import {useTransitionState} from "../../hooks/transitionState.ts";
 
 const uiColor = 0x2176AE;
 
-// TODO use useTransitionState hook
 const DemoHeading = ({ opacity }: { opacity: SpringValue }) => {
-  const [isEntering, setIsEntering] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
-
-  if (opacity.isAnimating && !isEntering && opacity.goal === 1) {
-    setIsEntering(true);
-    setIsLeaving(false);
-  }
-  if (opacity.isAnimating && !isLeaving && opacity.goal === 0) {
-    setIsEntering(false);
-    setIsLeaving(true);
-  }
-
+  const transitionState = useTransitionState(opacity);
   return <>
     <Html
       center={true}
@@ -29,7 +17,7 @@ const DemoHeading = ({ opacity }: { opacity: SpringValue }) => {
       position-y={2}
       zIndexRange={[50, 40]}
     >
-      <div className={`demo-heading ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`}>
+      <div className={`demo-heading ${transitionState === 'ENTERING' ? 'fade-in': ''} ${transitionState === 'LEAVING' ? 'fade-out': ''}`}>
         <div>REACT THREE FIBRE</div>
       </div>
     </Html>

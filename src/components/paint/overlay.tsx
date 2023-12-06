@@ -2,6 +2,7 @@ import {Html} from "@react-three/drei";
 import {SpringValue} from "@react-spring/three";
 import {ReactNode, useCallback, useState} from "react";
 import "./overlay.css";
+import {useTransitionState} from "../../hooks/transitionState.ts";
 
 export type PaintColor = {
   name: string;
@@ -44,21 +45,10 @@ type MenuOpenChangeEvent = {
   isOpen: boolean;
 }
 
-// TODO use useTransitionState hook
 const Toolbar = ({ opacity, children } : { opacity: SpringValue, children: ReactNode }) => {
-  const [isEntering, setIsEntering] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
-
-  if (opacity.isAnimating && !isEntering && opacity.goal === 1) {
-    setIsEntering(true);
-    setIsLeaving(false);
-  }
-  if (opacity.isAnimating && !isLeaving && opacity.goal === 0) {
-    setIsEntering(false);
-    setIsLeaving(true);
-  }
+  const transitionState = useTransitionState(opacity);
   return (
-      <div className={`toolbar ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`} >
+      <div className={`toolbar ${transitionState === 'ENTERING' ? 'fade-in': ''} ${transitionState === 'LEAVING' ? 'fade-out': ''}`} >
         {children}
       </div>
   )

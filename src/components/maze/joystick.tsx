@@ -2,27 +2,17 @@
 import {SpringValue} from "@react-spring/three";
 import nipplejs from 'nipplejs';
 import {Html} from "@react-three/drei";
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import './joystick.css';
+import {useTransitionState} from "../../hooks/transitionState.ts";
 
 export type JoystickMoveEvent = {
   x: number;
   y: number;
 };
 
-// TODO use useTransitionState hook
 const Joystick = ({ opacity, onJoystickMove }: { opacity: SpringValue, onJoystickMove: (event: JoystickMoveEvent) => void }) => {
-  const [isEntering, setIsEntering] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
-
-  if (opacity.isAnimating && !isEntering && opacity.goal === 1) {
-    setIsEntering(true);
-    setIsLeaving(false);
-  }
-  if (opacity.isAnimating && !isLeaving && opacity.goal === 0) {
-    setIsEntering(false);
-    setIsLeaving(true);
-  }
+  const transitionState = useTransitionState(opacity);
 
   useEffect(() => {
     setTimeout(() => {
@@ -47,7 +37,7 @@ const Joystick = ({ opacity, onJoystickMove }: { opacity: SpringValue, onJoystic
       occlude={false}
       zIndexRange={[50, 40]}
     >
-      <div className={`joystick ${isEntering ? 'isEntering': ''} ${isLeaving ? 'isLeaving': ''}`}>
+      <div className={`joystick ${transitionState === 'ENTERING' ? 'fade-in-slow': ''} ${transitionState === 'LEAVING' ? 'fade-out': ''}`}>
         <div id="zone_joystick" ></div>
       </div>
     </Html>
