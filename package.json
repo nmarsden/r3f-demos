@@ -22,6 +22,7 @@
     "wouter": "2.12.1"
   },
   "devDependencies": {
+    "@pmndrs/assets": "^1.6.0",
     "@react-three/csg": "^3.1.0",
     "@react-three/rapier": "^1.1.2",
     "@types/react": "^18.2.15",
@@ -35,6 +36,7 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "gh-pages": "^6.1.0",
     "nipplejs": "^0.10.1",
+    "suspend-react": "^0.1.3",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
   }

@@ -19,6 +19,9 @@ import * as THREE from "three";
 import {MainContext} from "./mainContext";
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import {useHashLocation} from "./hooks/hashLocation.ts";
+import { suspend } from 'suspend-react'
+// @ts-ignore
+const warehouse = import('@pmndrs/assets/hdri/warehouse.exr').then((module) => module.default)
 
 const pages: Page[] = [
   { name: 'Demos', path: '/', screenshot: '', renderFn: (props) => <Home {...props} /> },
@@ -61,7 +64,6 @@ const Lights = () => {
 }
 
 // TODO create a demo of a small rube goldberg machine using rapier physics
-// TODO do not fetch empty_warehouse_01_1k.hdr from cdn (see Environment)
 const App = () => {
   const container = useRef<HTMLDivElement>(null!);
   const controls = useRef<OrbitControlsImpl>(null!);
@@ -132,7 +134,8 @@ const App = () => {
                 </Router>
               </animated.group>
             )) }
-            <Environment preset={'warehouse'} background blur={1}/>
+            { /* @ts-ignore */ }
+            <Environment files={suspend(warehouse)} background blur={1}/>
             <OrbitControls
               ref={controls}
               makeDefault={true}

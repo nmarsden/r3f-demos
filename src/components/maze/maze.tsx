@@ -11,6 +11,8 @@ import {useTransitionState} from "../../hooks/transitionState.ts";
 import {Score} from "./score.tsx";
 
 // TODO have ability to reset once goal is reached
+// TODO indicate maze is completed
+// TODO fade in / out the check points
 const Maze = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const ball = useRef<BallRef>(null!);
