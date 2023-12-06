@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {SpringValue, animated} from "@react-spring/three";
+import {SpringValue, animated, useSpring, config} from "@react-spring/three";
 import {
   CELL_SIZE,
   CHECKPOINT_CELLS,
@@ -10,7 +10,7 @@ import {
 } from "./mazeConstants.ts";
 import {Box, Html} from "@react-three/drei";
 import {RigidBody} from "@react-three/rapier";
-import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
+import {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from "react";
 
 const CHECKPOINT_SIZE = CELL_SIZE;
 const CHECKPOINT_HEIGHT = WALL_HEIGHT;
@@ -34,6 +34,17 @@ const CHECKPOINTS: CheckpointType[] = CHECKPOINT_CELLS.map((cell, index) => {
 }).filter(checkPoint => checkPoint.checkPointNum > 0);
 
 const CheckPoint = ({ checkPointNum, position, completed, onHit } : { checkPointNum: number, position: number[], completed: boolean, onHit: () => void }) => {
+  const [{ opacity }, api] = useSpring(() => ({
+    from: { opacity: 0 },
+    config: config.molasses
+  }))
+
+  useEffect(() => {
+    api.start({
+      to: { opacity: 0.5 }
+    })
+  }, []);
+
   return (
     <RigidBody
       sensor={true}
@@ -58,7 +69,7 @@ const CheckPoint = ({ checkPointNum, position, completed, onHit } : { checkPoint
           roughness={0.75}
           color={completed ? 'orange' : 0x2176AE}
           transparent={true}
-          opacity={0.5}
+          opacity={opacity}
         />
         <Html
           center={true}

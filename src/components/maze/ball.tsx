@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {SpringValue, animated} from "@react-spring/three";
-import {forwardRef, useImperativeHandle, useState} from "react";
+import {SpringValue, animated, useSpring, config} from "@react-spring/three";
+import {forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useState} from "react";
 import {RigidBody} from "@react-three/rapier";
 import {Sphere, useTexture} from "@react-three/drei";
 
@@ -15,7 +15,11 @@ type BallProps = {
 };
 
 const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
-  const [enabled, setEnabled] = useState(true);
+  const [{ ballOpacity }, api] = useSpring(() => ({
+    from: { ballOpacity: 0 },
+    config: config.molasses
+  }))
+  const [enabled, setEnabled] = useState(false);
   const texture = useTexture('/r3f-demos/maze/ball-texture.jpg')
 
   useImperativeHandle(ref, () => ({
@@ -25,6 +29,20 @@ const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
       setTimeout(() => setEnabled(true), 300);
     }
   }));
+
+  useEffect(() => {
+    api.start({
+      from: { ballOpacity: 0 },
+      to: { ballOpacity: 1 }
+    })
+  }, [enabled]);
+
+  useLayoutEffect(() => {
+    // Initial enabling of ball
+    if (!opacity.isAnimating && !enabled) {
+      setEnabled(true);
+    }
+  }, [opacity.isAnimating, enabled]);
 
   return (
     <>
@@ -45,7 +63,7 @@ const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
               roughness={0.75}
               color={'orange'}
               transparent={true}
-              opacity={opacity}
+              opacity={ballOpacity}
             />
           </Sphere>
         </RigidBody>
