@@ -1,0 +1,11 @@
+Model Information:
+* title:	Trophy (Clash Royale)
+* source:	https://sketchfab.com/3d-models/trophy-clash-royale-57ec3bc84cc74f5a85da07b99f4c770a
+* author:	Arun Kumar S (https://sketchfab.com/arun-kumar)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Trophy (Clash Royale)" (https://sketchfab.com/3d-models/trophy-clash-royale-57ec3bc84cc74f5a85da07b99f4c770a) by Arun Kumar S (https://sketchfab.com/arun-kumar) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

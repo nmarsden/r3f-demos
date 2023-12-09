@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {SpringValue, animated, useSpring, config} from "@react-spring/three";
-import {forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useState} from "react";
-import {RigidBody} from "@react-three/rapier";
+import {forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState} from "react";
+import {RapierRigidBody, RigidBody} from "@react-three/rapier";
 import {Sphere, useTexture} from "@react-three/drei";
 
 const BALL_SIZE = 0.18;
@@ -12,9 +12,11 @@ export type BallRef = {
 
 type BallProps = {
   opacity: SpringValue;
+  paused: boolean;
 };
 
-const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
+const Ball = forwardRef<BallRef, BallProps>(({ opacity, paused }: BallProps, ref) => {
+  const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const [{ ballOpacity }, api] = useSpring(() => ({
     from: { ballOpacity: 0 },
     config: config.molasses
@@ -36,6 +38,12 @@ const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
     })
   }, [enabled]);
 
+  useEffect(() => {
+      if (rigidBodyRef.current) {
+        rigidBodyRef.current.setEnabled(!paused)
+      }
+  }, [paused]);
+
   useLayoutEffect(() => {
     // Initial enabling of ball
     if (!opacity.isAnimating && !enabled) {
@@ -48,7 +56,7 @@ const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
       {(opacity.isAnimating || !enabled) ? (
         <></>
       ) : (
-        <RigidBody name={'Ball'} colliders={'ball'}>
+        <RigidBody ref={rigidBodyRef} name={'Ball'} colliders={'ball'}>
           <Sphere
             args={[BALL_SIZE, 64, 32]}
             position={[0, 0, 0]}

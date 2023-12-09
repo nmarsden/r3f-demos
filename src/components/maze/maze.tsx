@@ -8,15 +8,18 @@ import {Physics} from "@react-three/rapier";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 import {Score} from "./score.tsx";
+import {Won} from "./won.tsx";
+
+type GameState = 'PLAYING' | 'LOST' | 'WON';
 
 // TODO have ability to reset once goal is reached
-// TODO indicate maze is completed
 const Maze = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const ball = useRef<BallRef>(null!);
   const mazeBox = useRef<MazeBoxRef>(null!);
   const transitionState = useTransitionState(opacity);
-  const [score, setScore] = useState(0)
+  const [score, setScore] = useState(0);
+  const [gameState, setGameState] = useState<GameState>('PLAYING');
 
   const onFloorHit = useCallback(() => {
     if (ball.current && mazeBox.current) {
@@ -28,6 +31,9 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
 
   const onCheckPointCompleted = useCallback((checkPointNum: number) => {
     setScore(score + checkPointNum * 100);
+    if (checkPointNum === 4) {
+      setGameState('WON');
+    }
   }, [score]);
 
   useEffect(() => {
@@ -45,9 +51,10 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
       <Suspense>
         <Physics debug={false}>
           <Score opacity={opacity} score={score} />
-          <Ball ref={ball} opacity={opacity}/>
-          <MazeBox ref={mazeBox} opacity={opacity} onCheckPointCompleted={onCheckPointCompleted}/>
+          <Ball ref={ball} opacity={opacity} paused={gameState !== 'PLAYING'}/>
+          <MazeBox ref={mazeBox} opacity={opacity} paused={gameState !== 'PLAYING'} onCheckPointCompleted={onCheckPointCompleted}/>
           <FloorSensor opacity={opacity} onHit={onFloorHit}/>
+          {gameState === 'WON' ? <Won /> : null}
         </Physics>
       </Suspense>
     </>

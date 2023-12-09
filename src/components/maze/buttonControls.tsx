@@ -29,6 +29,7 @@ const HALF_BUTTON_SIZE = BUTTON_SIZE / 2;
 
 type ButtonControlProps = {
   opacity: SpringValue;
+  paused: boolean;
   button: Button;
   selected: boolean;
   position: [number, number, number];
@@ -36,19 +37,20 @@ type ButtonControlProps = {
   onButtonHoverChanged: (event: ButtonHoverChangedEvent) => void;
 };
 
-const ButtonControl = ({ opacity, button, selected, position, onButtonPressed, onButtonHoverChanged }: ButtonControlProps) => {
+const ButtonControl = ({ opacity, paused, button, selected, position, onButtonPressed, onButtonHoverChanged }: ButtonControlProps) => {
   const [hovered, setHovered] = useState(false);
 
   const onPointerOver = useCallback((event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
+    if (paused) return;
     setHovered(true);
     onButtonHoverChanged({ isHovered: true });
-  }, [])
+  }, [paused])
 
   const onPointerOut = useCallback(() => {
     setHovered(false);
     onButtonHoverChanged({ isHovered: false });
-  }, [])
+  }, [paused])
 
   return (
     <Box
@@ -56,6 +58,7 @@ const ButtonControl = ({ opacity, button, selected, position, onButtonPressed, o
       position={position}
       onClick={(event) => {
         event.stopPropagation();
+        if (paused) return;
         onButtonPressed({ button })
       }}
       onPointerOver={(event) => onPointerOver(event)}
@@ -81,7 +84,7 @@ const ButtonControl = ({ opacity, button, selected, position, onButtonPressed, o
     </Box>
   );
 }
-const ButtonControls = ({ onButtonPressed }: { onButtonPressed: (event: ButtonPressedEvent) => void }) => {
+const ButtonControls = ({ paused, onButtonPressed }: { paused: boolean; onButtonPressed: (event: ButtonPressedEvent) => void }) => {
   const [selectedButton, setSelectedButton] = useState<Button>('center');
   const [hovered, setHovered] = useState<boolean[]>(BUTTONS.map(() => false));
   const [anyHover, setAnyHover] = useState(false)
@@ -125,6 +128,7 @@ const ButtonControls = ({ onButtonPressed }: { onButtonPressed: (event: ButtonPr
           <ButtonControl
             key={`${index}`}
             opacity={opacity}
+            paused={paused}
             button={button}
             selected={button === selectedButton}
             position={position}

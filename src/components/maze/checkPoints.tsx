@@ -8,7 +8,7 @@ import {
   NUM_CELLS,
   WALL_HEIGHT
 } from "./mazeConstants.ts";
-import {Box, Html} from "@react-three/drei";
+import {Box, useTexture} from "@react-three/drei";
 import {RigidBody} from "@react-three/rapier";
 import {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from "react";
 
@@ -34,6 +34,7 @@ const CHECKPOINTS: CheckpointType[] = CHECKPOINT_CELLS.map((cell, index) => {
 }).filter(checkPoint => checkPoint.checkPointNum > 0);
 
 const CheckPoint = ({ checkPointNum, position, completed, onHit } : { checkPointNum: number, position: number[], completed: boolean, onHit: () => void }) => {
+  const texture = useTexture(`/r3f-demos/maze/checkpoint-${checkPointNum}.png`)
   const [{ opacity }, api] = useSpring(() => ({
     from: { opacity: 0 },
     config: config.molasses
@@ -64,23 +65,12 @@ const CheckPoint = ({ checkPointNum, position, completed, onHit } : { checkPoint
         args={[CHECKPOINT_SIZE, CHECKPOINT_HEIGHT, CHECKPOINT_SIZE]}
       >
         { /* @ts-ignore */ }
-        <animated.meshStandardMaterial
-          metalness={0.45}
-          roughness={0.75}
-          color={completed ? 'orange' : 0x2176AE}
-          transparent={true}
-          opacity={opacity}
-        />
-        <Html
-          center={true}
-          transform={true}
-          position-y={CHECKPOINT_HEIGHT * 0.5}
-          rotation-x={Math.PI * -0.5}
-          scale={0.75}
-          pointerEvents={'none'}
-        >
-          {checkPointNum}
-        </Html>
+        <animated.meshStandardMaterial attach="material-0" color={completed ? 'orange' : 0x2176AE} transparent={true} opacity={opacity} />
+        <animated.meshStandardMaterial attach="material-1" color={completed ? 'orange' : 0x2176AE} transparent={true} opacity={opacity} />
+        <animated.meshStandardMaterial attach="material-2" color={completed ? 'orange' : 0x2176AE} transparent={true} opacity={opacity} map={texture} />
+        <animated.meshStandardMaterial attach="material-3" color={completed ? 'orange' : 0x2176AE} transparent={true} opacity={opacity} />
+        <animated.meshStandardMaterial attach="material-4" color={completed ? 'orange' : 0x2176AE} transparent={true} opacity={opacity} />
+        <animated.meshStandardMaterial attach="material-5" color={completed ? 'orange' : 0x2176AE} transparent={true} opacity={opacity} />
       </Box>
     </RigidBody>
   );
