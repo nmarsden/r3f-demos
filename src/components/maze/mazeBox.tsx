@@ -118,6 +118,8 @@ const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, onCheckPointCom
 
   useEffect(() => {
     if (opacity.isAnimating) {
+      desiredRotation.current.set(0,0,0);
+      rigidBodyRotation.current.set(0,0,0);
       setAllowRotation(false)
     } else {
       setTimeout(() => setAllowRotation(true), 300);
