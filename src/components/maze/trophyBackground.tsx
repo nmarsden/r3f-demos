@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {Box} from "@react-three/drei";
+import {Circle} from "@react-three/drei";
 import {useFrame} from "@react-three/fiber";
 import {useEffect, useRef} from "react";
 import * as THREE from "three";
@@ -7,30 +7,25 @@ import {animated, config, SpringValue, useSpring} from "@react-spring/three";
 
 const COLOR_1 = 0xffffff;
 const COLOR_2 = 0xFFA500;
-const NUM_RIBBONS = 8;
-const RIBBON_DEPTH = 0.01;
-const RIBBON_ANGLE_DIFF = Math.PI / NUM_RIBBONS;
+const NUM_RIBBONS = 16;
+const RIBBON_ANGLE_DIFF = Math.PI * 2 / NUM_RIBBONS;
 
 type RibbonProps = {
-  positionY: number;
-  rotationY: number;
+  startAngle: number;
   color: number;
 }
 const RIBBONS: RibbonProps[] = [];
 for (let i = 0; i<NUM_RIBBONS; i++) {
   RIBBONS.push({
-    positionY: -0.5 + (i * RIBBON_DEPTH),
-    rotationY: i * RIBBON_ANGLE_DIFF,
+    startAngle: i * RIBBON_ANGLE_DIFF,
     color: (i % 2) ? COLOR_1 : COLOR_2
   })
 }
 
-const Ribbon = ({ positionY, rotationY, color, opacity } : RibbonProps & { opacity: SpringValue }) => {
+const Ribbon = ({ startAngle, color, opacity } : RibbonProps & { opacity: SpringValue }) => {
   return (
-    <Box
-      position={[0,positionY,0]}
-      args={[0.125, RIBBON_DEPTH, 40]}
-      rotation-y={rotationY}
+    <Circle
+      args={[25, 3, startAngle, RIBBON_ANGLE_DIFF]}
     >
       { /* @ts-ignore */ }
       <animated.meshStandardMaterial
@@ -40,7 +35,7 @@ const Ribbon = ({ positionY, rotationY, color, opacity } : RibbonProps & { opaci
         transparent={true}
         opacity={opacity}
       />
-    </Box>
+    </Circle>
   )
 };
 
@@ -53,16 +48,16 @@ const TrophyBackground = () => {
 
   useEffect(() => {
     api.start({
-      to: { positionZ: 0, opacity: 1}
+      to: { positionZ: 0, opacity: 0.5}
     })
   }, [])
 
   useFrame(() => {
-    group.current.rotation.y = group.current.rotation.y + 0.01;
+    group.current.rotation.z = group.current.rotation.z + 0.01;
   })
 
   return (
-    <animated.group ref={group} position-z={positionZ} rotation-x={Math.PI}>
+    <animated.group ref={group} position-y={0.5} position-z={positionZ} rotation-x={Math.PI * -0.5}>
       {RIBBONS.map((ribbon, index) => <Ribbon key={`${index}`} {...ribbon} opacity={opacity} />)}
     </animated.group>
   )
