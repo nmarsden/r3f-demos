@@ -2,18 +2,32 @@
 import * as THREE from "three";
 import {SpringValue, animated} from "@react-spring/three";
 import {Base, Geometry, Addition, Subtraction} from "@react-three/csg";
-import {forwardRef, useEffect, useImperativeHandle, useRef, useState} from "react";
+import {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from "react";
 import {RapierRigidBody, RigidBody} from "@react-three/rapier";
 import {useFrame} from "@react-three/fiber";
 import {useTexture} from "@react-three/drei";
 import {CheckPoints, CheckPointsRef} from "./checkPoints.tsx";
 import {Group} from "three";
 import {CELL_SIZE, CELLS, HALF_CELL_SIZE, HALF_MAZE_SIZE, NUM_CELLS, WALL_HEIGHT} from "./mazeConstants.ts";
+import {Button, ButtonControls, ButtonPressedEvent} from "./buttonControls.tsx";
 
 const BASE_COLOR = 0xEEEEEE;
 const WALL_COLOR = 0x555555;
 
 const MESH_POSITION: THREE.Vector3 = new THREE.Vector3(0,-0.5,0);
+
+const ROTATION_ANGLE = Math.PI * 0.05;
+const BUTTON_ROTATIONS: Map<Button, THREE.Vector3> = new Map([
+  ['top-left',     new THREE.Vector3(-ROTATION_ANGLE, 0, ROTATION_ANGLE)],
+  ['top',          new THREE.Vector3(-ROTATION_ANGLE, 0, 0)],
+  ['top-right',    new THREE.Vector3(-ROTATION_ANGLE, 0, -ROTATION_ANGLE)],
+  ['left',         new THREE.Vector3(0,               0, ROTATION_ANGLE)],
+  ['center',       new THREE.Vector3(0,               0, 0)],
+  ['right',        new THREE.Vector3(0,               0, -ROTATION_ANGLE)],
+  ['bottom-left',  new THREE.Vector3(ROTATION_ANGLE,  0, ROTATION_ANGLE)],
+  ['bottom',       new THREE.Vector3(ROTATION_ANGLE,  0, 0)],
+  ['bottom-right', new THREE.Vector3(ROTATION_ANGLE,  0, -ROTATION_ANGLE)]
+]);
 
 const InternalMazeBox = ({ opacity }: { opacity: SpringValue }) => {
   const texture = useTexture('/r3f-demos/maze/maze-texture.png')
@@ -77,12 +91,10 @@ export type MazeBoxRef = {
 
 type MazeBoxProps = {
   opacity: SpringValue,
-  rotationX: number,
-  rotationZ: number,
   onCheckPointCompleted: (checkPointNumber: number) => void
 };
 
-const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, rotationX, rotationZ, onCheckPointCompleted }: MazeBoxProps, ref) => {
+const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, onCheckPointCompleted }: MazeBoxProps, ref) => {
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const rigidBodyRotation = useRef(new THREE.Vector3(0,0,0));
   const checkPointsGroupRef = useRef<Group>(null!);
@@ -90,6 +102,11 @@ const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, rotationX, rota
   const checkPoints = useRef<CheckPointsRef>(null!);
   const desiredRotation= useRef(new THREE.Vector3(0,0,0));
   const [allowRotation, setAllowRotation] = useState(false);
+
+  const onButtonPressed = useCallback((event: ButtonPressedEvent) => {
+    const rotation = BUTTON_ROTATIONS.get(event.button) as THREE.Vector3;
+    desiredRotation.current.set(rotation.x, rotation.y, rotation.z);
+  }, []);
 
   useImperativeHandle(ref, () => ({
     reset: () => {
@@ -106,10 +123,6 @@ const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, rotationX, rota
       setTimeout(() => setAllowRotation(true), 300);
     }
   }, [opacity.isAnimating]);
-
-  useEffect(() => {
-    desiredRotation.current.set(rotationX, 0, rotationZ);
-  }, [rotationX, rotationZ]);
 
   useFrame(() => {
     if (opacity.isAnimating || !allowRotation) return;
@@ -130,6 +143,7 @@ const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, rotationX, rota
         <>
           <RigidBody ref={rigidBodyRef} type={'dynamic'} colliders={'trimesh'} gravityScale={0} mass={0} density={0}>
             <InternalMazeBox opacity={opacity} />
+            <ButtonControls onButtonPressed={onButtonPressed}/>
           </RigidBody>
           <group ref={checkPointsGroupRef}>
             <CheckPoints ref={checkPoints} opacity={opacity} onCheckPointCompleted={onCheckPointCompleted}/>

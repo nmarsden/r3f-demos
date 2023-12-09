@@ -77,7 +77,10 @@ const CheckPoint = ({ checkPointNum, position, completed, onHit } : { checkPoint
           position-y={CHECKPOINT_HEIGHT * 0.5}
           rotation-x={Math.PI * -0.5}
           scale={0.75}
-        >{checkPointNum}</Html>
+          pointerEvents={'none'}
+        >
+          {checkPointNum}
+        </Html>
       </Box>
     </RigidBody>
   );

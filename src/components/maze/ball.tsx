@@ -24,7 +24,6 @@ const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
 
   useImperativeHandle(ref, () => ({
     respawn: () => {
-      // console.info('ball: respawn!');
       setEnabled(false);
       setTimeout(() => setEnabled(true), 300);
     }
