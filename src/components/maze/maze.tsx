@@ -12,7 +12,6 @@ import {Won} from "./won.tsx";
 
 type GameState = 'PLAYING' | 'LOST' | 'WON';
 
-// TODO have ability to reset once goal is reached
 const Maze = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const ball = useRef<BallRef>(null!);
@@ -21,7 +20,7 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
   const [score, setScore] = useState(0);
   const [gameState, setGameState] = useState<GameState>('PLAYING');
 
-  const onFloorHit = useCallback(() => {
+  const resetGame = useCallback(() => {
     if (ball.current && mazeBox.current) {
       setScore(0);
       ball.current.respawn();
@@ -29,12 +28,20 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
     }
   }, []);
 
+  const onFloorHit = useCallback(() => {
+    resetGame();
+  }, [resetGame]);
+
   const onCheckPointCompleted = useCallback((checkPointNum: number) => {
     setScore(score + checkPointNum * 100);
     if (checkPointNum === 4) {
       setGameState('WON');
     }
   }, [score]);
+
+  const onPlayAgainButtonClicked = useCallback(() => {
+    setGameState('PLAYING');
+  }, []);
 
   useEffect(() => {
     if (!mainContext.controls.current) return;
@@ -46,6 +53,12 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
     }
   }, [mainContext, transitionState]);
 
+  useEffect(() => {
+    if (gameState === 'PLAYING') {
+      resetGame();
+    }
+  }, [resetGame,gameState]);
+
   return (
     <>
       <Suspense>
@@ -54,7 +67,7 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
           <Ball ref={ball} opacity={opacity} paused={gameState !== 'PLAYING'}/>
           <MazeBox ref={mazeBox} opacity={opacity} paused={gameState !== 'PLAYING'} onCheckPointCompleted={onCheckPointCompleted}/>
           <FloorSensor opacity={opacity} onHit={onFloorHit}/>
-          {gameState === 'WON' ? <Won /> : null}
+          {gameState === 'WON' ? <Won onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
         </Physics>
       </Suspense>
     </>
