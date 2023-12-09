@@ -32,7 +32,7 @@ export function TrophyModel(props: JSX.IntrinsicElements['group']) {
   useEffect(() => {
     api.start({
       to: [
-        { positionZ: 1.4, rotationZ: Math.PI * 2 },
+        { positionZ: 1.55, rotationZ: Math.PI * 2 },
         { rotationZ: Math.PI * 2, loop: true }
       ]
     })
