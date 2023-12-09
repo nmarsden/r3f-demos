@@ -39,14 +39,12 @@ const InternalMazeBox = ({ opacity }: { opacity: SpringValue }) => {
         <Base>
           <boxGeometry args={[5, 0.25, 5]} />
           {/* @ts-ignore */}
-          <animated.meshStandardMaterial
-            map={texture}
-            metalness={0.45}
-            roughness={0.75}
-            color={BASE_COLOR}
-            transparent={true}
-            opacity={opacity}
-          />
+          <animated.meshStandardMaterial attach="material-0" color={BASE_COLOR} metalness={0.45} roughness={0.75} transparent={true} opacity={opacity} />
+          <animated.meshStandardMaterial attach="material-1" color={BASE_COLOR} metalness={0.45} roughness={0.75} transparent={true} opacity={opacity} />
+          <animated.meshStandardMaterial attach="material-2" color={BASE_COLOR} metalness={0.45} roughness={0.75} transparent={true} opacity={opacity} map={texture} />
+          <animated.meshStandardMaterial attach="material-3" color={BASE_COLOR} metalness={0.45} roughness={0.75} transparent={true} opacity={opacity} />
+          <animated.meshStandardMaterial attach="material-4" color={BASE_COLOR} metalness={0.45} roughness={0.75} transparent={true} opacity={opacity} />
+          <animated.meshStandardMaterial attach="material-5" color={BASE_COLOR} metalness={0.45} roughness={0.75} transparent={true} opacity={opacity} />
         </Base>
 
         {CELLS.map((cell, index) => {
