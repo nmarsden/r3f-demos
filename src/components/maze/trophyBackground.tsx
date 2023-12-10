@@ -57,7 +57,7 @@ const TrophyBackground = () => {
   })
 
   return (
-    <animated.group ref={group} position-y={0.5} position-z={positionZ} rotation-x={Math.PI * -0.5}>
+    <animated.group ref={group} position-y={0.6} position-z={positionZ} rotation-x={Math.PI * -0.5}>
       {RIBBONS.map((ribbon, index) => <Ribbon key={`${index}`} {...ribbon} opacity={opacity} />)}
     </animated.group>
   )
