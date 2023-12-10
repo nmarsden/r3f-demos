@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {animated, config, SpringValue, useSpring} from "@react-spring/three";
-import {Box, Outlines, useCursor} from "@react-three/drei";
+import {Box, Line, MeshDiscardMaterial, useCursor} from "@react-three/drei";
 import {HALF_MAZE_SIZE, MAZE_SIZE} from "./mazeConstants.ts";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {ThreeEvent} from "@react-three/fiber";
 
 const Y_POSITION = 0.3;
@@ -23,12 +22,11 @@ type ButtonHoverChangedEvent = {
 };
 
 const BUTTON_GAP = 0.05;
-const BUTTON_DEPTH = 0.05;
+const BUTTON_DEPTH = 0.001;
 const BUTTON_SIZE = (MAZE_SIZE - (BUTTON_GAP * 2)) / 3;
 const HALF_BUTTON_SIZE = BUTTON_SIZE / 2;
 
 type ButtonControlProps = {
-  opacity: SpringValue;
   paused: boolean;
   button: Button;
   selected: boolean;
@@ -37,8 +35,18 @@ type ButtonControlProps = {
   onButtonHoverChanged: (event: ButtonHoverChangedEvent) => void;
 };
 
-const ButtonControl = ({ opacity, paused, button, selected, position, onButtonPressed, onButtonHoverChanged }: ButtonControlProps) => {
+const ButtonControl = ({ paused, button, selected, position, onButtonPressed, onButtonHoverChanged }: ButtonControlProps) => {
   const [hovered, setHovered] = useState(false);
+
+  const points = useMemo(() => {
+    return [
+      [position[0] - HALF_BUTTON_SIZE, position[1], position[2] - HALF_BUTTON_SIZE],
+      [position[0] + HALF_BUTTON_SIZE, position[1], position[2] - HALF_BUTTON_SIZE],
+      [position[0] + HALF_BUTTON_SIZE, position[1], position[2] + HALF_BUTTON_SIZE],
+      [position[0] - HALF_BUTTON_SIZE, position[1], position[2] + HALF_BUTTON_SIZE],
+      [position[0] - HALF_BUTTON_SIZE, position[1], position[2] - HALF_BUTTON_SIZE]
+    ];
+  }, [position])
 
   const onPointerOver = useCallback((event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
@@ -53,45 +61,31 @@ const ButtonControl = ({ opacity, paused, button, selected, position, onButtonPr
   }, [paused])
 
   return (
-    <Box
-      args={[BUTTON_SIZE, BUTTON_DEPTH, BUTTON_SIZE]}
-      position={position}
-      onClick={(event) => {
-        event.stopPropagation();
-        if (paused) return;
-        onButtonPressed({ button })
-      }}
-      onPointerOver={(event) => onPointerOver(event)}
-      onPointerOut={() => onPointerOut()}
-    >
-      { /* @ts-ignore */ }
-      <animated.meshStandardMaterial
-        color="#f3f3f3"
-        wireframe={false}
-        opacity={opacity}
-        transparent={true}
-      />
+    <>
+      <Box
+        args={[BUTTON_SIZE, BUTTON_DEPTH, BUTTON_SIZE]}
+        position={position}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (paused) return;
+          onButtonPressed({ button })
+        }}
+        onPointerOver={(event) => onPointerOver(event)}
+        onPointerOut={() => onPointerOut()}
+      >
+        <MeshDiscardMaterial />
+      </Box>
       {(hovered || selected) && (
-        <Outlines
-          thickness={0.02}
-          color="orange"
-          angle={Math.PI}
-          screenspace={false}
-          opacity={1}
-          transparent={true}
-        />
+        // @ts-ignore
+        <Line points={points} color={"orange"} lineWidth={5} dashed={false} />
       )}
-    </Box>
+    </>
   );
 }
 const ButtonControls = ({ paused, onButtonPressed }: { paused: boolean; onButtonPressed: (event: ButtonPressedEvent) => void }) => {
   const [selectedButton, setSelectedButton] = useState<Button>('center');
   const [hovered, setHovered] = useState<boolean[]>(BUTTONS.map(() => false));
   const [anyHover, setAnyHover] = useState(false)
-  const [{ opacity }, api] = useSpring(() => ({
-    from: { opacity: 0 },
-    config: config.molasses
-  }))
 
   useCursor(anyHover)
 
@@ -109,12 +103,6 @@ const ButtonControls = ({ paused, onButtonPressed }: { paused: boolean; onButton
     setAnyHover(hoveredIndex >= 0)
   }, [hovered]);
 
-  useEffect(() => {
-    api.start({
-      to: { opacity: 0.15 }
-    })
-  }, []);
-
   return (
     <>
       {BUTTONS.map((button, index) => {
@@ -127,7 +115,6 @@ const ButtonControls = ({ paused, onButtonPressed }: { paused: boolean; onButton
         return (
           <ButtonControl
             key={`${index}`}
-            opacity={opacity}
             paused={paused}
             button={button}
             selected={button === selectedButton}

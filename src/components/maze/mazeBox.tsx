@@ -144,10 +144,10 @@ const MazeBox = forwardRef<MazeBoxRef, MazeBoxProps>(({ opacity, paused, onCheck
         <>
           <RigidBody ref={rigidBodyRef} type={'dynamic'} colliders={'trimesh'} gravityScale={0} mass={0} density={0}>
             <InternalMazeBox opacity={opacity} />
-            <ButtonControls paused={paused} onButtonPressed={onButtonPressed}/>
           </RigidBody>
           <group ref={checkPointsGroupRef}>
             <CheckPoints ref={checkPoints} opacity={opacity} onCheckPointCompleted={onCheckPointCompleted}/>
+            <ButtonControls paused={paused} onButtonPressed={onButtonPressed}/>
           </group>
         </>
       )}
