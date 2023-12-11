@@ -117,7 +117,7 @@ const Ground = ({ opacity }: GroundProps) => {
                 type={'kinematicPosition'}
                 position={instance.position}
               >
-                <mesh>
+                <mesh castShadow={true} receiveShadow={true}>
                   <boxGeometry
                     args={[BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH]}
                   />

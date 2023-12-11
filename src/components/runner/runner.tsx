@@ -15,12 +15,6 @@ import {useTransitionState} from "../../hooks/transitionState.ts";
 const Runner = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);
-  // const extraCamera = useRef<THREE.PerspectiveCamera>(null!);
-  // const { camera } = useThree();
-
-  // // @ts-ignore
-  // useHelper(camera, THREE.CameraHelper)
-  // useHelper(extraCamera, THREE.CameraHelper)
 
   useEffect(() => {
     if (!mainContext.controls.current) return;
@@ -34,11 +28,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
 
   return (
     <>
-      {/*<CameraControls />*/}
       <Suspense>
-        {/*<PerspectiveCamera makeDefault={false} position={[0, 0, 6]} near={1} far={10} fov={70} ref={extraCamera}>*/}
-        {/*  <meshBasicMaterial />*/}
-        {/*</PerspectiveCamera>*/}
         <Physics debug={false}>
           <Ball opacity={opacity}/>
           <Ground opacity={opacity}/>

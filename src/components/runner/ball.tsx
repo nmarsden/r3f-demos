@@ -13,27 +13,32 @@ type BallProps = {
   opacity: SpringValue;
 };
 
-const vec = new THREE.Vector3()
+const spherePosition = new THREE.Vector3()
 const cameraTarget = new THREE.Vector3(0, 0, 0)
 
 const Ball = ({ opacity }: BallProps) => {
+  const light = useRef<THREE.DirectionalLight>(null!);
   const { camera } = useThree();
   const transitionState = useTransitionState(opacity);
-  // const mainContext = useContext(MainContext)
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const texture = useTexture('/r3f-demos/maze/ball-texture.jpg')
-  const ref = useRef<THREE.Mesh>(null!);
+  const sphere = useRef<THREE.Mesh>(null!);
 
   useFrame((state) => {
-    if (opacity.isAnimating || ref.current === null) {
+    if (opacity.isAnimating || sphere.current === null) {
       return;
     }
 
-    // Have the camera follow the ball
-    cameraTarget.lerp(ref.current.getWorldPosition(vec), 0.03)
+    // Move the camera to follow the ball
+    sphere.current.getWorldPosition(spherePosition);
+
+    cameraTarget.lerp(spherePosition, 0.03)
     state.camera.position.setX(cameraTarget.x + 1.2);
     state.camera.position.setY(cameraTarget.y + 2);
     state.camera.position.setZ(cameraTarget.z + 12);
+
+    // Move the light to follow the ball
+    light.current.position.setX(spherePosition.x);
   })
 
   useEffect(() => {
@@ -56,30 +61,41 @@ const Ball = ({ opacity }: BallProps) => {
 
   }, [rigidBodyRef.current])
 
+  useEffect(() => {
+    if (!light.current || !sphere.current) return;
+
+    light.current.target = sphere.current;
+
+  }, [sphere.current, light.current]);
+
   return (
     <>
       {(opacity.isAnimating) ? (
         <></>
       ) : (
-        <RigidBody ref={rigidBodyRef} name={'Ball'} colliders={'ball'} angularDamping={1}>
-          <Sphere
-            ref={ref}
-            args={[BALL_SIZE, 64, 32]}
-            position={[0, 2, 0]}
-            rotation-x={Math.PI * -0.5}
-            rotation-y={Math.PI * -0.1}
-          >
-            { /* @ts-ignore */ }
-            <animated.meshStandardMaterial
-              map={texture}
-              metalness={0.45}
-              roughness={0.75}
-              color={'orange'}
-              transparent={false}
-              opacity={opacity}
-            />
-          </Sphere>
-        </RigidBody>
+        <>
+          <directionalLight ref={light} args={[ 0xffffff, 10 ]} castShadow={true} />
+          <RigidBody ref={rigidBodyRef} name={'Ball'} colliders={'ball'} angularDamping={1}>
+            <Sphere
+              ref={sphere}
+              args={[BALL_SIZE, 64, 32]}
+              position={[0, 2, 0]}
+              rotation-x={Math.PI * -0.5}
+              rotation-y={Math.PI * -0.1}
+              castShadow={true}
+            >
+              { /* @ts-ignore */ }
+              <animated.meshStandardMaterial
+                map={texture}
+                metalness={0.45}
+                roughness={0.75}
+                color={'orange'}
+                transparent={false}
+                opacity={opacity}
+              />
+            </Sphere>
+          </RigidBody>
+        </>
       )}
     </>
   )
