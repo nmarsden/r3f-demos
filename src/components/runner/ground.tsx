@@ -96,8 +96,8 @@ const Ground = ({ opacity }: GroundProps) => {
 
       // update desired position
       const headBoxPosition = DESIRED_POSITIONS[headBoxIndex];
-      headBoxPosition.setX(headBoxPosition.x + TOTAL_WIDTH);
-      headBoxPosition.setY(headBoxPosition.y - TOTAL_HEIGHT);
+      headBoxPosition.setX(headBoxPosition.x + TOTAL_WIDTH + BOX_GAP);
+      headBoxPosition.setY(headBoxPosition.y - (TOTAL_HEIGHT + BOX_GAP));
 
       // update headBoxIndex
       headBoxIndex = (headBoxIndex === (NUM_BOXES-1) ? 0 : headBoxIndex + 1);

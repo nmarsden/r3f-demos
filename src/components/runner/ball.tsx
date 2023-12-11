@@ -6,10 +6,8 @@ import {Sphere, useTexture} from "@react-three/drei";
 import {useFrame, useThree} from "@react-three/fiber";
 import * as THREE from "three";
 import {useTransitionState} from "../../hooks/transitionState.ts";
-// import {MainContext} from "../../mainContext.ts";
 
-const BALL_SIZE = 0.4;
-// const BALL_SIZE = 0.18;
+const BALL_SIZE = 0.8;
 
 type BallProps = {
   opacity: SpringValue;
@@ -33,19 +31,9 @@ const Ball = ({ opacity }: BallProps) => {
 
     // Have the camera follow the ball
     cameraTarget.lerp(ref.current.getWorldPosition(vec), 0.03)
-    state.camera.lookAt(cameraTarget);
-    state.camera.position.setX(cameraTarget.x);
+    state.camera.position.setX(cameraTarget.x + 1.2);
     state.camera.position.setY(cameraTarget.y + 2);
-    state.camera.position.setZ(cameraTarget.z + 10);
-    // state.camera.updateMatrixWorld(true);
-    // state.camera.updateProjectionMatrix();
-
-    // if (mainContext.controls.current) {
-    //   mainContext.controls.current.target.setX(cameraTarget.x);
-    //   mainContext.controls.current.target.setY(cameraTarget.y + 2);
-    //   mainContext.controls.current.target.setZ(0);
-    //   mainContext.controls.current.update();
-    // }
+    state.camera.position.setZ(cameraTarget.z + 12);
   })
 
   useEffect(() => {
@@ -73,7 +61,7 @@ const Ball = ({ opacity }: BallProps) => {
       {(opacity.isAnimating) ? (
         <></>
       ) : (
-        <RigidBody ref={rigidBodyRef} name={'Ball'} colliders={'ball'}>
+        <RigidBody ref={rigidBodyRef} name={'Ball'} colliders={'ball'} angularDamping={1}>
           <Sphere
             ref={ref}
             args={[BALL_SIZE, 64, 32]}
