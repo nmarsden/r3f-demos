@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {SpringValue} from "@react-spring/three";
 import {Ball} from "./ball.tsx";
-import {Suspense, useContext, useEffect} from "react";
+import {Suspense, useCallback, useContext, useEffect} from "react";
 import {Physics} from "@react-three/rapier";
 import {Ground} from "./ground.tsx";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
+import {ControlPanel} from "./controlPanel.tsx";
 
 // TODO add a button to make the ball jump
 // TODO add obstacles
@@ -15,6 +16,10 @@ import {useTransitionState} from "../../hooks/transitionState.ts";
 const Runner = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);
+
+  const onButtonClicked = useCallback(() => {
+    console.info('button clicked!');
+  }, []);
 
   useEffect(() => {
     if (!mainContext.controls.current) return;
@@ -32,6 +37,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
         <Physics debug={false}>
           <Ball opacity={opacity}/>
           <Ground opacity={opacity}/>
+          <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked}/>
         </Physics>
       </Suspense>
     </>

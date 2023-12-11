@@ -3,10 +3,13 @@ import {SpringValue} from "@react-spring/three";
 import {Suspense, useCallback, useEffect, useState} from "react";
 import {Physics, RigidBody, CuboidCollider} from "@react-three/rapier";
 import {GrabbableBox, GrabbedChangeEvent, HoveredChangeEvent} from "./grabbableBox";
-import {ButtonHoveredChangedEvent, PushButton} from "./pushButton";
+import {ButtonHoveredChangedEvent, PushButton} from "../pushButton/pushButton.tsx";
 import {Counter} from "./counter";
+import * as THREE from "three";
 
 const MAX_NUM_BOXES = 100;
+
+const BUTTON_POSITION = new THREE.Vector3(0, -1.3, 1.75);
 
 const Boxes = ({ opacity }: { opacity: SpringValue }) => {
   const [isShowBox, setShowBox] = useState([...Array(MAX_NUM_BOXES)].map(() => false));
@@ -88,14 +91,14 @@ const Boxes = ({ opacity }: { opacity: SpringValue }) => {
                 })
               }
               <RigidBody type={'fixed'} colliders={'cuboid'}>
-                <PushButton opacity={opacity} onHoveredChanged={onButtonHoveredChanged} onButtonClicked={onButtonClicked} enabled={!isAnyBoxGrabbed && !isExploded}/>
+                <PushButton opacity={opacity} position={BUTTON_POSITION} scale={0.25} onHoveredChanged={onButtonHoveredChanged} onButtonClicked={onButtonClicked} enabled={!isAnyBoxGrabbed && !isExploded}/>
               </RigidBody>
 
               <CuboidCollider position={[0, -1.5, 0]} args={[20, 0.2, 20]} />
             </>
           ) : (
             <>
-              <PushButton opacity={opacity} onHoveredChanged={onButtonHoveredChanged} onButtonClicked={onButtonClicked} enabled={false}/>
+              <PushButton opacity={opacity} position={BUTTON_POSITION} scale={0.25} onHoveredChanged={onButtonHoveredChanged} onButtonClicked={onButtonClicked} enabled={false}/>
             </>
           )}
         </Physics>

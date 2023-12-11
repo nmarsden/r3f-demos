@@ -36,13 +36,15 @@ export type ButtonHoveredChangedEvent = {
   isHovered: boolean;
 }
 type PushButtonProps = {
-  opacity: SpringValue,
-  onHoveredChanged: (event: ButtonHoveredChangedEvent) => void,
-  onButtonClicked: () => void,
-  enabled: boolean
+  opacity: SpringValue;
+  position: THREE.Vector3;
+  scale: number;
+  onHoveredChanged: (event: ButtonHoveredChangedEvent) => void;
+  onButtonClicked: () => void;
+  enabled: boolean;
 }
 
-const PushButton = ({ opacity, onHoveredChanged, onButtonClicked, enabled }: PushButtonProps) => {
+const PushButton = ({ opacity, position, scale, onHoveredChanged, onButtonClicked, enabled }: PushButtonProps) => {
   const [{ positionY }, api] = useSpring(() => ({
     from: { positionY: 0.5 },
     config: config.stiff
@@ -76,9 +78,8 @@ const PushButton = ({ opacity, onHoveredChanged, onButtonClicked, enabled }: Pus
   }, [enabled, onButtonClicked])
 
   return <group
-    scale={0.25}
-    position-z={1.75}
-    position-y={-1.3}
+    scale={scale}
+    position={position}
   >
     <ButtonBase opacity={opacity} />
     <animated.mesh
