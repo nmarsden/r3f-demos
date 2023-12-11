@@ -75,7 +75,7 @@ const Ball = ({ opacity }: BallProps) => {
         <></>
       ) : (
         <>
-          <directionalLight ref={light} args={[ 0xffffff, 10 ]} castShadow={true} />
+          <directionalLight ref={light} args={[ 0xdddddd, 10 ]} castShadow={true} />
           <RigidBody ref={rigidBodyRef} name={'Ball'} colliders={'ball'} angularDamping={1}>
             <Sphere
               ref={sphere}
