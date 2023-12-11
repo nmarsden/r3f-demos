@@ -10,6 +10,7 @@ import {Shapes} from "./components/shapes/shapes";
 import {Paint} from "./components/paint/paint";
 import {Boxes} from "./components/boxes/boxes";
 import {Maze} from "./components/maze/maze.tsx";
+import {Runner} from "./components/runner/runner.tsx";
 import {About} from "./components/about/about.tsx";
 import {Environment, Loader, OrbitControls} from "@react-three/drei";
 import {Route, Switch, Router} from "wouter";
@@ -19,7 +20,7 @@ import * as THREE from "three";
 import {MainContext} from "./mainContext";
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import {useHashLocation} from "./hooks/hashLocation.ts";
-import { suspend } from 'suspend-react'
+import {suspend } from 'suspend-react'
 // @ts-ignore
 const warehouse = import('@pmndrs/assets/hdri/warehouse.exr').then((module) => module.default)
 
@@ -30,6 +31,7 @@ const pages: Page[] = [
   { name: 'Paint', path: '/paint', screenshot: '/r3f-demos/home/paint.png', renderFn: (props) => <Paint {...props} /> },
   { name: 'Boxes', path: '/boxes', screenshot: '/r3f-demos/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
   { name: 'Maze', path: '/maze', screenshot: '/r3f-demos/home/maze.png', renderFn: (props) => <Maze {...props} />, cameraPosition: new THREE.Vector3(0, 8, 0) },
+  { name: 'Runner', path: '/runner', screenshot: '/r3f-demos/home/maze.png', renderFn: (props) => <Runner {...props} />, cameraPosition: new THREE.Vector3(0, 2, 10) },
   // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
   { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },
