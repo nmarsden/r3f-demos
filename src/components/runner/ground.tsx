@@ -10,18 +10,18 @@ type GroundProps = {
   opacity: SpringValue;
 };
 
+const NUM_BOXES = 10;
+
 const BOX_WIDTH = 0.8;
 const BOX_HEIGHT = 0.125;
 const BOX_DEPTH = 2;
 const BOX_COLOR = 'white';
 const BOX_GAP = 0.1;
 
-const BOX_MOVE_TIME_GAP = 0.5;
-
-const NUM_BOXES = 10;
-
 const TOTAL_WIDTH = (NUM_BOXES * BOX_WIDTH) + ((NUM_BOXES - 1) * BOX_GAP);
 const TOTAL_HEIGHT = (NUM_BOXES * BOX_HEIGHT) + ((NUM_BOXES - 1) * BOX_GAP);
+
+const MAX_X_DISTANCE_BETWEEN_HEAD_BOX_AND_CAMERA = TOTAL_WIDTH * 0.45;
 
 const BOX_MOVE_Y_GAP = BOX_HEIGHT;
 
@@ -29,7 +29,6 @@ const DESIRED_POSITIONS: THREE.Vector3[] = new Array(NUM_BOXES);
 const INSTANCES: InstancedRigidBodyProps[] = new Array(NUM_BOXES);
 
 let headBoxIndex = 0;
-let lastTimeBoxMoved = 0;
 
 const Ground = ({ opacity }: GroundProps) => {
   const transitionState = useTransitionState(opacity);
@@ -49,7 +48,6 @@ const Ground = ({ opacity }: GroundProps) => {
         };
       }
       headBoxIndex = 0;
-      lastTimeBoxMoved = 0;
     }
   }, [transitionState]);
 
@@ -86,16 +84,13 @@ const Ground = ({ opacity }: GroundProps) => {
 
     if (opacity.isAnimating) return;
 
-    // -- Update desired positions
-    const diff = state.clock.elapsedTime - lastTimeBoxMoved
+    // -- Update desired position of head box
+    const headBoxPosition = DESIRED_POSITIONS[headBoxIndex];
+    const xDistanceBetweenHeadBoxAndCamera = state.camera.position.x - headBoxPosition.x;
 
-    if (diff > BOX_MOVE_TIME_GAP) {
-
-      // update last time box moved
-      lastTimeBoxMoved = state.clock.elapsedTime;
+    if (xDistanceBetweenHeadBoxAndCamera > MAX_X_DISTANCE_BETWEEN_HEAD_BOX_AND_CAMERA) {
 
       // update desired position
-      const headBoxPosition = DESIRED_POSITIONS[headBoxIndex];
       headBoxPosition.setX(headBoxPosition.x + TOTAL_WIDTH + BOX_GAP);
       headBoxPosition.setY(headBoxPosition.y - (TOTAL_HEIGHT + BOX_GAP));
 

@@ -8,6 +8,7 @@ import * as THREE from "three";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 
 const BALL_SIZE = 0.8;
+const BALL_START_POSITION = new THREE.Vector3(0, 2, 0);
 
 type BallProps = {
   opacity: SpringValue;
@@ -18,13 +19,13 @@ const cameraTarget = new THREE.Vector3(0, 0, 0)
 
 const Ball = ({ opacity }: BallProps) => {
   const light = useRef<THREE.DirectionalLight>(null!);
-  const { camera } = useThree();
+  const {camera} = useThree();
   const transitionState = useTransitionState(opacity);
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const texture = useTexture('/r3f-demos/maze/ball-texture.jpg')
   const sphere = useRef<THREE.Mesh>(null!);
 
-  useFrame((state) => {
+  useFrame(() => {
     if (opacity.isAnimating || sphere.current === null) {
       return;
     }
@@ -33,9 +34,9 @@ const Ball = ({ opacity }: BallProps) => {
     sphere.current.getWorldPosition(spherePosition);
 
     cameraTarget.lerp(spherePosition, 0.03)
-    state.camera.position.setX(cameraTarget.x + 1.2);
-    state.camera.position.setY(cameraTarget.y + 2);
-    state.camera.position.setZ(cameraTarget.z + 12);
+    camera.position.setX(cameraTarget.x);
+    camera.position.setY(cameraTarget.y + 2);
+    camera.position.setZ(cameraTarget.z + 16);
 
     // Move the light to follow the ball
     light.current.position.setX(spherePosition.x);
@@ -79,7 +80,7 @@ const Ball = ({ opacity }: BallProps) => {
             <Sphere
               ref={sphere}
               args={[BALL_SIZE, 64, 32]}
-              position={[0, 2, 0]}
+              position={BALL_START_POSITION}
               rotation-x={Math.PI * -0.5}
               rotation-y={Math.PI * -0.1}
               castShadow={true}
