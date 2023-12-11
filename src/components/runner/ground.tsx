@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {SpringValue, animated} from "@react-spring/three";
-import {InstancedRigidBodies, InstancedRigidBodyProps, RapierRigidBody, vec3} from "@react-three/rapier";
+import {InstancedRigidBodyProps, RapierRigidBody, RigidBody, vec3} from "@react-three/rapier";
 import * as THREE from "three";
 import {useFrame} from "@react-three/fiber";
 import {useEffect, useRef} from "react";
@@ -33,7 +33,7 @@ let lastTimeBoxMoved = 0;
 
 const Ground = ({ opacity }: GroundProps) => {
   const transitionState = useTransitionState(opacity);
-  const rigidBodies = useRef<RapierRigidBody[]>(null);
+  const rigidBodies = useRef<RapierRigidBody[]>([]);
 
   useEffect(() => {
     if (transitionState === 'ENTERING') {
@@ -105,31 +105,37 @@ const Ground = ({ opacity }: GroundProps) => {
   });
 
   return (
-    <>
-      {(opacity.isAnimating) ? (
+      (opacity.isAnimating) ? (
         <></>
       ) : (
-        <InstancedRigidBodies
-          ref={rigidBodies}
-          instances={INSTANCES}
-          colliders="cuboid"
-          type={'kinematicPosition'}
-        >
-          <instancedMesh receiveShadow castShadow args={[undefined, undefined, INSTANCES.length]} dispose={null}>
-              <boxGeometry args={[BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH]}/>
-              {/* @ts-ignore */}
-              <animated.meshStandardMaterial
-                metalness={0.55}
-                roughness={0.75}
-                color={BOX_COLOR}
-                transparent={true}
-                opacity={opacity}
-              />
-          </instancedMesh>
-        </InstancedRigidBodies>
-      )}
-    </>
-  )
+        <>
+          {INSTANCES.map((instance, index) => {
+            return (
+              <RigidBody
+                key={instance.key}
+                ref={(rigidBody) => (rigidBodies.current[index] = rigidBody as RapierRigidBody)}
+                type={'kinematicPosition'}
+                position={instance.position}
+              >
+                <mesh>
+                  <boxGeometry
+                    args={[BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH]}
+                  />
+                  { /* @ts-ignore */ }
+                  <animated.meshStandardMaterial
+                    metalness={0.55}
+                    roughness={0.75}
+                    color={BOX_COLOR}
+                    transparent={true}
+                    opacity={opacity}
+                  />
+                </mesh>
+              </RigidBody>
+            )
+          })}
+      </>
+    )
+  );
 }
 
 export { Ground }

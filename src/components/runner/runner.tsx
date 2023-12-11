@@ -7,8 +7,6 @@ import {Ground} from "./ground.tsx";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 
-// TODO fix: objects are no longer rendered after moving them to the right
-// TODO fix: floor should not be enabled when 'runner'
 // TODO add a button to make the ball jump
 // TODO add obstacles
 // TODO add a start state
@@ -41,7 +39,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
         {/*<PerspectiveCamera makeDefault={false} position={[0, 0, 6]} near={1} far={10} fov={70} ref={extraCamera}>*/}
         {/*  <meshBasicMaterial />*/}
         {/*</PerspectiveCamera>*/}
-        <Physics debug={true}>
+        <Physics debug={false}>
           <Ball opacity={opacity}/>
           <Ground opacity={opacity}/>
         </Physics>
