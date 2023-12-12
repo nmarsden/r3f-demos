@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {SpringValue, animated} from "@react-spring/three";
-import {useEffect, useRef} from "react";
+import {forwardRef, useEffect, useImperativeHandle, useRef} from "react";
 import {RapierRigidBody, RigidBody} from "@react-three/rapier";
 import {Sphere, useTexture} from "@react-three/drei";
 import {useFrame, useThree} from "@react-three/fiber";
@@ -10,6 +10,11 @@ import {useTransitionState} from "../../hooks/transitionState.ts";
 const BALL_SIZE = 0.8;
 const BALL_START_POSITION = new THREE.Vector3(0, 2, 0);
 
+export type BallRef = {
+  jump: () => void;
+  resetForces: () => void;
+} | null;
+
 type BallProps = {
   opacity: SpringValue;
 };
@@ -17,13 +22,22 @@ type BallProps = {
 const spherePosition = new THREE.Vector3()
 const cameraTarget = new THREE.Vector3(0, 0, 0)
 
-const Ball = ({ opacity }: BallProps) => {
+const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
   const light = useRef<THREE.DirectionalLight>(null!);
   const {camera} = useThree();
   const transitionState = useTransitionState(opacity);
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const texture = useTexture('/r3f-demos/maze/ball-texture.jpg')
   const sphere = useRef<THREE.Mesh>(null!);
+
+  useImperativeHandle(ref, () => ({
+    jump: () => {
+      rigidBodyRef.current.applyImpulse(new THREE.Vector3(0, 25, 0), true);
+    },
+    resetForces: () => {
+      rigidBodyRef.current.setLinvel(new THREE.Vector3(1, 0, 0), true);
+    }
+  }), [rigidBodyRef]);
 
   useFrame(() => {
     if (opacity.isAnimating || sphere.current === null) {
@@ -33,7 +47,7 @@ const Ball = ({ opacity }: BallProps) => {
     // Move the camera to follow the ball
     sphere.current.getWorldPosition(spherePosition);
 
-    cameraTarget.lerp(spherePosition, 0.03)
+    cameraTarget.lerp(spherePosition, 0.1)
     camera.position.setX(cameraTarget.x);
     camera.position.setY(cameraTarget.y + 2);
     camera.position.setZ(cameraTarget.z + 16);
@@ -100,6 +114,6 @@ const Ball = ({ opacity }: BallProps) => {
       )}
     </>
   )
-}
+});
 
 export { Ball }

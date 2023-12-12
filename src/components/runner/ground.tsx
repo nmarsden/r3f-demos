@@ -8,6 +8,7 @@ import {useTransitionState} from "../../hooks/transitionState.ts";
 
 type GroundProps = {
   opacity: SpringValue;
+  onGroundHit: () => void;
 };
 
 const NUM_BOXES = 10;
@@ -21,7 +22,7 @@ const BOX_GAP = 0.1;
 const TOTAL_WIDTH = (NUM_BOXES * BOX_WIDTH) + ((NUM_BOXES - 1) * BOX_GAP);
 const TOTAL_HEIGHT = (NUM_BOXES * BOX_HEIGHT) + ((NUM_BOXES - 1) * BOX_GAP);
 
-const MAX_X_DISTANCE_BETWEEN_HEAD_BOX_AND_CAMERA = TOTAL_WIDTH * 0.45;
+const MAX_X_DISTANCE_BETWEEN_HEAD_BOX_AND_CAMERA = (TOTAL_WIDTH * 0.5) - (BOX_WIDTH * 1.625);
 
 const BOX_MOVE_Y_GAP = BOX_HEIGHT;
 
@@ -30,7 +31,7 @@ const INSTANCES: InstancedRigidBodyProps[] = new Array(NUM_BOXES);
 
 let headBoxIndex = 0;
 
-const Ground = ({ opacity }: GroundProps) => {
+const Ground = ({ opacity, onGroundHit }: GroundProps) => {
   const transitionState = useTransitionState(opacity);
   const rigidBodies = useRef<RapierRigidBody[]>([]);
 
@@ -111,6 +112,7 @@ const Ground = ({ opacity }: GroundProps) => {
                 ref={(rigidBody) => (rigidBodies.current[index] = rigidBody as RapierRigidBody)}
                 type={'kinematicPosition'}
                 position={instance.position}
+                onCollisionEnter={onGroundHit}
               >
                 <mesh castShadow={true} receiveShadow={true}>
                   <boxGeometry
