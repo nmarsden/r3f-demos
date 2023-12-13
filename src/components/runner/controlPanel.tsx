@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {animated, SpringValue} from "@react-spring/three";
-import {useEffect, useRef} from "react";
-import {Box} from "@react-three/drei";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {Box, useCursor} from "@react-three/drei";
 import * as THREE from "three";
 import {useFrame} from "@react-three/fiber";
-import {PushButton} from "../pushButton/pushButton.tsx";
+import {ButtonHoveredChangedEvent, PushButton} from "../pushButton/pushButton.tsx";
 
 const SIZE = 0.75;
 const BUTTON_POSITION = new THREE.Vector3(0, 0.38, 0);
@@ -12,6 +12,13 @@ const BUTTON_POSITION = new THREE.Vector3(0, 0.38, 0);
 const ControlPanel = ({ opacity, onButtonClicked }: { opacity: SpringValue, onButtonClicked: () => void }) => {
   const box = useRef<THREE.Mesh>(null!);
   const spotLight = useRef<THREE.SpotLight>(null!);
+  const [hovered, setHovered] = useState(false);
+
+  const onButtonHovered = useCallback((event: ButtonHoveredChangedEvent) => {
+    setHovered(event.isHovered);
+  }, []);
+
+  useCursor(hovered);
 
   useFrame(({ camera }) => {
     if (!box.current) return;
@@ -46,7 +53,7 @@ const ControlPanel = ({ opacity, onButtonClicked }: { opacity: SpringValue, onBu
           transparent={true}
           opacity={opacity}
         />
-        <PushButton opacity={opacity} position={BUTTON_POSITION} scale={0.085} onHoveredChanged={() => {}} onButtonClicked={onButtonClicked} enabled={true} />
+        <PushButton opacity={opacity} position={BUTTON_POSITION} scale={0.085} onHoveredChanged={onButtonHovered} onButtonClicked={onButtonClicked} enabled={true} />
         <spotLight ref={spotLight} angle={0.51} intensity={2} castShadow={true} position={[0, 1, 0]} />
       </Box>
     </>
