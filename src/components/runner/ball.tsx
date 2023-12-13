@@ -54,6 +54,7 @@ const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
 
     // Move the light to follow the ball
     light.current.position.setX(spherePosition.x);
+    light.current.position.setY(spherePosition.y + 1);
   })
 
   useEffect(() => {
