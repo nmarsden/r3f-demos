@@ -18,12 +18,11 @@ const OBSTACLE_GAP = 10;
 
 const Obstacles = ({ opacity, groundBounds }: ObstaclesProps) => {
   const [position, setPosition] = useState<THREE.Vector3>(null!);
-  const [nextPosition, setNextPosition] = useState<THREE.Vector3>(null!);
+  const [nextPosition, setNextPosition] = useState<THREE.Vector3 | null>(null);
   const [{ obstacleOpacity }, api] = useSpring(() => ({
     from: { obstacleOpacity: 0 },
     config: config.stiff
   }))
-  const [updateNextPosition, setUpdateNextPosition] = useState(false);
 
   // -- Set initial position
   useEffect(() => {
@@ -35,13 +34,12 @@ const Obstacles = ({ opacity, groundBounds }: ObstaclesProps) => {
       from: { obstacleOpacity: 0 },
       to: { obstacleOpacity: 1 } }
     );
-    setUpdateNextPosition(true);
 
   }, [opacity.isAnimating, position, groundBounds]);
 
   // -- Update position
   useEffect(() => {
-    if (opacity.isAnimating || updateNextPosition || !nextPosition) return;
+    if (opacity.isAnimating || !nextPosition) return;
 
     api.start({
       from: { obstacleOpacity: 1 },
@@ -52,19 +50,17 @@ const Obstacles = ({ opacity, groundBounds }: ObstaclesProps) => {
           from: { obstacleOpacity: 0 },
           to: { obstacleOpacity: 1 }
         })
-        setUpdateNextPosition(true);
+        setNextPosition(null);
       }
     })
 
-  }, [opacity.isAnimating, updateNextPosition, nextPosition])
+  }, [opacity.isAnimating, nextPosition])
 
   // -- Update next position
   useFrame((state) => {
-    if (opacity.isAnimating || !updateNextPosition) return;
+    if (opacity.isAnimating || !position || nextPosition) return;
 
     if ((state.camera.position.x - position.x) > OBSTACLE_GAP) {
-
-      setUpdateNextPosition(false);
       setNextPosition(new THREE.Vector3(groundBounds.max.x + 2, groundBounds.max.y, 0));
     }
   });
