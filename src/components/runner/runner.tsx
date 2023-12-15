@@ -3,7 +3,7 @@ import {SpringValue} from "@react-spring/three";
 import {Ball, BallRef} from "./ball.tsx";
 import {Suspense, useCallback, useContext, useEffect, useRef, useState} from "react";
 import {Physics} from "@react-three/rapier";
-import {Ground} from "./ground.tsx";
+import {Ground, GroundBoundsChangedEvent} from "./ground.tsx";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 import {ControlPanel} from "./controlPanel.tsx";
@@ -11,13 +11,9 @@ import {Obstacles} from "./obstacles.tsx";
 import * as THREE from "three";
 import {useFrame} from "@react-three/fiber";
 
-const OBSTACLE_OFFSET_FROM_CAMERA = new THREE.Vector3(7, -2, -16);
 const OBSTACLE_GAP = 10;
 
-const vector = new THREE.Vector3();
-
 // TODO obstacle: refactor to handle respawning itself
-// TODO obstacle: fix bug with respawning in the wrong position when jumping
 // TODO add a start state
 // TODO add a loss state
 // TODO add a completed state
@@ -26,8 +22,9 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
   const transitionState = useTransitionState(opacity);
   const ball = useRef<BallRef>(null);
   const [jumping, setJumping] = useState(false);
-  const [obstaclePosition, setObstaclePosition] = useState(new THREE.Vector3(7, 1, 0));
+  const [obstaclePosition, setObstaclePosition] = useState(new THREE.Vector3());
   const [showObstacle, setShowObstacle] = useState(false);
+  const [nextObstaclePosition, setNextObstaclePosition] = useState(new THREE.Vector3());
 
   const onButtonClicked = useCallback(() => {
     if (!ball.current || jumping) return;
@@ -42,6 +39,10 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
     ball.current?.resetForces();
   }, [ball,jumping]);
 
+  const onGroundBoundsChanged = useCallback((event: GroundBoundsChangedEvent) => {
+    setNextObstaclePosition(new THREE.Vector3(event.bounds.max.x + 2, event.bounds.max.y, 0));
+  }, []);
+
   useEffect(() => {
     if (!mainContext.controls.current) return;
 
@@ -53,6 +54,8 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
   }, [mainContext, transitionState]);
 
   useEffect(() => {
+    if (opacity.isAnimating || !ball.current) return;
+
     setShowObstacle(false);
     setTimeout(() => setShowObstacle(true), 1000);
   }, [obstaclePosition])
@@ -62,11 +65,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
 
     // -- Reposition obstacle
     if ((state.camera.position.x - obstaclePosition.x) > OBSTACLE_GAP) {
-
-      state.camera.getWorldPosition(vector);
-      vector.add(OBSTACLE_OFFSET_FROM_CAMERA);
-
-      setObstaclePosition(vector.clone());
+      setObstaclePosition(nextObstaclePosition.clone());
     }
   });
 
@@ -75,7 +74,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
       <Suspense>
         <Physics debug={false}>
           <Ball ref={ball} opacity={opacity}/>
-          <Ground opacity={opacity} onGroundHit={onGroundHit}/>
+          <Ground opacity={opacity} onGroundHit={onGroundHit} onGroundBoundsChanged={onGroundBoundsChanged}/>
           {showObstacle ? <Obstacles opacity={opacity} position={obstaclePosition}/> : null}
           <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked}/>
         </Physics>

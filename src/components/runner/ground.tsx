@@ -3,12 +3,17 @@ import {SpringValue, animated} from "@react-spring/three";
 import {InstancedRigidBodyProps, RapierRigidBody, RigidBody, vec3} from "@react-three/rapier";
 import * as THREE from "three";
 import {useFrame} from "@react-three/fiber";
-import {useEffect, useRef} from "react";
+import {useCallback, useEffect, useRef} from "react";
 import {useTransitionState} from "../../hooks/transitionState.ts";
+
+export type GroundBoundsChangedEvent = {
+  bounds: THREE.Box2;
+};
 
 type GroundProps = {
   opacity: SpringValue;
   onGroundHit: () => void;
+  onGroundBoundsChanged: (event: GroundBoundsChangedEvent) => void
 };
 
 const NUM_BOXES = 10;
@@ -27,13 +32,38 @@ const MAX_X_DISTANCE_BETWEEN_HEAD_BOX_AND_CAMERA = (TOTAL_WIDTH * 0.5) - (BOX_WI
 const BOX_MOVE_Y_GAP = BOX_HEIGHT;
 
 const DESIRED_POSITIONS: THREE.Vector3[] = new Array(NUM_BOXES);
+const DESIRED_POSITIONS_XY: THREE.Vector2[] = new Array(NUM_BOXES);
+for (let i =0; i<NUM_BOXES; i++) {
+  DESIRED_POSITIONS_XY[i] = new THREE.Vector2();
+}
+
 const INSTANCES: InstancedRigidBodyProps[] = new Array(NUM_BOXES);
 
 let headBoxIndex = 0;
 
-const Ground = ({ opacity, onGroundHit }: GroundProps) => {
+const Ground = ({ opacity, onGroundHit, onGroundBoundsChanged }: GroundProps) => {
   const transitionState = useTransitionState(opacity);
   const rigidBodies = useRef<RapierRigidBody[]>([]);
+  // const [points, setPoints] = useState<number[][]>([])
+
+  const updateGroundBounds = useCallback(() => {
+    DESIRED_POSITIONS.forEach((desiredPosition, index) => {
+      DESIRED_POSITIONS_XY[index].x = desiredPosition.x;
+      DESIRED_POSITIONS_XY[index].y = desiredPosition.y;
+    })
+    const bounds = new THREE.Box2();
+    bounds.setFromPoints(DESIRED_POSITIONS_XY);
+
+    onGroundBoundsChanged({ bounds });
+
+    // setPoints([
+    //   [bounds.min.x, bounds.min.y, 0],
+    //   [bounds.max.x, bounds.min.y, 0],
+    //   [bounds.max.x, bounds.max.y, 0],
+    //   [bounds.min.x, bounds.max.y, 0],
+    //   [bounds.min.x, bounds.min.y, 0]
+    // ])
+  }, []);
 
   useEffect(() => {
     if (transitionState === 'ENTERING') {
@@ -48,6 +78,8 @@ const Ground = ({ opacity, onGroundHit }: GroundProps) => {
           position: DESIRED_POSITIONS[index]
         };
       }
+      updateGroundBounds();
+
       headBoxIndex = 0;
     }
   }, [transitionState]);
@@ -97,6 +129,9 @@ const Ground = ({ opacity, onGroundHit }: GroundProps) => {
 
       // update headBoxIndex
       headBoxIndex = (headBoxIndex === (NUM_BOXES-1) ? 0 : headBoxIndex + 1);
+
+      // re-calculate desired bounds
+      updateGroundBounds();
     }
   });
 
@@ -130,6 +165,8 @@ const Ground = ({ opacity, onGroundHit }: GroundProps) => {
               </RigidBody>
             )
           })}
+          { /* @ts-ignore */ }
+          {/*<Line points={points} color={"orange"} lineWidth={5} dashed={false} />*/}
       </>
     )
   );
