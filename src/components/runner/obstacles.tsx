@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {SpringValue, animated, useSpring, config} from "@react-spring/three";
-import {RigidBody} from "@react-three/rapier";
+import {CuboidCollider, RigidBody} from "@react-three/rapier";
 import * as THREE from "three";
 import {useEffect, useState} from "react";
 import {useFrame} from "@react-three/fiber";
@@ -8,6 +8,8 @@ import {useFrame} from "@react-three/fiber";
 type ObstaclesProps = {
   opacity: SpringValue;
   groundBounds: THREE.Box2;
+  onObstacleHit: () => void;
+  onObstaclePassed: () => void;
 };
 
 const BOX_WIDTH = 0.25;
@@ -16,7 +18,7 @@ const BOX_DEPTH = 4;
 const BOX_COLOR = 'red';
 const OBSTACLE_GAP = 10;
 
-const Obstacles = ({ opacity, groundBounds }: ObstaclesProps) => {
+const Obstacles = ({ opacity, groundBounds, onObstacleHit, onObstaclePassed }: ObstaclesProps) => {
   const [position, setPosition] = useState<THREE.Vector3>(null!);
   const [nextPosition, setNextPosition] = useState<THREE.Vector3 | null>(null);
   const [{ obstacleOpacity }, api] = useSpring(() => ({
@@ -73,6 +75,7 @@ const Obstacles = ({ opacity, groundBounds }: ObstaclesProps) => {
           <RigidBody
             type={'kinematicPosition'}
             position={position}
+            onCollisionEnter={() => onObstacleHit()}
           >
             <mesh castShadow={true} receiveShadow={true}>
               <boxGeometry
@@ -87,6 +90,12 @@ const Obstacles = ({ opacity, groundBounds }: ObstaclesProps) => {
                 opacity={obstacleOpacity}
               />
             </mesh>
+            <CuboidCollider
+              args={[BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH]}
+              position={[2,0,0]}
+              sensor={true}
+              onIntersectionEnter={onObstaclePassed}
+            />
           </RigidBody>
       </>
     )
