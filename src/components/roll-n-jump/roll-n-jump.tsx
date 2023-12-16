@@ -14,6 +14,7 @@ import {GameOver} from "./gameOver.tsx";
 import {ButtonHoveredChangedEvent} from "../pushButton/pushButton.tsx";
 import {useCursor} from "@react-three/drei";
 import {Bloom, EffectComposer} from "@react-three/postprocessing";
+import {Background} from "./background.tsx";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
@@ -95,6 +96,7 @@ const RollNJump = ({ opacity }: { opacity: SpringValue }) => {
           <Obstacles ref={obstacles} opacity={opacity} groundBounds={groundBounds} onObstacleHit={onObstacleHit} onObstaclePassed={onObstaclePassed}/>
           <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING'}/>
           <Score opacity={opacity} score={score} />
+          <Background opacity={opacity} groundBounds={groundBounds} />
           {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
         </Physics>
         <EffectComposer enabled={transitionState !== 'LEAVING'}>
