@@ -67,7 +67,7 @@ const Maze = ({ opacity }: { opacity: SpringValue }) => {
           <Ball ref={ball} opacity={opacity} paused={gameState !== 'PLAYING'}/>
           <MazeBox ref={mazeBox} opacity={opacity} paused={gameState !== 'PLAYING'} onCheckPointCompleted={onCheckPointCompleted}/>
           <FloorSensor opacity={opacity} onHit={onFloorHit}/>
-          {gameState === 'WON' ? <Won onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
+          {gameState === 'WON' ? <Won opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
         </Physics>
       </Suspense>
     </>

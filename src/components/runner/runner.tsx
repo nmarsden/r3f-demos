@@ -93,7 +93,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
           <Obstacles ref={obstacles} opacity={opacity} groundBounds={groundBounds} onObstacleHit={onObstacleHit} onObstaclePassed={onObstaclePassed}/>
           <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING'}/>
           <Score opacity={opacity} score={score} />
-          {gameState === 'GAME_OVER' ? <GameOver onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
+          {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
         </Physics>
       </Suspense>
     </>
