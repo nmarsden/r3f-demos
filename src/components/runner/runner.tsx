@@ -29,6 +29,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
   const [groundBounds, setGroundBounds] = useState<THREE.Box2>(new THREE.Box2());
   const [gameState, setGameState] = useState<GameState>('PLAYING');
   const [hovered, setHovered] = useState(false);
+  const [paused, setPaused] = useState(false);
 
   const onControlPanelButtonHovered = useCallback((event: ButtonHoveredChangedEvent) => {
     setHovered(event.isHovered);
@@ -57,6 +58,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
     setHovered(false);
     ball.current?.pause();
     ground.current?.pause();
+    setPaused(true);
     setGameState('GAME_OVER');
   }, []);
 
@@ -69,6 +71,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
     ball.current?.unpause();
     ground.current?.unpause();
     obstacles.current?.reset();
+    setPaused(false)
     setGameState('PLAYING');
   }, [obstacles]);
 
@@ -85,7 +88,7 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
   return (
     <>
       <Suspense>
-        <Physics debug={false}>
+        <Physics debug={false} paused={paused}>
           <Ball ref={ball} opacity={opacity}/>
           <Ground ref={ground} opacity={opacity} onGroundHit={onGroundHit} onGroundBoundsChanged={onGroundBoundsChanged}/>
           <Obstacles ref={obstacles} opacity={opacity} groundBounds={groundBounds} onObstacleHit={onObstacleHit} onObstaclePassed={onObstaclePassed}/>
