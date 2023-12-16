@@ -14,7 +14,7 @@ const Score = ({ opacity, score }: { opacity: SpringValue, score: number }) => {
       zIndexRange={[50, 40]}
     >
       <div className={`mazeScore ${transitionState === 'ENTERING' ? 'fade-in': ''} ${transitionState === 'LEAVING' ? 'fade-out': ''}`}>
-        <div style={{ color: '#555555', fontSize: '1rem' }}>SCORE</div>
+        <div style={{ color: '#AAAAAA', fontSize: '1rem' }}>SCORE</div>
         <div style={{ color: 'white'}}>{score}</div>
       </div>
     </Html>

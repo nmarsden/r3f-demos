@@ -60,7 +60,7 @@ const CameraAnimation = ({ reset, cameraPosition, controls }: { reset: boolean, 
 const Lights = () => {
   const spotLight = useRef<THREE.SpotLight>(null!);
   return <>
-    <ambientLight intensity={0.25} />
+    <ambientLight intensity={1} />
     <spotLight ref={spotLight} angle={0.51} intensity={100} castShadow={true} position={[0, 10, 0]} />
   </>
 }
@@ -137,7 +137,7 @@ const App = () => {
               </animated.group>
             )) }
             { /* @ts-ignore */ }
-            <Environment files={suspend(warehouse)} background blur={1}/>
+            <Environment files={suspend(warehouse)}/>
             <OrbitControls
               ref={controls}
               makeDefault={true}

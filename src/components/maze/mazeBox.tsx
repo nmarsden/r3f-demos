@@ -12,7 +12,7 @@ import {CELL_SIZE, CELLS, HALF_CELL_SIZE, HALF_MAZE_SIZE, NUM_CELLS, WALL_HEIGHT
 import {Button, ButtonControls, ButtonPressedEvent} from "./buttonControls.tsx";
 
 const BASE_COLOR = 0xEEEEEE;
-const WALL_COLOR = 0x555555;
+const WALL_COLOR = 0x2176AE;
 
 const MESH_POSITION: THREE.Vector3 = new THREE.Vector3(0,-0.5,0);
 
@@ -57,8 +57,8 @@ const InternalMazeBox = ({ opacity }: { opacity: SpringValue }) => {
             <Addition key={`${index}`} position={[x, WALL_HEIGHT/2 + 0.126, z]}>
               <boxGeometry args={[CELL_SIZE, WALL_HEIGHT, CELL_SIZE]}/>
               <animated.meshStandardMaterial
-                metalness={0.55}
-                roughness={0.75}
+                metalness={0.75}
+                roughness={0.45}
                 color={WALL_COLOR}
                 transparent={true}
                 opacity={opacity}
@@ -69,8 +69,8 @@ const InternalMazeBox = ({ opacity }: { opacity: SpringValue }) => {
             <Subtraction key={`${index}`} position={[x, 0, z]}>
               <boxGeometry args={[CELL_SIZE, WALL_HEIGHT, CELL_SIZE]}/>
               <animated.meshStandardMaterial
-                metalness={0.55}
-                roughness={0.75}
+                metalness={0.75}
+                roughness={0.45}
                 color={WALL_COLOR}
                 transparent={true}
                 opacity={opacity}

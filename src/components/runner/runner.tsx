@@ -97,8 +97,8 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
           <Score opacity={opacity} score={score} />
           {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
         </Physics>
-        <EffectComposer>
-          <Bloom mipmapBlur intensity={1.2} />
+        <EffectComposer enabled={transitionState !== 'LEAVING'}>
+          <Bloom mipmapBlur={false} intensity={0.125} />
         </EffectComposer>
       </Suspense>
     </>
