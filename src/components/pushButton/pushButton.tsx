@@ -55,14 +55,14 @@ const PushButton = ({ opacity, position, scale, onHoveredChanged, onButtonClicke
       return
     }
     onHoveredChanged({ isHovered: true })
-  }, [enabled])
+  }, [enabled, onHoveredChanged])
 
   const onPointerOut = useCallback(() => {
     if (!enabled) {
       return
     }
     onHoveredChanged({ isHovered: false })
-  }, [enabled])
+  }, [enabled, onHoveredChanged])
 
   const onPointerDown = useCallback(() => {
     if (!enabled) {

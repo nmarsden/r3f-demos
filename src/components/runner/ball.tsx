@@ -13,6 +13,8 @@ const BALL_START_POSITION = new THREE.Vector3(0, 2, 0);
 export type BallRef = {
   jump: () => void;
   resetForces: () => void;
+  pause: () => void;
+  unpause: () => void;
 } | null;
 
 type BallProps = {
@@ -36,6 +38,12 @@ const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
     },
     resetForces: () => {
       rigidBodyRef.current.setLinvel(new THREE.Vector3(1, 0, 0), true);
+    },
+    pause: () => {
+      rigidBodyRef.current.setEnabled(false);
+    },
+    unpause: () => {
+      rigidBodyRef.current.setEnabled(true);
     }
   }), [rigidBodyRef]);
 

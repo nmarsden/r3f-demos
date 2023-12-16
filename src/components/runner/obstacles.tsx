@@ -2,8 +2,12 @@
 import {SpringValue, animated, useSpring, config} from "@react-spring/three";
 import {CuboidCollider, RigidBody} from "@react-three/rapier";
 import * as THREE from "three";
-import {useEffect, useState} from "react";
+import {forwardRef, useEffect, useImperativeHandle, useState} from "react";
 import {useFrame} from "@react-three/fiber";
+
+export type ObstaclesRef = {
+  reset: () => void;
+} | null;
 
 type ObstaclesProps = {
   opacity: SpringValue;
@@ -18,13 +22,21 @@ const BOX_DEPTH = 4;
 const BOX_COLOR = 'red';
 const OBSTACLE_GAP = 10;
 
-const Obstacles = ({ opacity, groundBounds, onObstacleHit, onObstaclePassed }: ObstaclesProps) => {
-  const [position, setPosition] = useState<THREE.Vector3>(null!);
+const Obstacles = forwardRef<ObstaclesRef, ObstaclesProps>(({ opacity, groundBounds, onObstacleHit, onObstaclePassed }: ObstaclesProps, ref) => {
+  const [position, setPosition] = useState<THREE.Vector3 | null>(null);
   const [nextPosition, setNextPosition] = useState<THREE.Vector3 | null>(null);
   const [{ obstacleOpacity }, api] = useSpring(() => ({
     from: { obstacleOpacity: 0 },
     config: config.stiff
   }))
+
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      setPosition(null);
+      setNextPosition(null);
+      api.start({ to: { obstacleOpacity: 0 }, immediate: true });
+    },
+  }), []);
 
   // -- Set initial position
   useEffect(() => {
@@ -100,6 +112,6 @@ const Obstacles = ({ opacity, groundBounds, onObstacleHit, onObstaclePassed }: O
       </>
     )
   );
-}
+});
 
 export { Obstacles }

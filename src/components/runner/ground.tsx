@@ -3,12 +3,17 @@ import {SpringValue, animated} from "@react-spring/three";
 import {InstancedRigidBodyProps, RapierRigidBody, RigidBody, vec3} from "@react-three/rapier";
 import * as THREE from "three";
 import {useFrame} from "@react-three/fiber";
-import {useCallback, useEffect, useRef} from "react";
+import {forwardRef, useCallback, useEffect, useImperativeHandle, useRef} from "react";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 
 export type GroundBoundsChangedEvent = {
   bounds: THREE.Box2;
 };
+
+export type GroundRef = {
+  pause: () => void;
+  unpause: () => void;
+} | null;
 
 type GroundProps = {
   opacity: SpringValue;
@@ -41,10 +46,19 @@ const INSTANCES: InstancedRigidBodyProps[] = new Array(NUM_BOXES);
 
 let headBoxIndex = 0;
 
-const Ground = ({ opacity, onGroundHit, onGroundBoundsChanged }: GroundProps) => {
+const Ground = forwardRef<GroundRef, GroundProps>(({ opacity, onGroundHit, onGroundBoundsChanged }: GroundProps, ref) => {
   const transitionState = useTransitionState(opacity);
   const rigidBodies = useRef<RapierRigidBody[]>([]);
   // const [points, setPoints] = useState<number[][]>([])
+
+  useImperativeHandle(ref, () => ({
+    pause: () => {
+      rigidBodies.current.forEach(rigidBody => rigidBody.setEnabled(false));
+    },
+    unpause: () => {
+      rigidBodies.current.forEach(rigidBody => rigidBody.setEnabled(true));
+    }
+  }), [rigidBodies]);
 
   const updateGroundBounds = useCallback(() => {
     DESIRED_POSITIONS.forEach((desiredPosition, index) => {
@@ -170,6 +184,6 @@ const Ground = ({ opacity, onGroundHit, onGroundBoundsChanged }: GroundProps) =>
       </>
     )
   );
-}
+});
 
 export { Ground }
