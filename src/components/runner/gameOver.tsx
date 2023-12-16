@@ -1,5 +1,5 @@
-import {PlayAgainButton} from "../maze/playAgainButton.tsx";
-import {Message} from "../maze/message.tsx";
+import {PlayAgainButton} from "../playAgainButton/playAgainButton.tsx";
+import {Message} from "../message/message.tsx";
 import {Billboard, ScreenSpace} from "@react-three/drei";
 import {SpringValue} from "@react-spring/three";
 

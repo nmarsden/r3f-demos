@@ -1,6 +1,6 @@
 import {TrophyModel} from "./trophyModel.tsx";
-import {PlayAgainButton} from "./playAgainButton.tsx";
-import {Message} from "./message.tsx";
+import {PlayAgainButton} from "../playAgainButton/playAgainButton.tsx";
+import {Message} from "../message/message.tsx";
 import {TrophyBackground} from "./trophyBackground.tsx";
 import {SpringValue} from "@react-spring/three";
 

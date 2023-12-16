@@ -16,8 +16,6 @@ import {useCursor} from "@react-three/drei";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
-// TODO refactor PlayAgainButton as a shared component
-// TODO refactor Message as a shared component
 // TODO increase difficulty overtime, maybe increase obstacle height?
 // TODO add a start state
 const Runner = ({ opacity }: { opacity: SpringValue }) => {
