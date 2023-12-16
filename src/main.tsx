@@ -31,7 +31,7 @@ const pages: Page[] = [
   { name: 'Paint', path: '/paint', screenshot: '/r3f-demos/home/paint.png', renderFn: (props) => <Paint {...props} /> },
   { name: 'Boxes', path: '/boxes', screenshot: '/r3f-demos/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
   { name: 'Maze', path: '/maze', screenshot: '/r3f-demos/home/maze.png', renderFn: (props) => <Maze {...props} />, cameraPosition: new THREE.Vector3(0, 8, 0) },
-  { name: "Roll-n-Jump", path: '/roll-n-jump', screenshot: '/r3f-demos/home/maze.png', renderFn: (props) => <RollNJump {...props} />, cameraPosition: new THREE.Vector3(0, 2, 16) },
+  { name: "Roll-n-Jump", path: '/roll-n-jump', screenshot: '/r3f-demos/home/roll-n-jump.png', renderFn: (props) => <RollNJump {...props} />, cameraPosition: new THREE.Vector3(0, 2, 16) },
   // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
   { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },
