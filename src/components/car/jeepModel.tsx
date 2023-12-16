@@ -5,8 +5,9 @@ Files: public/car/jeep.glb [230.19KB] > jeep-transformed.glb [95.42KB] (59%)
 */
 
 import * as THREE from 'three'
-import { useGLTF } from '@react-three/drei'
-import { GLTF } from 'three-stdlib'
+import {useGLTF} from '@react-three/drei'
+import {GLTF} from 'three-stdlib'
+import {animated, SpringValue} from "@react-spring/three";
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -33,27 +34,27 @@ type GLTFResult = GLTF & {
   }
 }
 
-export function JeepModel(props: JSX.IntrinsicElements['group']) {
+export function JeepModel({ opacity, ...props } : JSX.IntrinsicElements['group'] & { opacity: SpringValue }) {
   const { nodes, materials } = useGLTF('/r3f-demos/car/jeep-transformed.glb') as GLTFResult
   return (
     <group {...props} dispose={null}>
-      <mesh geometry={nodes.Cube006_Cube001.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Cylinder003.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Circle003.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Circle002.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Cylinder002.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Cube005_Cube008.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Cube003_Cube006.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Cube002_Cube005.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Cube001_Cube004.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Cylinder001.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Circle001.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Circle.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes.Cylinder.geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes['Cube_Cube002-Mesh'].geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes['Cube_Cube002-Mesh_1'].geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes['Cube_Cube002-Mesh_2'].geometry} material={materials.PaletteMaterial001} />
-      <mesh geometry={nodes['Cube_Cube002-Mesh_3'].geometry} material={materials.PaletteMaterial001} />
+      {Object.values(nodes).map((node, index) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return <animated.mesh
+          key={`${index}`}
+          geometry={node.geometry}
+          castShadow={true}
+        >
+          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+          {/* @ts-ignore */}
+          <animated.meshStandardMaterial
+            {...materials.PaletteMaterial001}
+            transparent={true}
+            opacity={opacity}
+          />
+        </animated.mesh>
+      })}
     </group>
   )
 }

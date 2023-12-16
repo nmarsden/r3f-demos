@@ -6,6 +6,9 @@ import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 import {JeepModel} from "./jeepModel.tsx";
 
+// TODO auto-move to the right
+//      - rolling wheels
+//      - camera follow
 const Car = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);
@@ -24,7 +27,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
     <>
       <Suspense>
         <Physics debug={false}>
-          <JeepModel rotation-y={Math.PI * 0.5} scale={0.25} position={[0, -3, 0]}/>
+          <JeepModel opacity={opacity} rotation-y={Math.PI * 0.5} scale={0.25} position={[0, -1.3, 0]}/>
         </Physics>
       </Suspense>
     </>
