@@ -13,6 +13,7 @@ import {Score} from "./score.tsx";
 import {GameOver} from "./gameOver.tsx";
 import {ButtonHoveredChangedEvent} from "../pushButton/pushButton.tsx";
 import {useCursor} from "@react-three/drei";
+import {Bloom, EffectComposer} from "@react-three/postprocessing";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
@@ -96,6 +97,9 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
           <Score opacity={opacity} score={score} />
           {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
         </Physics>
+        <EffectComposer>
+          <Bloom mipmapBlur intensity={1.2} />
+        </EffectComposer>
       </Suspense>
     </>
   )

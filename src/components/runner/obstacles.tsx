@@ -19,7 +19,7 @@ type ObstaclesProps = {
 const BOX_WIDTH = 0.25;
 const BOX_HEIGHT = 4;
 const BOX_DEPTH = 4;
-const BOX_COLOR = 'red';
+const BOX_COLOR = new THREE.Color(0xFF5555).multiplyScalar(3);
 const OBSTACLE_GAP = 10;
 
 const Obstacles = forwardRef<ObstaclesRef, ObstaclesProps>(({ opacity, groundBounds, onObstacleHit, onObstaclePassed }: ObstaclesProps, ref) => {

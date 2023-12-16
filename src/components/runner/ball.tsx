@@ -61,7 +61,7 @@ const Ball = forwardRef<BallRef, BallProps>(({ opacity }: BallProps, ref) => {
     camera.position.setZ(cameraTarget.z + 16);
 
     // Move the light to follow the ball
-    light.current.position.setX(spherePosition.x);
+    light.current.position.setX(spherePosition.x - 1);
     light.current.position.setY(spherePosition.y + 1);
   })
 
