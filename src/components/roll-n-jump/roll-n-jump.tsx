@@ -19,7 +19,7 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 
 // TODO increase difficulty overtime, maybe increase obstacle height?
 // TODO add a start state
-const Runner = ({ opacity }: { opacity: SpringValue }) => {
+const RollNJump = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);
   const [score, setScore] = useState(0);
@@ -105,4 +105,4 @@ const Runner = ({ opacity }: { opacity: SpringValue }) => {
   )
 }
 
-export { Runner }
+export { RollNJump }
