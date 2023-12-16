@@ -21,6 +21,7 @@ import {MainContext} from "./mainContext";
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import {useHashLocation} from "./hooks/hashLocation.ts";
 import {suspend } from 'suspend-react'
+import {Car} from "./components/car/car.tsx";
 // @ts-ignore
 const warehouse = import('@pmndrs/assets/hdri/warehouse.exr').then((module) => module.default)
 
@@ -32,6 +33,7 @@ const pages: Page[] = [
   { name: 'Boxes', path: '/boxes', screenshot: '/r3f-demos/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
   { name: 'Maze', path: '/maze', screenshot: '/r3f-demos/home/maze.png', renderFn: (props) => <Maze {...props} />, cameraPosition: new THREE.Vector3(0, 8, 0) },
   { name: "Roll-n-Jump", path: '/roll-n-jump', screenshot: '/r3f-demos/home/roll-n-jump.png', renderFn: (props) => <RollNJump {...props} />, cameraPosition: new THREE.Vector3(0, 2, 16) },
+  { name: "Car", path: '/car', screenshot: '/r3f-demos/home/car.png', renderFn: (props) => <Car {...props} />, cameraPosition: new THREE.Vector3(0, 2, 16) },
   // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
   { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },

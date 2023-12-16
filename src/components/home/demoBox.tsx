@@ -114,7 +114,7 @@ const DemoBox = ({ opacity, position, size, risingDelayMsecs, demo, onHoverChang
       case 'FLOATING':
         rigidBodyRef.current.setGravityScale(0, true)
         rigidBodyRef.current.setLinearDamping(10)
-        rigidBodyRef.current.applyTorqueImpulse(new THREE.Vector3(0.0, 0.01, 0.0), true)
+        rigidBodyRef.current.applyTorqueImpulse(new THREE.Vector3(0.0, 0.03, 0.0), true)
         break;
       default:
         break;
@@ -127,7 +127,7 @@ const DemoBox = ({ opacity, position, size, risingDelayMsecs, demo, onHoverChang
 
     if (boxState === 'RISING') {
       const pos = rigidBodyRef?.current.translation();
-      if (pos.y > 0.8) {
+      if (pos.y > 0.3) {
         setBoxState('FLOATING')
         setCounter(0)
       }
