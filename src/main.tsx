@@ -143,13 +143,13 @@ const App = () => {
             <OrbitControls
               ref={controls}
               makeDefault={true}
-              maxPolarAngle={Math.PI / 2}
+              // maxPolarAngle={Math.PI / 2}
               autoRotate={false}
               autoRotateSpeed={0.25}
-              minDistance={3}
-              maxDistance={10}
+              // minDistance={3}
+              // maxDistance={10}
               enableZoom={!isTransitioning}
-              enablePan={false}
+              // enablePan={false}
               enableRotate={!isTransitioning}
             />
           </MainContext.Provider>
