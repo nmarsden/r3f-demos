@@ -38,46 +38,25 @@ type GLTFResult = GLTF & {
   }
 }
 
-// ['Cube006_Cube001', 'Cylinder003', 'Circle003', 'Circle002', 'Cylinder002', 'Cube005_Cube008', 'Cube003_Cube006','Cube002_Cube005', 'Cube001_Cube004', 'Cylinder001', 'Circle001',
-//  'Cube_Cube002',
-//     'Cube_Cube002-Mesh', 'Cube_Cube002-Mesh_1', 'Cube_Cube002-Mesh_2', 'Cube_Cube002-Mesh_3',
-//  'Circle', 'Cylinder']
-
 type WheelInfo = {
   nodeIndexes: number[];
-  position: THREE.Vector3Tuple;
   nodeHubName: string;
 }
 
-const WHEEL_OFFSET_X = 0;
-// const WHEEL_OFFSET_X = 0.5;
-// const WHEEL_OFFSET_X = 0.5;
-// const WHEEL_OFFSET_X = 0.4;
-// const WHEEL_OFFSET_Y = -0.1;
-const WHEEL_OFFSET_Y = 0;
-// const WHEEL_OFFSET_Y = -1;
-const WHEEL_OFFSET_Z = 0;
-// const WHEEL_OFFSET_Z = 0.4;
-// const WHEEL_OFFSET_Z = 0.5;
-
 const REAR_RIGHT_WHEEL: WheelInfo = {
   nodeIndexes: [3, 4], // hub & wheel
-  position: [-WHEEL_OFFSET_X, WHEEL_OFFSET_Y, -WHEEL_OFFSET_Z],
   nodeHubName: 'Circle002'
 };
 const REAR_LEFT_WHEEL: WheelInfo = {
   nodeIndexes: [9, 10], // wheel & hub
-  position: [WHEEL_OFFSET_X, WHEEL_OFFSET_Y, -WHEEL_OFFSET_Z],
   nodeHubName: 'Circle001'
 };
 const FRONT_RIGHT_WHEEL: WheelInfo = {
   nodeIndexes: [1, 2], // wheel & hub
-  position: [-WHEEL_OFFSET_X, WHEEL_OFFSET_Y, WHEEL_OFFSET_Z],
   nodeHubName: 'Circle003'
 };
 const FRONT_LEFT_WHEEL: WheelInfo = {
   nodeIndexes: [16, 17], // hub & wheel
-  position: [WHEEL_OFFSET_X, WHEEL_OFFSET_Y, WHEEL_OFFSET_Z],
   nodeHubName: 'Circle'
 };
 
@@ -91,114 +70,43 @@ type WheelProps = {
   materials: GLTFResult['materials'];
 };
 
-// TODO try adding an axle joint ??
 function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
   const wheel = useRef<RapierRigidBody | null>(null);
-  const { wheelPosition, bodyPosition } = useMemo(() => {
+  const { wheelPosition, inverseWheelPosition } = useMemo(() => {
     // @ts-ignore
     const mesh: THREE.Mesh = nodes[wheelInfo.nodeHubName] as THREE.Mesh;
-    // const pos = (mesh.geometry.boundingBox?.getCenter(new THREE.Vector3()) as THREE.Vector3).multiplyScalar(0.25);
     const pos = mesh.geometry.boundingBox?.getCenter(new THREE.Vector3()) as THREE.Vector3;
 
-    console.info('wheel: ', wheelInfo.nodeHubName, pos);
-
-    // return { wheelPosition: [0,0,0] as THREE.Vector3Tuple, bodyPosition: [pos.x, pos.y, pos.z] as THREE.Vector3Tuple };
-    // return { wheelPosition: [pos.x, pos.y, pos.z] as THREE.Vector3Tuple, bodyPosition: [0,0,0] as THREE.Vector3Tuple };
-    return { wheelPosition: [pos.x, pos.y, pos.z] as THREE.Vector3Tuple, bodyPosition: [pos.x, pos.y, pos.z] as THREE.Vector3Tuple };
+    return {
+      wheelPosition: [pos.x, 0, pos.z] as THREE.Vector3Tuple,
+      inverseWheelPosition: [-pos.x, -pos.y, -pos.z] as THREE.Vector3Tuple
+    };
   }, [nodes, body, wheel]);
 
-  const joint = useRevoluteJoint(body, wheel, [bodyPosition, wheelPosition, [1, 0, 0]]);
-  // const joint = useRevoluteJoint(body, wheel, [wheelPosition, wheelPosition, [1, 0, 0]]);
-
-
-  // const joint = useRevoluteJoint(body, wheel, [[-2.6147185564041138, 1.1443854868412018, 1.949126958847046], [-2.6147185564041138, 1.1443854868412018, 1.949126958847046], [1, 0, 0]]);
-  // const joint = useRevoluteJoint(body, wheel, [[-2.6147185564041138, 1.1443854868412018, 1.949126958847046], [0, 0, 0], [1, 0, 0]]);
-  // const joint = useRevoluteJoint(body, wheel, [[0,0,0], [0, 0, 0], [1, 0, 0]]);
-  // const joint = useRevoluteJoint(body, wheel, [[0,0,0], [0, 0, 0], [1, 0, 0]]);
-  // const joint = useRevoluteJoint(body, wheel, [[nodes.Cylinder.position.x, nodes.Cylinder.position.y, nodes.Cylinder.position.z], [0, 0, 0], [1, 0, 0]]);
-  // const joint = useRevoluteJoint(body, wheel, [wheelInfo.position, [0, 0, 0], [1, 0, 0]]);
-  // useRevoluteJoint(body, wheel, [[0,0,0], wheelInfo.position, [1, 0, 0]]);
-  // useRevoluteJoint(body, wheel, [wheelInfo.position, wheelInfo.position, [1, 0, 0]]);
+  const joint = useRevoluteJoint(body, wheel, [wheelPosition, [0,0,0], [1, 0, 0]]);
 
   useEffect(() => {
-    // console.info('front-right wheel hub world bounding box center=', nodes.Circle003.geometry.boundingBox?.getCenter(new THREE.Vector3()));
-    // console.info('front-right wheel hub world bounding box=', nodes.Circle003.geometry.boundingBox);
-    // console.info('front-right wheel hub world position=', nodes.Circle003.getWorldPosition(new THREE.Vector3));
-    // console.info('front-right wheel hub position=', [nodes.Circle003.position.x, nodes.Circle003.position.y, nodes.Circle003.position.z]);
-    // console.info('front-right wheel position=', [nodes.Cylinder003.position.x, nodes.Cylinder003.position.y, nodes.Cylinder003.position.z]);
-    // console.info('node names=', Object.values(nodes).map(node => node.name));
-    // console.info('node=', nodes);
-    // console.info('front-left wheel position=', [nodes.Cylinder.position.x, nodes.Cylinder.position.y, nodes.Cylinder.position.z]);
-
-    joint.current?.configureMotorVelocity(12, 0);
+    joint.current?.configureMotorVelocity(15, 10);
   }, [])
 
   return (
     <RigidBody
-      // mass={20}
       position={wheelPosition}
       ref={wheel}
       colliders="hull"
+      type="dynamic"
     >
-      {/*<Cylinder args={[]} rotation-z={Math.PI * 0.5}/>*/}
-      {Object.values(nodes)
-      .filter((_node, index) => wheelInfo.nodeIndexes.includes(index))
-      .map((node, index) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return <animated.mesh
-          key={`${index}`}
-          geometry={node.geometry}
-          castShadow={true}
-        >
-          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-          {/* @ts-ignore */}
-          <animated.meshStandardMaterial
-            {...materials.PaletteMaterial001}
-            transparent={true}
-            opacity={opacity}
-          />
-        </animated.mesh>
-      })}
-
-    </RigidBody>
-  );
-}
-export function JeepModel({ opacity, ...props } : JSX.IntrinsicElements['group'] & { opacity: SpringValue }) {
-  const { nodes, materials } = useGLTF('/r3f-demos/car/jeep-transformed.glb') as GLTFResult
-  const body = useRef<RapierRigidBody | null>(null);
-
-  useEffect(() => {
-    // console.info('nodes=', Object.values(nodes));
-
-    // Push car forward
-    // body.current?.applyImpulse(new THREE.Vector3(0,0,20), true);
-    // body.current?.resetForces(true);
-  }, []);
-
-  return (opacity.isAnimating ? null :
-    <group {...props} dispose={null}>
-      {/* --- Body --- */}
-      <RigidBody
-        angularDamping={1}
-        linearDamping={1}
-        ref={body}
-        colliders="cuboid"
-        // scale={0.25}
-        // mass={10}
-        enabledRotations={[false, false, false]}
-      >
+      <group>
         {Object.values(nodes)
-          .filter((_node, index) => !WHEEL_NODE_INDEXES.includes(index))
-          .map((node, index) => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        .filter((_node, index) => wheelInfo.nodeIndexes.includes(index))
+        .map((node, index) => {
           // @ts-ignore
           return <animated.mesh
             key={`${index}`}
             geometry={node.geometry}
             castShadow={true}
+            position={inverseWheelPosition} /* reset position to [0,0,0] */
           >
-            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore */}
             <animated.meshStandardMaterial
               {...materials.PaletteMaterial001}
@@ -207,9 +115,41 @@ export function JeepModel({ opacity, ...props } : JSX.IntrinsicElements['group']
             />
           </animated.mesh>
         })}
-        {/* box at wheel anchor point */}
-        {/*<Box args={[1,1,1]} position={[2.629583477973938, 1.1443854868412018, 1.949126958847046]}/>*/}
-        {/*<Box args={[1,1,1]} position={[-2.629583477973938, 1.1443854868412018, 1.949126958847046]}/>*/}
+      </group>
+    </RigidBody>
+  );
+}
+export function JeepModel({ opacity, ...props } : JSX.IntrinsicElements['group'] & { opacity: SpringValue }) {
+  const { nodes, materials } = useGLTF('/r3f-demos/car/jeep-transformed.glb') as GLTFResult
+  const body = useRef<RapierRigidBody | null>(null);
+
+  return (opacity.isAnimating ? null :
+    <group {...props} dispose={null}>
+      {/* --- Body --- */}
+      <RigidBody
+        ref={body}
+        colliders="cuboid"
+        type="dynamic"
+      >
+        <group position-y={-1.1}>
+          {Object.values(nodes)
+            .filter((_node, index) => !WHEEL_NODE_INDEXES.includes(index))
+            .map((node, index) => {
+            // @ts-ignore
+            return <animated.mesh
+              key={`${index}`}
+              geometry={node.geometry}
+              castShadow={true}
+            >
+              {/* @ts-ignore */}
+              <animated.meshStandardMaterial
+                {...materials.PaletteMaterial001}
+                transparent={true}
+                opacity={opacity}
+              />
+            </animated.mesh>
+          })}
+        </group>
       </RigidBody>
       {/* --- Wheels --- */}
       <Wheel opacity={opacity} body={body} wheelInfo={FRONT_LEFT_WHEEL} nodes={nodes} materials={materials} />

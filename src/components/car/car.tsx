@@ -27,8 +27,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
     <>
       <Suspense>
         <Physics debug={true}>
-          <JeepModel opacity={opacity} />
-          {/*<JeepModel opacity={opacity} rotation-y={Math.PI * 0.5} scale={0.25} position={[0, -1.3, 0]}/>*/}
+          {opacity.isAnimating ? null : <JeepModel opacity={opacity} />}
           {opacity.isAnimating ? null : <CuboidCollider position={[0, -1.5, 0]} args={[20, 0.2, 20]} />}
         </Physics>
       </Suspense>
