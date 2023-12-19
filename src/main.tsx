@@ -33,7 +33,7 @@ const pages: Page[] = [
   { name: 'Boxes', path: '/boxes', screenshot: '/r3f-demos/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
   { name: 'Maze', path: '/maze', screenshot: '/r3f-demos/home/maze.png', renderFn: (props) => <Maze {...props} />, cameraPosition: new THREE.Vector3(0, 8, 0) },
   { name: "Roll-n-Jump", path: '/roll-n-jump', screenshot: '/r3f-demos/home/roll-n-jump.png', renderFn: (props) => <RollNJump {...props} />, cameraPosition: new THREE.Vector3(0, 2, 16) },
-  { name: "Car", path: '/car', screenshot: '/r3f-demos/home/car.png', renderFn: (props) => <Car {...props} />, cameraPosition: new THREE.Vector3(0, 10, 16) },
+  { name: "Car", path: '/car', screenshot: '/r3f-demos/home/car.png', renderFn: (props) => <Car {...props} />, cameraPosition: new THREE.Vector3(0, 30, 30) },
   // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
   { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },
@@ -114,8 +114,8 @@ const App = () => {
         >
           <MainContext.Provider value={{ controls: controls, pages: pages }} >
             <CameraAnimation reset={isTransitioning} cameraPosition={cameraPosition} controls={controls} />
-            {location !== '/roll-n-jump' ? <Lights/> : null}
-            <Floor showCross={location === '/boxes'} enabled={location !== '/roll-n-jump'}/>
+            {!['/roll-n-jump', '/car'].includes(location) ? <Lights/> : null}
+            <Floor showCross={location === '/boxes'} enabled={!['/roll-n-jump', '/car'].includes(location)}/>
             { transition(({ position, rotation, scale, opacity }, location) => (
               <animated.group
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

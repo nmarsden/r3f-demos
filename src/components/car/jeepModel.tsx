@@ -11,7 +11,8 @@ import {useGLTF} from '@react-three/drei'
 import {GLTF} from 'three-stdlib'
 import {animated, SpringValue} from "@react-spring/three";
 import {RefObject, useEffect, useMemo, useRef} from "react";
-import {RigidBody, RapierRigidBody, useRevoluteJoint} from "@react-three/rapier";
+import {RigidBody, RapierRigidBody, useRevoluteJoint, CylinderCollider, CuboidCollider} from "@react-three/rapier";
+import {useFrame, useThree} from "@react-three/fiber";
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -41,26 +42,42 @@ type GLTFResult = GLTF & {
 type WheelInfo = {
   nodeIndexes: number[];
   nodeHubName: string;
+  side: 'left' | 'right';
 }
 
 const REAR_RIGHT_WHEEL: WheelInfo = {
   nodeIndexes: [3, 4], // hub & wheel
-  nodeHubName: 'Circle002'
+  nodeHubName: 'Circle002',
+  side: 'right'
 };
 const REAR_LEFT_WHEEL: WheelInfo = {
   nodeIndexes: [9, 10], // wheel & hub
-  nodeHubName: 'Circle001'
+  nodeHubName: 'Circle001',
+  side: 'left'
 };
 const FRONT_RIGHT_WHEEL: WheelInfo = {
   nodeIndexes: [1, 2], // wheel & hub
-  nodeHubName: 'Circle003'
+  nodeHubName: 'Circle003',
+  side: 'right'
 };
 const FRONT_LEFT_WHEEL: WheelInfo = {
   nodeIndexes: [16, 17], // hub & wheel
-  nodeHubName: 'Circle'
+  nodeHubName: 'Circle',
+  side: 'left'
 };
 
-const WHEEL_NODE_INDEXES = [...REAR_RIGHT_WHEEL.nodeIndexes, ...REAR_LEFT_WHEEL.nodeIndexes, ...FRONT_RIGHT_WHEEL.nodeIndexes, ...FRONT_LEFT_WHEEL.nodeIndexes];
+const EXCLUDE_FROM_CHASSIS = [
+  ...REAR_RIGHT_WHEEL.nodeIndexes,
+  ...REAR_LEFT_WHEEL.nodeIndexes,
+  ...FRONT_RIGHT_WHEEL.nodeIndexes,
+  ...FRONT_LEFT_WHEEL.nodeIndexes,
+];
+
+const BODY_TOP_MASS = 1;
+const BODY_MIDDLE_MASS = 5;
+const BODY_BOTTOM_MASS = 50;
+const WHEEL_MASS = 12;
+
 
 type WheelProps = {
   opacity: SpringValue;
@@ -76,26 +93,29 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
     // @ts-ignore
     const mesh: THREE.Mesh = nodes[wheelInfo.nodeHubName] as THREE.Mesh;
     const pos = mesh.geometry.boundingBox?.getCenter(new THREE.Vector3()) as THREE.Vector3;
+    const wheelPosition = [pos.x, 0, pos.z] as THREE.Vector3Tuple;
+    const inverseWheelPosition = [-pos.x, -pos.y, -pos.z] as THREE.Vector3Tuple;
 
     return {
-      wheelPosition: [pos.x, 0, pos.z] as THREE.Vector3Tuple,
-      inverseWheelPosition: [-pos.x, -pos.y, -pos.z] as THREE.Vector3Tuple
+      wheelPosition,
+      inverseWheelPosition
     };
   }, [nodes, body, wheel]);
 
   const joint = useRevoluteJoint(body, wheel, [wheelPosition, [0,0,0], [1, 0, 0]]);
 
   useEffect(() => {
-    joint.current?.configureMotorVelocity(15, 10);
+    joint.current?.configureMotorVelocity(5, 10);
   }, [])
 
   return (
     <RigidBody
       position={wheelPosition}
       ref={wheel}
-      colliders="hull"
+      colliders={false}
       type="dynamic"
     >
+      <CylinderCollider args={[0.6, 1.1]} mass={WHEEL_MASS} rotation={[0, 0, Math.PI * 0.5]} position={[(wheelInfo.side === 'left' ? -0.3 : 0.3),0,0]}/>
       <group>
         {Object.values(nodes)
         .filter((_node, index) => wheelInfo.nodeIndexes.includes(index))
@@ -119,44 +139,83 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
     </RigidBody>
   );
 }
+
+const chassisPosition = new THREE.Vector3()
+const cameraTarget = new THREE.Vector3(0, 0, 0)
+
 export function JeepModel({ opacity, ...props } : JSX.IntrinsicElements['group'] & { opacity: SpringValue }) {
   const { nodes, materials } = useGLTF('/r3f-demos/car/jeep-transformed.glb') as GLTFResult
+  const light = useRef<THREE.DirectionalLight>(null!);
   const body = useRef<RapierRigidBody | null>(null);
+  const chassis = useRef<THREE.Group>(null!);
+  const {camera} = useThree();
 
-  return (opacity.isAnimating ? null :
-    <group {...props} dispose={null}>
-      {/* --- Body --- */}
-      <RigidBody
-        ref={body}
-        colliders="cuboid"
-        type="dynamic"
-      >
-        <group position-y={-1.1}>
-          {Object.values(nodes)
-            .filter((_node, index) => !WHEEL_NODE_INDEXES.includes(index))
-            .map((node, index) => {
-            // @ts-ignore
-            return <animated.mesh
-              key={`${index}`}
-              geometry={node.geometry}
-              castShadow={true}
-            >
-              {/* @ts-ignore */}
-              <animated.meshStandardMaterial
-                {...materials.PaletteMaterial001}
-                transparent={true}
-                opacity={opacity}
-              />
-            </animated.mesh>
-          })}
-        </group>
-      </RigidBody>
-      {/* --- Wheels --- */}
-      <Wheel opacity={opacity} body={body} wheelInfo={FRONT_LEFT_WHEEL} nodes={nodes} materials={materials} />
-      <Wheel opacity={opacity} body={body} wheelInfo={FRONT_RIGHT_WHEEL} nodes={nodes} materials={materials} />
-      <Wheel opacity={opacity} body={body} wheelInfo={REAR_LEFT_WHEEL} nodes={nodes} materials={materials} />
-      <Wheel opacity={opacity} body={body} wheelInfo={REAR_RIGHT_WHEEL} nodes={nodes} materials={materials} />
-    </group>
+  useEffect(() => {
+    if (!light.current || !chassis.current) return;
+
+    light.current.target = chassis.current;
+
+  }, [chassis.current, light.current]);
+
+  useFrame(() => {
+    if (opacity.isAnimating || chassis.current === null) {
+      return;
+    }
+
+    // Move the camera to follow the ball
+    chassis.current.getWorldPosition(chassisPosition);
+
+    cameraTarget.lerp(chassisPosition, 1)
+    camera.position.setX(cameraTarget.x);
+    camera.position.setY(cameraTarget.y + 30);
+    camera.position.setZ(cameraTarget.z + 30);
+
+    // Move the light to follow the ball
+    light.current.position.setX(chassisPosition.x);
+    light.current.position.setY(chassisPosition.y + 10);
+  })
+
+  return (opacity.isAnimating ? null : (
+    <>
+      <directionalLight ref={light} args={[ 0xdddddd, 10 ]} castShadow={true} />
+      <group {...props} dispose={null} rotation={[0, Math.PI * 0.5, 0]} >
+        {/* --- Body --- */}
+        <RigidBody
+          ref={body}
+          colliders={false}
+          type="dynamic"
+        >
+          <CuboidCollider args={[1.1,0.88,1.7]} position={[0,3.6,-1.1]} mass={BODY_TOP_MASS} />
+          <CuboidCollider args={[1.6,0.8,3]} position={[0,2,-0.15]} mass={BODY_MIDDLE_MASS} />
+          <CuboidCollider args={[1.6,1,2.5]} position={[0,0.4,-0.15]} mass={BODY_BOTTOM_MASS}/>
+          <group position-y={-1.1} ref={chassis}>
+            {Object.values(nodes)
+              .filter((_node, index) => !EXCLUDE_FROM_CHASSIS.includes(index))
+              .map((node, index) => {
+              // @ts-ignore
+              return <animated.mesh
+                key={`${index}`}
+                geometry={node.geometry}
+                castShadow={true}
+              >
+                {/* @ts-ignore */}
+                <animated.meshStandardMaterial
+                  {...materials.PaletteMaterial001}
+                  transparent={true}
+                  opacity={opacity}
+                />
+              </animated.mesh>
+            })}
+          </group>
+        </RigidBody>
+        {/* --- Wheels --- */}
+        <Wheel opacity={opacity} body={body} wheelInfo={FRONT_LEFT_WHEEL} nodes={nodes} materials={materials} />
+        <Wheel opacity={opacity} body={body} wheelInfo={FRONT_RIGHT_WHEEL} nodes={nodes} materials={materials} />
+        <Wheel opacity={opacity} body={body} wheelInfo={REAR_LEFT_WHEEL} nodes={nodes} materials={materials} />
+        <Wheel opacity={opacity} body={body} wheelInfo={REAR_RIGHT_WHEEL} nodes={nodes} materials={materials} />
+      </group>
+    </>
+    )
   )
 }
 
