@@ -10,8 +10,14 @@ import * as THREE from 'three'
 import {useGLTF} from '@react-three/drei'
 import {GLTF} from 'three-stdlib'
 import {animated, SpringValue} from "@react-spring/three";
-import {RefObject, useEffect, useMemo, useRef} from "react";
-import {RigidBody, RapierRigidBody, useRevoluteJoint, CylinderCollider, CuboidCollider} from "@react-three/rapier";
+import {forwardRef, RefObject, useEffect, useImperativeHandle, useMemo, useRef} from "react";
+import {
+  RigidBody,
+  RapierRigidBody,
+  useRevoluteJoint,
+  CuboidCollider,
+  BallCollider, vec3
+} from "@react-three/rapier";
 import {useFrame, useThree} from "@react-three/fiber";
 
 type GLTFResult = GLTF & {
@@ -73,10 +79,12 @@ const EXCLUDE_FROM_CHASSIS = [
   ...FRONT_LEFT_WHEEL.nodeIndexes,
 ];
 
-const BODY_TOP_MASS = 1;
-const BODY_MIDDLE_MASS = 5;
-const BODY_BOTTOM_MASS = 50;
-const WHEEL_MASS = 12;
+const MASS_FACTOR = 1.25;
+
+const BODY_TOP_MASS = MASS_FACTOR;
+const BODY_MIDDLE_MASS = 0;
+const BODY_BOTTOM_MASS = 8 * MASS_FACTOR;
+const WHEEL_MASS = 5 * MASS_FACTOR;
 
 
 type WheelProps = {
@@ -105,7 +113,9 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
   const joint = useRevoluteJoint(body, wheel, [wheelPosition, [0,0,0], [1, 0, 0]]);
 
   useEffect(() => {
-    joint.current?.configureMotorVelocity(5, 10);
+    joint.current?.configureMotorModel(1); // Force based
+    joint.current?.setContactsEnabled(false);
+    joint.current?.configureMotorVelocity(25, 20);
   }, [])
 
   return (
@@ -115,7 +125,7 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
       colliders={false}
       type="dynamic"
     >
-      <CylinderCollider args={[0.6, 1.1]} mass={WHEEL_MASS} rotation={[0, 0, Math.PI * 0.5]} position={[(wheelInfo.side === 'left' ? -0.3 : 0.3),0,0]}/>
+      <BallCollider args={[1.1]} mass={WHEEL_MASS} rotation={[0, 0, Math.PI * 0.5]} position={[(wheelInfo.side === 'left' ? -0.3 : 0.3),0,0]}/>
       <group>
         {Object.values(nodes)
         .filter((_node, index) => wheelInfo.nodeIndexes.includes(index))
@@ -143,12 +153,26 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
 const chassisPosition = new THREE.Vector3()
 const cameraTarget = new THREE.Vector3(0, 0, 0)
 
-export function JeepModel({ opacity, ...props } : JSX.IntrinsicElements['group'] & { opacity: SpringValue }) {
+export type JeepModelRef = {
+  jump: () => void;
+} | null;
+
+type JeepModelProps = JSX.IntrinsicElements['group'] & { opacity: SpringValue };
+
+const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, ...props } : JeepModelProps, ref) => {
   const { nodes, materials } = useGLTF('/r3f-demos/car/jeep-transformed.glb') as GLTFResult
   const light = useRef<THREE.DirectionalLight>(null!);
   const body = useRef<RapierRigidBody | null>(null);
   const chassis = useRef<THREE.Group>(null!);
   const {camera} = useThree();
+
+  useImperativeHandle(ref, () => ({
+    jump: () => {
+      const impulse = new THREE.Vector3(0, 500, 0);
+      const point = vec3(body.current?.translation()).add(new THREE.Vector3(-0.05,0,0));
+      body.current?.applyImpulseAtPoint(impulse, point, true);
+    },
+  }), [body]);
 
   useEffect(() => {
     if (!light.current || !chassis.current) return;
@@ -184,10 +208,11 @@ export function JeepModel({ opacity, ...props } : JSX.IntrinsicElements['group']
           ref={body}
           colliders={false}
           type="dynamic"
+          enabledRotations={[false, false, true]}
         >
           <CuboidCollider args={[1.1,0.88,1.7]} position={[0,3.6,-1.1]} mass={BODY_TOP_MASS} />
           <CuboidCollider args={[1.6,0.8,3]} position={[0,2,-0.15]} mass={BODY_MIDDLE_MASS} />
-          <CuboidCollider args={[1.6,1,2.5]} position={[0,0.4,-0.15]} mass={BODY_BOTTOM_MASS}/>
+          <CuboidCollider args={[1.1,1,2.5]} position={[0,0.4,-0.15]} mass={BODY_BOTTOM_MASS}/>
           <group position-y={-1.1} ref={chassis}>
             {Object.values(nodes)
               .filter((_node, index) => !EXCLUDE_FROM_CHASSIS.includes(index))
@@ -217,6 +242,8 @@ export function JeepModel({ opacity, ...props } : JSX.IntrinsicElements['group']
     </>
     )
   )
-}
+});
 
 useGLTF.preload('/r3f-demos/car/jeep-transformed.glb')
+
+export { JeepModel }
