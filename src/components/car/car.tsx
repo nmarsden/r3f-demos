@@ -6,13 +6,12 @@ import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 import {JeepModel, JeepModelRef} from "./jeepModel.tsx";
 import {Ground} from "./ground.tsx";
-import {ControlPanel} from "./controlPanel.tsx";
+import {ControlPanel} from "../controlPanel/controlPanel.tsx";
 import {ButtonHoveredChangedEvent} from "../pushButton/pushButton.tsx";
 import {useCursor} from "@react-three/drei";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
-// TODO make ControlPanel a shared component
 const Car = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);

@@ -6,7 +6,7 @@ import {Physics} from "@react-three/rapier";
 import {Ground, GroundBoundsChangedEvent, GroundRef} from "./ground.tsx";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
-import {ControlPanel} from "./controlPanel.tsx";
+import {ControlPanel} from "../controlPanel/controlPanel.tsx";
 import {Obstacles, ObstaclesRef} from "./obstacles.tsx";
 import * as THREE from "three";
 import {Score} from "./score.tsx";
