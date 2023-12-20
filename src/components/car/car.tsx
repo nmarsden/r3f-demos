@@ -19,6 +19,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   const [gameState, setGameState] = useState<GameState>('PLAYING');
   const [hovered, setHovered] = useState(false);
   const [jumping, setJumping] = useState(false);
+  const [boosted, setBoosted] = useState(false);
 
   const onControlPanelButtonHovered = useCallback((event: ButtonHoveredChangedEvent) => {
     setHovered(event.isHovered);
@@ -27,17 +28,28 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   useCursor(hovered);
 
   const onButtonClicked = useCallback(() => {
-    if (!jeep.current || jumping) return;
+    if (!jeep.current || boosted) return;
 
-    setJumping(true);
-    jeep.current?.jump();
-  }, [jeep, jumping]);
+    setBoosted(true);
+    jeep.current?.boost();
+  }, [jeep, boosted]);
+
+  // const onButtonClicked = useCallback(() => {
+  //   if (!jeep.current || jumping) return;
+  //
+  //   setJumping(true);
+  //   jeep.current?.jump();
+  // }, [jeep, jumping]);
 
   const onGroundHit = useCallback(() => {
     if (!jumping) return;
 
     setJumping(false);
   }, [jumping]);
+
+  const onBoostCompleted = useCallback(() => {
+    setBoosted(false);
+  }, []);
 
   useEffect(() => {
     if (!mainContext.controls.current) return;
@@ -55,7 +67,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
         <Physics debug={false}>
           {opacity.isAnimating ? null : (
             <>
-              <JeepModel ref={jeep} opacity={opacity} position={[0,2,0]}/>
+              <JeepModel ref={jeep} opacity={opacity} onBoostCompleted={onBoostCompleted}/>
               <Ground opacity={opacity} onGroundHit={onGroundHit} />
               <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING'}/>
             </>

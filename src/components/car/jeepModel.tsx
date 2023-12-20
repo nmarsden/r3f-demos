@@ -10,7 +10,7 @@ import * as THREE from 'three'
 import {useGLTF} from '@react-three/drei'
 import {GLTF} from 'three-stdlib'
 import {animated, SpringValue} from "@react-spring/three";
-import {forwardRef, RefObject, useEffect, useImperativeHandle, useMemo, useRef} from "react";
+import {forwardRef, RefObject, useEffect, useImperativeHandle, useMemo, useRef, useState} from "react";
 import {
   RigidBody,
   RapierRigidBody,
@@ -155,16 +155,21 @@ const cameraTarget = new THREE.Vector3(0, 0, 0)
 
 export type JeepModelRef = {
   jump: () => void;
+  boost: () => void;
 } | null;
 
-type JeepModelProps = JSX.IntrinsicElements['group'] & { opacity: SpringValue };
+type JeepModelProps = {
+  opacity: SpringValue;
+  onBoostCompleted: () => void;
+};
 
-const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, ...props } : JeepModelProps, ref) => {
+const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onBoostCompleted } : JeepModelProps, ref) => {
   const { nodes, materials } = useGLTF('/r3f-demos/car/jeep-transformed.glb') as GLTFResult
   const light = useRef<THREE.DirectionalLight>(null!);
   const body = useRef<RapierRigidBody | null>(null);
   const chassis = useRef<THREE.Group>(null!);
   const {camera} = useThree();
+  const [boosted, setBoosted] = useState(false);
 
   useImperativeHandle(ref, () => ({
     jump: () => {
@@ -172,6 +177,12 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, ...props 
       const point = vec3(body.current?.translation()).add(new THREE.Vector3(-0.05,0,0));
       body.current?.applyImpulseAtPoint(impulse, point, true);
     },
+    boost: () => {
+      const impulse = new THREE.Vector3(500, 0, 0);
+      const point = vec3(body.current?.translation()).add(new THREE.Vector3(0,0,0));
+      body.current?.applyImpulseAtPoint(impulse, point, true);
+      setBoosted(true);
+    }
   }), [body]);
 
   useEffect(() => {
@@ -182,8 +193,13 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, ...props 
   }, [chassis.current, light.current]);
 
   useFrame(() => {
-    if (opacity.isAnimating || chassis.current === null) {
+    if (opacity.isAnimating || chassis.current === null || !body.current) {
       return;
+    }
+
+    if (boosted && body.current.linvel().x < 28) {
+      setBoosted(false);
+      onBoostCompleted();
     }
 
     // Move the camera to follow the ball
@@ -202,7 +218,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, ...props 
   return (opacity.isAnimating ? null : (
     <>
       <directionalLight ref={light} args={[ 0xdddddd, 10 ]} castShadow={true} />
-      <group {...props} dispose={null} rotation={[0, Math.PI * 0.5, 0]} >
+      <group position={[0,2,0]} rotation={[0, Math.PI * 0.5, 0]} >
         {/* --- Body --- */}
         <RigidBody
           ref={body}
