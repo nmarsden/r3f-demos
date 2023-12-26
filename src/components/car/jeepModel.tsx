@@ -19,6 +19,7 @@ import {
   BallCollider, vec3
 } from "@react-three/rapier";
 import {useFrame, useThree} from "@react-three/fiber";
+import {CarConstants} from "./carConstants.ts";
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -115,7 +116,7 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
   useEffect(() => {
     joint.current?.configureMotorModel(1); // Force based
     joint.current?.setContactsEnabled(false);
-    joint.current?.configureMotorVelocity(25, 20);
+    joint.current?.configureMotorVelocity(20, 3);
   }, [])
 
   return (
@@ -174,7 +175,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
   const body = useRef<RapierRigidBody | null>(null);
   const chassis = useRef<THREE.Group>(null!);
   const {camera} = useThree();
-  const [boosted, setBoosted] = useState(false);
+  const [showSparkles, setShowSparkles] = useState(false);
   const [velocity, setVelocity] = useState(0);
 
   useImperativeHandle(ref, () => ({
@@ -187,7 +188,15 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
       const impulse = new THREE.Vector3(500, 0, 0);
       const point = vec3(body.current?.translation()).add(new THREE.Vector3(0,0,0));
       body.current?.applyImpulseAtPoint(impulse, point, true);
-      setBoosted(true);
+      setShowSparkles(true);
+      // Show sparkles for 2 seconds
+      setTimeout(() => {
+        setShowSparkles(false);
+      }, 2000);
+      // Complete boost after 8 seconds
+      setTimeout(() => {
+        onBoostCompleted();
+      }, CarConstants.boostCooldownMsecs);
     }
   }), [body]);
 
@@ -204,11 +213,6 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
     }
 
     const bodyVelocity = body.current.linvel().x
-
-    if (boosted && bodyVelocity < 28) {
-      setBoosted(false);
-      onBoostCompleted();
-    }
 
     // Handle velocity has changed
     if (velocity != bodyVelocity) {
@@ -234,7 +238,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
   return (opacity.isAnimating ? null : (
     <>
       <directionalLight ref={light} args={[ 0xdddddd, 10 ]} castShadow={true} />
-      <group position={[0,2,0]} rotation={[0, Math.PI * 0.5, 0]} >
+      <group position={[0,4,0]} rotation={[0, Math.PI * 0.5, 0]} >
         {/* --- Body --- */}
         <RigidBody
           ref={body}
@@ -242,7 +246,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
           type="dynamic"
           enabledRotations={[false, false, true]}
         >
-          <CuboidCollider args={[1.1,0.88,1.7]} position={[0,3.6,-1.1]} mass={BODY_TOP_MASS} />
+          <CuboidCollider args={[1.1,0.88,1.7]} position={[0,3.6,-1.5]} mass={BODY_TOP_MASS} />
           <CuboidCollider args={[1.6,0.8,3]} position={[0,2,-0.15]} mass={BODY_MIDDLE_MASS} />
           <CuboidCollider args={[1.1,1,2.5]} position={[0,0.4,-0.15]} mass={BODY_BOTTOM_MASS}/>
           <group position-y={-1.1} ref={chassis}>
@@ -265,7 +269,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
             })}
           </group>
           {/* --- Boost --- */}
-          {boosted ? (
+          {showSparkles ? (
             <Sparkles
               position={[0,1,-4]}
               /** Number of particles (default: 100) */

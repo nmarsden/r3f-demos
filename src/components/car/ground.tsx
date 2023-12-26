@@ -8,7 +8,8 @@ import * as THREE from "three";
 
 const BASE_HEIGHT = 3;
 const BASE_WIDTH = 30;
-const GROUND_LENGTH = 1000;
+const GROUND_LENGTH = 2000;
+const GROUND_FRICTION = 2;
 
 const BASE_POS_OFFSET_X = -20;
 const BASE_POS_X = GROUND_LENGTH * 0.5 + BASE_POS_OFFSET_X;
@@ -42,7 +43,12 @@ const Ramp = ({ opacity, type, ...props } : { opacity: SpringValue, type: RampTy
   }, [])
 
   return (
-    <RigidBody type={'fixed'} colliders={'hull'} position={props.position}>
+    <RigidBody
+      type={'fixed'}
+      colliders={'hull'}
+      position={props.position}
+      friction={GROUND_FRICTION}
+    >
       <group rotation-y={type === 'up' ? 0 : Math.PI}>
         <Extrude
           args={[triangleShape, { depth: RAMP_DEPTH }]}
@@ -68,7 +74,12 @@ const Ground = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: (
   return opacity.isAnimating ? null : (
       <>
         {/* Base */}
-        <RigidBody type={'fixed'} position={[BASE_POS_X, BASE_POS_Y, 0]} onCollisionEnter={onGroundHit}>
+        <RigidBody
+          type={'fixed'}
+          position={[BASE_POS_X, BASE_POS_Y, 0]}
+          onCollisionEnter={onGroundHit}
+          friction={GROUND_FRICTION}
+        >
           <Box args={[GROUND_LENGTH, BASE_HEIGHT, BASE_WIDTH]} receiveShadow={true}>
             {/* @ts-ignore */}
             <animated.meshStandardMaterial
@@ -81,9 +92,9 @@ const Ground = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: (
           </Box>
         </RigidBody>
         {/* Ramps */}
-        <Ramp opacity={opacity} position={[70,0,0]} type={'up'}/>
-        <Ramp opacity={opacity} position={[145,0,0]} type={'down'}/>
-        <Ramp opacity={opacity} position={[210,0,0]} type={'up'}/>
+        {/*<Ramp opacity={opacity} position={[200,0,0]} type={'up'}/>*/}
+        {/*<Ramp opacity={opacity} position={[145,0,0]} type={'down'}/>*/}
+        <Ramp opacity={opacity} position={[400,0,0]} type={'up'}/>
         {/* Markers */}
         {MARKER_POSITIONS_X.map((posX, index) =>
           <Box key={`${index}`} args={[MARKER_SIZE, MARKER_SIZE, MARKER_SIZE]} position={[posX, MARKER_POS_Y, MARKER_POS_Z]} receiveShadow={true}>

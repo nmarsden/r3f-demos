@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import * as THREE from "three";
-import {animated, SpringValue} from "@react-spring/three";
+import {animated, SpringValue, useSpring} from "@react-spring/three";
 import {Box, Cylinder, Lathe, RoundedBox, Text} from "@react-three/drei";
 import {ReactNode, useEffect, useMemo, useState} from "react";
 import {useFrame} from "@react-three/fiber";
+import {CarConstants} from "./carConstants.ts";
 
 type GaugeSegmentProps = {
   color: THREE.Color;
@@ -20,9 +21,9 @@ const GAUGE_SEGMENT_DEPTH = 0.075;
 
 const GAUGE_SEGMENTS: GaugeSegmentProps[] = new Array(NUM_GAUGE_SEGMENTS);
 for (let i=0; i<NUM_GAUGE_SEGMENTS; i++) {
-  const hue = THREE.MathUtils.mapLinear(i, 0, NUM_GAUGE_SEGMENTS-1, 0, 0.3);
+  const hue = THREE.MathUtils.mapLinear(i, 0, NUM_GAUGE_SEGMENTS-1, 0, 0.33);
   GAUGE_SEGMENTS[i] = {
-    color: new THREE.Color().setHSL(hue, 1, 0.5),
+    color: new THREE.Color().setHSL(hue, 1, 0.5).multiplyScalar(2),
     rotationY: i * (GAUGE_SEGMENT_THETA_LENGTH + GAUGE_SEGMENT_THETA_GAP) - (Math.PI * -0.5),
   }
 }
@@ -107,7 +108,7 @@ const Needle = ({ opacity, velocity } : { opacity: SpringValue, velocity: number
     if (velocity > 40) {
       normalizedVelocity = 40;
     }
-    setDesiredRotationZ(THREE.MathUtils.mapLinear(normalizedVelocity, 0, 40, Math.PI * -0.5, Math.PI * -1.5));
+    setDesiredRotationZ(THREE.MathUtils.mapLinear(normalizedVelocity, 0, 40, Math.PI * -0.55, Math.PI * -1.5));
   }, [velocity]);
 
   useFrame(() => {
@@ -156,10 +157,33 @@ const Needle = ({ opacity, velocity } : { opacity: SpringValue, velocity: number
   );
 }
 
-const BoostIndicator = ({ opacity } : { opacity: SpringValue }) => {
+const BOOST_INDICATOR_WIDTH = 0.25;
+
+const BoostIndicator = ({ opacity, boosted } : { opacity: SpringValue, boosted: boolean }) => {
+  const [boostOpacity, setBoostOpacity] = useState(0.1);
+  const [{ boostScale, positionX}, api] = useSpring(() => ({
+    from: { boostScale: 0, positionX: 0 },
+  }))
+
+  useEffect(() => {
+    if (boosted) {
+      setBoostOpacity(0.1);
+      // start cooldown animation
+      api.start({
+        from: { boostScale: 0, positionX: BOOST_INDICATOR_WIDTH * -0.5 },
+        to:   { boostScale: 1, positionX: 0 },
+        config: {
+          duration: CarConstants.boostCooldownMsecs
+        }
+      });
+    } else {
+      setBoostOpacity(1);
+    }
+  }, [boosted])
+
   return (
     <Box
-      args={[0.25, 0.08, 0.025]}
+      args={[BOOST_INDICATOR_WIDTH, 0.08, 0.025]}
       position={[0, -0.06, 0.08]}
     >
       {/* @ts-ignore */}
@@ -168,8 +192,25 @@ const BoostIndicator = ({ opacity } : { opacity: SpringValue }) => {
         roughness={0.75}
         color={'red'}
         transparent={true}
-        opacity={1}
+        opacity={0.1}
       />
+      <animated.group
+        position-x={positionX}
+        scale-x={boostScale}
+      >
+        <Box
+          args={[BOOST_INDICATOR_WIDTH, 0.08, 0.025]}
+        >
+          {/* @ts-ignore */}
+          <animated.meshStandardMaterial
+            metalness={0.45}
+            roughness={0.75}
+            color={'red'}
+            transparent={true}
+            opacity={1}
+          />
+        </Box>
+      </animated.group>
       <Text position={[0,-0.006,0.0125]} fontSize={0.05} letterSpacing={0.1} outlineWidth={0.002} outlineColor={'white'}>
         { /* @ts-ignore */ }
         <animated.meshStandardMaterial
@@ -177,7 +218,7 @@ const BoostIndicator = ({ opacity } : { opacity: SpringValue }) => {
           roughness={1}
           color={'white'}
           transparent={true}
-          opacity={opacity}
+          opacity={boostOpacity}
         />
         BOOST
       </Text>
@@ -185,12 +226,12 @@ const BoostIndicator = ({ opacity } : { opacity: SpringValue }) => {
   );
 }
 
-const DashBoard = ({ opacity, velocity } : { opacity: SpringValue, velocity: number }) => {
+const DashBoard = ({ opacity, velocity, boosted } : { opacity: SpringValue, velocity: number, boosted: boolean }) => {
   return (
     <Panel opacity={opacity}>
       <Gauge opacity={opacity} />
       <Needle opacity={opacity} velocity={velocity}/>
-      <BoostIndicator opacity={opacity} />
+      <BoostIndicator opacity={opacity} boosted={boosted} />
     </Panel>
   );
 };

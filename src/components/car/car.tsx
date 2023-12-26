@@ -30,7 +30,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
     setHovered(event.isHovered);
   }, []);
 
-  useCursor(hovered);
+  useCursor(hovered && !boosted);
 
   const onButtonClicked = useCallback(() => {
     if (!jeep.current || boosted) return;
@@ -70,6 +70,14 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
     }
   }, [mainContext, transitionState]);
 
+  // Jeep is initially boosted
+  useEffect(() => {
+    if (!jeep.current) return;
+
+    onButtonClicked();
+
+  }, [jeep.current]);
+
   return (
     <>
       <Suspense>
@@ -78,8 +86,8 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
             <>
               <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged} onBoostCompleted={onBoostCompleted}/>
               <Ground opacity={opacity} onGroundHit={onGroundHit} />
-              <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING'}>
-                <DashBoard opacity={opacity} velocity={velocity}/>
+              <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING' && !boosted}>
+                <DashBoard opacity={opacity} velocity={velocity} boosted={boosted}/>
               </ControlPanel>
               <EffectComposer>
                 <Bloom mipmapBlur={false} intensity={0.125} />
