@@ -219,9 +219,11 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
     // Move the camera to follow the jeep
     chassis.current.getWorldPosition(chassisPosition);
 
-    cameraTarget.lerp(chassisPosition, 1)
+    cameraTarget.lerp(chassisPosition, 1);
+
+    camera.rotation.set(-1.2,0,0,'XYZ');
     camera.position.setX(cameraTarget.x);
-    camera.position.setY(cameraTarget.y + 30);
+    camera.position.setY(cameraTarget.y + 40);
     camera.position.setZ(cameraTarget.z + 30);
 
     // Move the light to follow the jeep

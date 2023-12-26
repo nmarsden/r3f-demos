@@ -9,7 +9,7 @@ import {ButtonHoveredChangedEvent, PushButton} from "../pushButton/pushButton.ts
 const SIZE = 0.75;
 const BUTTON_POSITION = new THREE.Vector3(0, 0.38, 0);
 
-const ControlPanel = ({ opacity, onButtonClicked, onButtonHovered, enabled, children }: { opacity: SpringValue, velocity: number, onButtonClicked: () => void, onButtonHovered: (event: ButtonHoveredChangedEvent) => void, enabled: boolean, children?: ReactNode }) => {
+const ControlPanel = ({ opacity, onButtonClicked, onButtonHovered, enabled, children }: { opacity: SpringValue, onButtonClicked: () => void, onButtonHovered: (event: ButtonHoveredChangedEvent) => void, enabled: boolean, children?: ReactNode }) => {
   const box = useRef<THREE.Mesh>(null!);
   const spotLight = useRef<THREE.SpotLight>(null!);
 

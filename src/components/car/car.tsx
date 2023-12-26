@@ -10,6 +10,7 @@ import {ControlPanel} from "../controlPanel/controlPanel.tsx";
 import {ButtonHoveredChangedEvent} from "../pushButton/pushButton.tsx";
 import {useCursor} from "@react-three/drei";
 import {DashBoard} from "./dashBoard.tsx";
+import {Bloom, EffectComposer} from "@react-three/postprocessing";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
@@ -77,9 +78,12 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
             <>
               <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged} onBoostCompleted={onBoostCompleted}/>
               <Ground opacity={opacity} onGroundHit={onGroundHit} />
-              <ControlPanel opacity={opacity} velocity={velocity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING'}>
+              <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING'}>
                 <DashBoard opacity={opacity} velocity={velocity}/>
               </ControlPanel>
+              <EffectComposer>
+                <Bloom mipmapBlur={false} intensity={0.125} />
+              </EffectComposer>
             </>
           )}
         </Physics>

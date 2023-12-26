@@ -95,8 +95,8 @@ const GaugeSegment = ({ opacity, ...props } : { opacity: SpringValue } & GaugeSe
 }
 
 const Needle = ({ opacity, velocity } : { opacity: SpringValue, velocity: number }) => {
-  const [desiredRotationZ, setDesiredRotationZ] = useState(Math.PI * 0.5);
-  const [rotationZ, setRotationZ] = useState(Math.PI * 0.5);
+  const [desiredRotationZ, setDesiredRotationZ] = useState(Math.PI * -0.5);
+  const [rotationZ, setRotationZ] = useState(Math.PI * -0.5);
 
   useEffect(() => {
     // assumes velocity range is 0 to 40
@@ -107,7 +107,7 @@ const Needle = ({ opacity, velocity } : { opacity: SpringValue, velocity: number
     if (velocity > 40) {
       normalizedVelocity = 40;
     }
-    setDesiredRotationZ(THREE.MathUtils.mapLinear(normalizedVelocity, 0, 40, Math.PI * 0.5, Math.PI * -0.5));
+    setDesiredRotationZ(THREE.MathUtils.mapLinear(normalizedVelocity, 0, 40, Math.PI * -0.5, Math.PI * -1.5));
   }, [velocity]);
 
   useFrame(() => {
@@ -133,20 +133,24 @@ const Needle = ({ opacity, velocity } : { opacity: SpringValue, velocity: number
           transparent={true}
           opacity={opacity}
         />
-        <Cylinder
-          args={[0.01, 0.01, 0.2]}
-          position={[0, 0.1, -0.10]}
+        <group
+          position={[0, 0.04, -0.02]}
           rotation={[Math.PI * 0.5, 0, 0]}
         >
-          {/* @ts-ignore */}
-          <animated.meshStandardMaterial
-            metalness={0.5}
-            roughness={1}
-            color={'black'}
-            transparent={true}
-            opacity={opacity}
-          />
-        </Cylinder>
+          <Cylinder
+            args={[0.01, 0.01, 0.2]}
+            position={[0, 0.1, -0.02]}
+          >
+            {/* @ts-ignore */}
+            <animated.meshStandardMaterial
+              metalness={0.5}
+              roughness={1}
+              color={'black'}
+              transparent={true}
+              opacity={opacity}
+            />
+          </Cylinder>
+        </group>
       </Cylinder>
     </group>
   );
