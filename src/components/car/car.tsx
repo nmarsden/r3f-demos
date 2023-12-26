@@ -4,14 +4,17 @@ import {Suspense, useCallback, useContext, useEffect, useRef, useState} from "re
 import {Physics} from "@react-three/rapier";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
-import {JeepModel, JeepModelRef} from "./jeepModel.tsx";
+import {JeepModel, JeepModelRef, VelocityChangedEvent} from "./jeepModel.tsx";
 import {Ground} from "./ground.tsx";
 import {ControlPanel} from "../controlPanel/controlPanel.tsx";
 import {ButtonHoveredChangedEvent} from "../pushButton/pushButton.tsx";
 import {useCursor} from "@react-three/drei";
+import {DashBoard} from "./dashBoard.tsx";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
+// TODO show velocity
+// TODO show boost on jeep
 const Car = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);
@@ -20,6 +23,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   const [hovered, setHovered] = useState(false);
   const [jumping, setJumping] = useState(false);
   const [boosted, setBoosted] = useState(false);
+  const [velocity, setVelocity] = useState(0);
 
   const onControlPanelButtonHovered = useCallback((event: ButtonHoveredChangedEvent) => {
     setHovered(event.isHovered);
@@ -47,6 +51,10 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
     setJumping(false);
   }, [jumping]);
 
+  const onVelocityChanged = useCallback((event: VelocityChangedEvent) => {
+    setVelocity(event.velocity);
+  }, []);
+
   const onBoostCompleted = useCallback(() => {
     setBoosted(false);
   }, []);
@@ -67,9 +75,11 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
         <Physics debug={false}>
           {opacity.isAnimating ? null : (
             <>
-              <JeepModel ref={jeep} opacity={opacity} onBoostCompleted={onBoostCompleted}/>
+              <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged} onBoostCompleted={onBoostCompleted}/>
               <Ground opacity={opacity} onGroundHit={onGroundHit} />
-              <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING'}/>
+              <ControlPanel opacity={opacity} velocity={velocity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING'}>
+                <DashBoard opacity={opacity} velocity={velocity}/>
+              </ControlPanel>
             </>
           )}
         </Physics>

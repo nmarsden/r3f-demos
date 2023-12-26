@@ -81,8 +81,9 @@ const Ground = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: (
           </Box>
         </RigidBody>
         {/* Ramps */}
-        <Ramp opacity={opacity} position={[20,0,0]} type={'up'}/>
-        <Ramp opacity={opacity} position={[95,0,0]} type={'down'}/>
+        <Ramp opacity={opacity} position={[70,0,0]} type={'up'}/>
+        <Ramp opacity={opacity} position={[145,0,0]} type={'down'}/>
+        <Ramp opacity={opacity} position={[210,0,0]} type={'up'}/>
         {/* Markers */}
         {MARKER_POSITIONS_X.map((posX, index) =>
           <Box key={`${index}`} args={[MARKER_SIZE, MARKER_SIZE, MARKER_SIZE]} position={[posX, MARKER_POS_Y, MARKER_POS_Z]} receiveShadow={true}>

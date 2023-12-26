@@ -7,7 +7,7 @@ Files: public/car/jeep.glb [230.19KB] > jeep-transformed.glb [95.42KB] (59%)
 */
 
 import * as THREE from 'three'
-import {useGLTF} from '@react-three/drei'
+import {Sparkles, useGLTF} from '@react-three/drei'
 import {GLTF} from 'three-stdlib'
 import {animated, SpringValue} from "@react-spring/three";
 import {forwardRef, RefObject, useEffect, useImperativeHandle, useMemo, useRef, useState} from "react";
@@ -153,6 +153,10 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
 const chassisPosition = new THREE.Vector3()
 const cameraTarget = new THREE.Vector3(0, 0, 0)
 
+export type VelocityChangedEvent = {
+  velocity: number;
+};
+
 export type JeepModelRef = {
   jump: () => void;
   boost: () => void;
@@ -160,16 +164,18 @@ export type JeepModelRef = {
 
 type JeepModelProps = {
   opacity: SpringValue;
+  onVelocityChanged: (event: VelocityChangedEvent) => void;
   onBoostCompleted: () => void;
 };
 
-const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onBoostCompleted } : JeepModelProps, ref) => {
+const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocityChanged, onBoostCompleted } : JeepModelProps, ref) => {
   const { nodes, materials } = useGLTF('/r3f-demos/car/jeep-transformed.glb') as GLTFResult
   const light = useRef<THREE.DirectionalLight>(null!);
   const body = useRef<RapierRigidBody | null>(null);
   const chassis = useRef<THREE.Group>(null!);
   const {camera} = useThree();
   const [boosted, setBoosted] = useState(false);
+  const [velocity, setVelocity] = useState(0);
 
   useImperativeHandle(ref, () => ({
     jump: () => {
@@ -197,12 +203,20 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onBoostCo
       return;
     }
 
-    if (boosted && body.current.linvel().x < 28) {
+    const bodyVelocity = body.current.linvel().x
+
+    if (boosted && bodyVelocity < 28) {
       setBoosted(false);
       onBoostCompleted();
     }
 
-    // Move the camera to follow the ball
+    // Handle velocity has changed
+    if (velocity != bodyVelocity) {
+      setVelocity(bodyVelocity);
+      onVelocityChanged({ velocity: bodyVelocity });
+    }
+
+    // Move the camera to follow the jeep
     chassis.current.getWorldPosition(chassisPosition);
 
     cameraTarget.lerp(chassisPosition, 1)
@@ -210,7 +224,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onBoostCo
     camera.position.setY(cameraTarget.y + 30);
     camera.position.setZ(cameraTarget.z + 30);
 
-    // Move the light to follow the ball
+    // Move the light to follow the jeep
     light.current.position.setX(chassisPosition.x);
     light.current.position.setY(chassisPosition.y + 10);
   })
@@ -248,6 +262,26 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onBoostCo
               </animated.mesh>
             })}
           </group>
+          {/* --- Boost --- */}
+          {boosted ? (
+            <Sparkles
+              position={[0,1,-4]}
+              /** Number of particles (default: 100) */
+              count={10}
+              /** Speed of particles (default: 1) */
+              speed={10}
+              /** Opacity of particles (default: 1) */
+              // opacity={1}
+              /** Color of particles (default: 100) */
+              color={'orange'}
+              /** Size of particles (default: randomized between 0 and 1) */
+              size={150}
+              /** The space the particles occupy (default: 1) */
+              scale={0.1}
+              /** Movement factor (default: 1) */
+              noise={50}
+            />
+          ) : null}
         </RigidBody>
         {/* --- Wheels --- */}
         <Wheel opacity={opacity} body={body} wheelInfo={FRONT_LEFT_WHEEL} nodes={nodes} materials={materials} />
