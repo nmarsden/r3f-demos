@@ -7,7 +7,7 @@ Files: public/car/jeep.glb [230.19KB] > jeep-transformed.glb [95.42KB] (59%)
 */
 
 import * as THREE from 'three'
-import {Sparkles, useGLTF} from '@react-three/drei'
+import {Trail, useGLTF} from '@react-three/drei'
 import {GLTF} from 'three-stdlib'
 import {animated, SpringValue} from "@react-spring/three";
 import {forwardRef, RefObject, useEffect, useImperativeHandle, useMemo, useRef, useState} from "react";
@@ -175,7 +175,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
   const body = useRef<RapierRigidBody | null>(null);
   const chassis = useRef<THREE.Group>(null!);
   const {camera} = useThree();
-  const [showSparkles, setShowSparkles] = useState(false);
+  const [showBoost, setShowBoost] = useState(false);
   const [velocity, setVelocity] = useState(0);
 
   useImperativeHandle(ref, () => ({
@@ -188,10 +188,10 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
       const impulse = new THREE.Vector3(500, 0, 0);
       const point = vec3(body.current?.translation()).add(new THREE.Vector3(0,0,0));
       body.current?.applyImpulseAtPoint(impulse, point, true);
-      setShowSparkles(true);
-      // Show sparkles for 2 seconds
+      setShowBoost(true);
+      // Show boost for 2 seconds
       setTimeout(() => {
-        setShowSparkles(false);
+        setShowBoost(false);
       }, 2000);
       // Complete boost after 8 seconds
       setTimeout(() => {
@@ -269,24 +269,26 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
             })}
           </group>
           {/* --- Boost --- */}
-          {showSparkles ? (
-            <Sparkles
-              position={[0,1,-4]}
-              /** Number of particles (default: 100) */
-              count={100}
-              /** Speed of particles (default: 1) */
-              speed={10}
-              /** Opacity of particles (default: 1) */
-              opacity={0.05}
-              /** Color of particles (default: 100) */
-              color={0x666666}
-              /** Size of particles (default: randomized between 0 and 1) */
-              size={150}
-              /** The space the particles occupy (default: 1) */
-              scale={0.1}
-              /** Movement factor (default: 1) */
-              noise={50}
-            />
+          {showBoost ? (
+            <Trail
+              width={10} // Width of the line
+              color={'orange'} // Color of the line
+              length={2} // Length of the line
+              decay={1} // How fast the line fades away
+              local={false} // Whether to use the target's world or local positions
+              stride={0.2} // Min distance between previous and current point
+              interval={1} // Number of frames to wait before next calculation
+              target={undefined} // Optional target. This object will produce the trail.
+              attenuation={(width) => width} // A function to define the width in each point along it.
+            >
+              <mesh position={[0,1,-3]}>
+                <sphereGeometry args={[0.2]}/>
+                <meshStandardMaterial
+                  transparent={true}
+                  opacity={0.5}
+                />
+              </mesh>
+            </Trail>
           ) : null}
         </RigidBody>
         {/* --- Wheels --- */}
