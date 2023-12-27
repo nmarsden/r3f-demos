@@ -273,13 +273,13 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
             <Sparkles
               position={[0,1,-4]}
               /** Number of particles (default: 100) */
-              count={10}
+              count={100}
               /** Speed of particles (default: 1) */
               speed={10}
               /** Opacity of particles (default: 1) */
-              // opacity={1}
+              opacity={0.05}
               /** Color of particles (default: 100) */
-              color={'orange'}
+              color={0x666666}
               /** Size of particles (default: randomized between 0 and 1) */
               size={150}
               /** The space the particles occupy (default: 1) */

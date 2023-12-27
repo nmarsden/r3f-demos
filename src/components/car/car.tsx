@@ -14,8 +14,7 @@ import {Bloom, EffectComposer} from "@react-three/postprocessing";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
-// TODO show velocity
-// TODO show boost on jeep
+// TODO improve the look of the jeep boost
 const Car = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);
@@ -71,12 +70,12 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   }, [mainContext, transitionState]);
 
   // Jeep is initially boosted
-  useEffect(() => {
-    if (!jeep.current) return;
-
-    onButtonClicked();
-
-  }, [jeep.current]);
+  // useEffect(() => {
+  //   if (!jeep.current) return;
+  //
+  //   onButtonClicked();
+  //
+  // }, [jeep.current]);
 
   return (
     <>
