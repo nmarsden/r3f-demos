@@ -108,7 +108,7 @@ const Needle = ({ opacity, velocity } : { opacity: SpringValue, velocity: number
     if (velocity > 40) {
       normalizedVelocity = 40;
     }
-    setDesiredRotationZ(THREE.MathUtils.mapLinear(normalizedVelocity, 0, 80, Math.PI * -0.55, Math.PI * -1.5));
+    setDesiredRotationZ(THREE.MathUtils.mapLinear(normalizedVelocity, 0, 60, Math.PI * -0.55, Math.PI * -1.5));
   }, [velocity]);
 
   useFrame(() => {

@@ -118,7 +118,7 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
     setTimeout(() => {
       joint.current?.configureMotorModel(1); // Force based
       joint.current?.setContactsEnabled(false);
-      joint.current?.configureMotorVelocity(35, 10);
+      joint.current?.configureMotorVelocity(30, 10);
     }, 2000);
   }, [])
 
@@ -217,7 +217,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
   // initially after 1 second, force jeep forward for 2 seconds
   useEffect(() => {
     setTimeout(() => {
-      const force = new THREE.Vector3(500, 0, 0);
+      const force = new THREE.Vector3(400, 0, 0);
       const point = vec3(body.current?.translation()).add(new THREE.Vector3(0,0,0));
       body.current?.addForceAtPoint(force, point, true);
 
@@ -259,13 +259,14 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
   return (opacity.isAnimating ? null : (
     <>
       <directionalLight ref={light} args={[ 0xdddddd, 10 ]} castShadow={true} />
-      <group position={[0,3.125,0]} rotation={[0, Math.PI * 0.5, 0]} >
+      <group position={[0,2.5,0]} rotation={[0, Math.PI * 0.5, 0]} >
         {/* --- Body --- */}
         <RigidBody
           ref={body}
           colliders={false}
           type="dynamic"
           enabledRotations={[false, false, true]}
+          angularDamping={50}
         >
           <CuboidCollider args={[1.1,0.88,1.7]} position={[0,3.6,-1.5]} mass={BODY_TOP_MASS} />
           <CuboidCollider args={[1.6,0.8,3]} position={[0,2,-0.15]} mass={BODY_MIDDLE_MASS} />

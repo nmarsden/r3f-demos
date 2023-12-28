@@ -179,8 +179,8 @@ const Ground = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: (
         {/* Ramps */}
         <Ramp opacity={opacity} position={[150,0,0]} type={'up'}/>
         <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*2),0,0]} type={'flat'}/>
-        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*3.5),0,0]} type={'flat'}/>
-        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*4.5),0,0]} type={'down'}/>
+        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*3.25),0,0]} type={'flat'}/>
+        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*4.25),0,0]} type={'down'}/>
       </>
     )
 }
