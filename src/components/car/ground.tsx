@@ -24,8 +24,8 @@ const TERRAIN_POS_X = BASE_POS_X;
 const TERRAIN_POS_Y = -TERRAIN_MAX_HEIGHT;
 const TERRAIN_POS_Z = -((TERRAIN_DEPTH * 0.5) + (BASE_DEPTH * 0.5));
 const TERRAIN_POS_Z_2 = (TERRAIN_DEPTH * 0.5) + (BASE_DEPTH * 0.5);
-const TERRAIN_COLOR = 0xDDDDDD;
-const TERRAIN_OPACITY = 0.3;
+const TERRAIN_COLOR = 0x227722;
+const TERRAIN_OPACITY = 1;
 const TERRAIN_FLAT_SHADING = true;
 
 const NUM_MARKERS = 100;
@@ -36,21 +36,24 @@ for (let i = 0; i<NUM_MARKERS; i++) {
   MARKER_POSITIONS_X[i] = (i * MARKER_OFFSET) + BASE_POS_OFFSET_X + (MARKER_SIZE * 0.5);
 }
 
-const RAMP_WIDTH = 10;
-const RAMP_HEIGHT = 5;
-const RAMP_DEPTH = 10;
-const RAMP_COLOR = 0x2176AE;
+const RAMP_HEIGHT = 25;
+const RAMP_WIDTH = 8 * RAMP_HEIGHT;
+const RAMP_DEPTH = BASE_DEPTH - 4;
+const RAMP_COLOR = 'black';
 
-type RampType = 'up' | 'down';
+type RampType = 'up' | 'down' | 'flat';
 
 const Ramp = ({ opacity, type, ...props } : { opacity: SpringValue, type: RampType } & JSX.IntrinsicElements['group']) => {
   const triangleShape = useMemo(() => {
-    const triangleShape = new THREE.Shape();
-    triangleShape.moveTo(0, 0);
-    triangleShape.lineTo(RAMP_WIDTH, 0);
-    triangleShape.lineTo(RAMP_WIDTH, RAMP_HEIGHT);
-    triangleShape.lineTo(0, 0);
-    return triangleShape;
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(RAMP_WIDTH, 0);
+    shape.lineTo(RAMP_WIDTH, RAMP_HEIGHT);
+    if (type === 'flat') {
+      shape.lineTo(0, RAMP_HEIGHT);
+    }
+    shape.lineTo(0, 0);
+    return shape;
   }, [])
 
   return (
@@ -174,9 +177,10 @@ const Ground = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: (
           />
         </mesh>
         {/* Ramps */}
-        <Ramp opacity={opacity} position={[200,0,0]} type={'up'}/>
-        {/*<Ramp opacity={opacity} position={[145,0,0]} type={'down'}/>*/}
-        {/*<Ramp opacity={opacity} position={[400,0,0]} type={'up'}/>*/}
+        <Ramp opacity={opacity} position={[150,0,0]} type={'up'}/>
+        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*2),0,0]} type={'flat'}/>
+        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*3.5),0,0]} type={'flat'}/>
+        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*4.5),0,0]} type={'down'}/>
       </>
     )
 }

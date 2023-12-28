@@ -1,3 +1,3 @@
 export const CarConstants = {
-  boostCooldownMsecs: 8000
+  jumpCooldownMsecs: 4000
 };

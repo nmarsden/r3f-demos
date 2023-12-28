@@ -14,7 +14,8 @@ import {Bloom, EffectComposer} from "@react-three/postprocessing";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
-// TODO improve the look of the jeep boost
+// TODO add powerups
+// TODO add obstacle - bouncing ball
 const Car = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);
@@ -22,41 +23,30 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   const [gameState, setGameState] = useState<GameState>('PLAYING');
   const [hovered, setHovered] = useState(false);
   const [jumping, setJumping] = useState(false);
-  const [boosted, setBoosted] = useState(false);
   const [velocity, setVelocity] = useState(0);
 
   const onControlPanelButtonHovered = useCallback((event: ButtonHoveredChangedEvent) => {
     setHovered(event.isHovered);
   }, []);
 
-  useCursor(hovered && !boosted);
+  useCursor(hovered && !jumping);
 
   const onButtonClicked = useCallback(() => {
-    if (!jeep.current || boosted) return;
+    if (!jeep.current || jumping) return;
 
-    setBoosted(true);
-    jeep.current?.boost();
-  }, [jeep, boosted]);
-
-  // const onButtonClicked = useCallback(() => {
-  //   if (!jeep.current || jumping) return;
-  //
-  //   setJumping(true);
-  //   jeep.current?.jump();
-  // }, [jeep, jumping]);
+    setJumping(true);
+    jeep.current?.jump();
+  }, [jeep, jumping]);
 
   const onGroundHit = useCallback(() => {
-    if (!jumping) return;
-
-    setJumping(false);
-  }, [jumping]);
+  }, []);
 
   const onVelocityChanged = useCallback((event: VelocityChangedEvent) => {
     setVelocity(event.velocity);
   }, []);
 
-  const onBoostCompleted = useCallback(() => {
-    setBoosted(false);
+  const onJumpCompleted = useCallback(() => {
+    setJumping(false);
   }, []);
 
   useEffect(() => {
@@ -69,24 +59,16 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
     }
   }, [mainContext, transitionState]);
 
-  // Jeep is initially boosted
-  // useEffect(() => {
-  //   if (!jeep.current) return;
-  //
-  //   onButtonClicked();
-  //
-  // }, [jeep.current]);
-
   return (
     <>
       <Suspense>
         <Physics debug={false}>
           {opacity.isAnimating ? null : (
             <>
-              <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged} onBoostCompleted={onBoostCompleted}/>
+              <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged} onJumpCompleted={onJumpCompleted}/>
               <Ground opacity={opacity} onGroundHit={onGroundHit} />
-              <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING' && !boosted}>
-                <DashBoard opacity={opacity} velocity={velocity} boosted={boosted}/>
+              <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING' && !jumping}>
+                <DashBoard opacity={opacity} velocity={velocity} jumping={jumping}/>
               </ControlPanel>
               <EffectComposer>
                 <Bloom mipmapBlur={false} intensity={0.125} />

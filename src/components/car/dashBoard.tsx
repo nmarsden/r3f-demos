@@ -108,7 +108,7 @@ const Needle = ({ opacity, velocity } : { opacity: SpringValue, velocity: number
     if (velocity > 40) {
       normalizedVelocity = 40;
     }
-    setDesiredRotationZ(THREE.MathUtils.mapLinear(normalizedVelocity, 0, 40, Math.PI * -0.55, Math.PI * -1.5));
+    setDesiredRotationZ(THREE.MathUtils.mapLinear(normalizedVelocity, 0, 80, Math.PI * -0.55, Math.PI * -1.5));
   }, [velocity]);
 
   useFrame(() => {
@@ -157,33 +157,33 @@ const Needle = ({ opacity, velocity } : { opacity: SpringValue, velocity: number
   );
 }
 
-const BOOST_INDICATOR_WIDTH = 0.25;
+const JUMP_INDICATOR_WIDTH = 0.25;
 
-const BoostIndicator = ({ opacity, boosted } : { opacity: SpringValue, boosted: boolean }) => {
-  const [boostOpacity, setBoostOpacity] = useState(0.1);
-  const [{ boostScale, positionX}, api] = useSpring(() => ({
-    from: { boostScale: 0, positionX: 0 },
+const JumpingIndicator = ({ opacity, jumping } : { opacity: SpringValue, jumping: boolean }) => {
+  const [indicatorOpacity, setIndicatorOpacity] = useState(0.1);
+  const [{ indicatorScale, positionX}, api] = useSpring(() => ({
+    from: { indicatorScale: 0, positionX: 0 },
   }))
 
   useEffect(() => {
-    if (boosted) {
-      setBoostOpacity(0.1);
+    if (jumping) {
+      setIndicatorOpacity(0.1);
       // start cooldown animation
       api.start({
-        from: { boostScale: 0, positionX: BOOST_INDICATOR_WIDTH * -0.5 },
-        to:   { boostScale: 1, positionX: 0 },
+        from: { indicatorScale: 0, positionX: JUMP_INDICATOR_WIDTH * -0.5 },
+        to:   { indicatorScale: 1, positionX: 0 },
         config: {
-          duration: CarConstants.boostCooldownMsecs
+          duration: CarConstants.jumpCooldownMsecs
         }
       });
     } else {
-      setBoostOpacity(1);
+      setIndicatorOpacity(1);
     }
-  }, [boosted])
+  }, [jumping])
 
   return (
     <Box
-      args={[BOOST_INDICATOR_WIDTH, 0.08, 0.025]}
+      args={[JUMP_INDICATOR_WIDTH, 0.08, 0.025]}
       position={[0, -0.06, 0.08]}
     >
       {/* @ts-ignore */}
@@ -196,10 +196,10 @@ const BoostIndicator = ({ opacity, boosted } : { opacity: SpringValue, boosted: 
       />
       <animated.group
         position-x={positionX}
-        scale-x={boostScale}
+        scale-x={indicatorScale}
       >
         <Box
-          args={[BOOST_INDICATOR_WIDTH, 0.08, 0.025]}
+          args={[JUMP_INDICATOR_WIDTH, 0.08, 0.025]}
         >
           {/* @ts-ignore */}
           <animated.meshStandardMaterial
@@ -218,20 +218,20 @@ const BoostIndicator = ({ opacity, boosted } : { opacity: SpringValue, boosted: 
           roughness={1}
           color={'white'}
           transparent={true}
-          opacity={boostOpacity}
+          opacity={indicatorOpacity}
         />
-        BOOST
+        JUMP
       </Text>
     </Box>
   );
 }
 
-const DashBoard = ({ opacity, velocity, boosted } : { opacity: SpringValue, velocity: number, boosted: boolean }) => {
+const DashBoard = ({ opacity, velocity, jumping } : { opacity: SpringValue, velocity: number, jumping: boolean }) => {
   return (
     <Panel opacity={opacity}>
       <Gauge opacity={opacity} />
       <Needle opacity={opacity} velocity={velocity}/>
-      <BoostIndicator opacity={opacity} boosted={boosted} />
+      <JumpingIndicator opacity={opacity} jumping={jumping} />
     </Panel>
   );
 };
