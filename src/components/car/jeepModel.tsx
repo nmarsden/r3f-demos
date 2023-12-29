@@ -173,8 +173,26 @@ const Wheel = forwardRef<WheelRef, WheelProps>(({ opacity, wheelInfo, body, node
   );
 });
 
-const chassisPosition = new THREE.Vector3()
-const cameraTarget = new THREE.Vector3(0, 0, 0)
+type CameraState = 'STANDARD' | 'ZOOMED-OUT';
+type CameraSettings = {
+  lerpAlpha: number;
+  offsetY: number;
+  offsetZ: number;
+}
+
+const chassisPosition = new THREE.Vector3();
+const cameraTarget = new THREE.Vector3(0, 0, 0);
+const CAMERA_SETTINGS: Map<CameraState, CameraSettings> = new Map([
+  ['STANDARD',    { lerpAlpha: 0.1, offsetY: 30, offsetZ: 20   }],
+  ['ZOOMED-OUT',  { lerpAlpha: 0.1, offsetY: 70, offsetZ: 52.5 }]
+]);
+let cameraState: CameraState = 'STANDARD';
+let cameraSettings = CAMERA_SETTINGS.get(cameraState) as CameraSettings;
+
+const switchCameraState = (newCameraState: CameraState): void => {
+  cameraState = newCameraState;
+  cameraSettings = CAMERA_SETTINGS.get(cameraState) as CameraSettings;
+}
 
 export type VelocityChangedEvent = {
   velocity: number;
@@ -238,6 +256,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
     },
     reset: () => {
       setRespawn(true);
+      switchCameraState("STANDARD");
 
       setTimeout(() => {
         body.current = null;
@@ -253,9 +272,11 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
 
   }, [chassis.current, light.current]);
 
-  // initially after 1 second, force jeep forward for 2 seconds
+  // initially after 1 second, zoom-out & force the jeep forward for 2 seconds
   useEffect(() => {
     setTimeout(() => {
+      switchCameraState("ZOOMED-OUT");
+
       const force = new THREE.Vector3(400, 0, 0);
       const point = vec3(body.current?.translation()).add(new THREE.Vector3(0,0,0));
       body.current?.addForceAtPoint(force, point, true);
@@ -287,8 +308,8 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
 
     camera.rotation.set(-1.2,0,0,'XYZ');
     camera.position.setX(cameraTarget.x);
-    camera.position.setY(cameraTarget.y + 70);
-    camera.position.setZ(cameraTarget.z + 52.5);
+    camera.position.setY(THREE.MathUtils.lerp(camera.position.y, cameraTarget.y + cameraSettings.offsetY, cameraSettings.lerpAlpha));
+    camera.position.setZ(THREE.MathUtils.lerp(camera.position.z, cameraTarget.z + cameraSettings.offsetZ, cameraSettings.lerpAlpha));
 
     // Move the light to follow the jeep
     light.current.position.setX(chassisPosition.x);
