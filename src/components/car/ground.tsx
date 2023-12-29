@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import * as THREE from "three";
 import {animated, SpringValue} from "@react-spring/three";
 import {RigidBody} from "@react-three/rapier";
 import {Box, Extrude} from "@react-three/drei";
 import {useMemo} from "react";
-import * as THREE from "three";
+import {Wall} from "./wall.tsx";
 
 const BASE_HEIGHT = 20;
 const BASE_DEPTH = 10;
@@ -181,6 +182,8 @@ const Ground = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: (
         <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*2),0,0]} type={'flat'}/>
         <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*3.25),0,0]} type={'flat'}/>
         <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*4.25),0,0]} type={'down'}/>
+        {/* Walls */}
+        <Wall opacity={opacity} position={[100,0,0]}/>
       </>
     )
 }

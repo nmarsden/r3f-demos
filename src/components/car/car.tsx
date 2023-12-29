@@ -14,8 +14,16 @@ import {Bloom, EffectComposer} from "@react-three/postprocessing";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
-// TODO add powerups
+// TODO add power-up - invincible
+// TODO add power-up - boost
+
 // TODO add obstacle - bouncing ball
+// TODO add obstacle - rock
+// TODO add obstacle - wall
+
+// TODO fix rendering view width to be equivalent for mobile and desktop
+//      - maybe scale based on viewport.width (see https://codesandbox.io/p/sandbox/basic-react-example-7kuzy?file=%2Fsrc%2FApp.js%3A17%2C45)
+// TODO fix rendering artifact at the end of 'flat' ramp and the start of 'down' ramp
 const Car = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);

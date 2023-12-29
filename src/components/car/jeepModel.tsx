@@ -248,8 +248,8 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
 
     camera.rotation.set(-1.2,0,0,'XYZ');
     camera.position.setX(cameraTarget.x);
-    camera.position.setY(cameraTarget.y + 40);
-    camera.position.setZ(cameraTarget.z + 30);
+    camera.position.setY(cameraTarget.y + 70);
+    camera.position.setZ(cameraTarget.z + 52.5);
 
     // Move the light to follow the jeep
     light.current.position.setX(chassisPosition.x);
