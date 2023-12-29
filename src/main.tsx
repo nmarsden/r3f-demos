@@ -143,7 +143,7 @@ const App = () => {
             <OrbitControls
               ref={controls}
               makeDefault={true}
-              // maxPolarAngle={Math.PI / 2}
+              maxPolarAngle={Math.PI / 2}
               autoRotate={false}
               autoRotateSpeed={0.25}
               // minDistance={3}
