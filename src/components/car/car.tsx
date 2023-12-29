@@ -11,8 +11,11 @@ import {ButtonHoveredChangedEvent} from "../pushButton/pushButton.tsx";
 import {useCursor} from "@react-three/drei";
 import {DashBoard} from "./dashBoard.tsx";
 import {Bloom, EffectComposer} from "@react-three/postprocessing";
+import {GameOver} from "./gameOver.tsx";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
+
+// TODO change gameState to GAME_OVER when hole hit
 
 // TODO add power-up - invincible
 // TODO add power-up - boost
@@ -32,6 +35,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   const [hovered, setHovered] = useState(false);
   const [jumping, setJumping] = useState(false);
   const [velocity, setVelocity] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   const onControlPanelButtonHovered = useCallback((event: ButtonHoveredChangedEvent) => {
     setHovered(event.isHovered);
@@ -47,6 +51,18 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   }, [jeep, jumping]);
 
   const onGroundHit = useCallback(() => {
+  }, []);
+
+  const onObstacleHit = useCallback(() => {
+    setGameState('GAME_OVER');
+    setPaused(true)
+    jeep.current?.pause();
+  }, []);
+
+  const onPlayAgainButtonClicked = useCallback(() => {
+    setPaused(false);
+    jeep.current?.reset();
+    setGameState('PLAYING');
   }, []);
 
   const onVelocityChanged = useCallback((event: VelocityChangedEvent) => {
@@ -70,11 +86,12 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   return (
     <>
       <Suspense>
-        <Physics debug={false}>
+        <Physics debug={false} paused={paused}>
           {opacity.isAnimating ? null : (
             <>
               <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged} onJumpCompleted={onJumpCompleted}/>
-              <Ground opacity={opacity} onGroundHit={onGroundHit} />
+              <Ground opacity={opacity} onGroundHit={onGroundHit} onObstacleHit={onObstacleHit}/>
+              {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
               <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING' && !jumping}>
                 <DashBoard opacity={opacity} velocity={velocity} jumping={jumping}/>
               </ControlPanel>

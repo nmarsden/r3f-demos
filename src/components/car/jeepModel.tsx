@@ -73,6 +73,8 @@ const FRONT_LEFT_WHEEL: WheelInfo = {
   side: 'left'
 };
 
+const WHEELS: WheelInfo[] = [REAR_RIGHT_WHEEL, REAR_LEFT_WHEEL, FRONT_RIGHT_WHEEL, FRONT_LEFT_WHEEL];
+
 const EXCLUDE_FROM_CHASSIS = [
   ...REAR_RIGHT_WHEEL.nodeIndexes,
   ...REAR_LEFT_WHEEL.nodeIndexes,
@@ -87,6 +89,10 @@ const BODY_MIDDLE_MASS = 0;
 const BODY_BOTTOM_MASS = 8 * MASS_FACTOR;
 const WHEEL_MASS = 5 * MASS_FACTOR;
 
+// @ts-ignore
+type WheelRef = {
+  pause: () => void;
+} | null;
 
 type WheelProps = {
   opacity: SpringValue;
@@ -96,7 +102,7 @@ type WheelProps = {
   materials: GLTFResult['materials'];
 };
 
-function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
+const Wheel = forwardRef<WheelRef, WheelProps>(({ opacity, wheelInfo, body, nodes, materials } : WheelProps, ref) => {
   const wheel = useRef<RapierRigidBody | null>(null);
   const { wheelPosition, inverseWheelPosition } = useMemo(() => {
     // @ts-ignore
@@ -113,14 +119,22 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
 
   const joint = useRevoluteJoint(body, wheel, [wheelPosition, [0,0,0], [1, 0, 0]]);
 
+  useImperativeHandle(ref, () => ({
+    pause: () => {
+      wheel.current?.setEnabled(false);
+    }
+  }), [wheel]);
+
   // set motor velocity after 2 seconds
   useEffect(() => {
+    if (!wheel.current) return;
+
     setTimeout(() => {
       joint.current?.configureMotorModel(1); // Force based
       joint.current?.setContactsEnabled(false);
       joint.current?.configureMotorVelocity(30, 10);
     }, 2000);
-  }, [])
+  }, [wheel])
 
   return (
     <RigidBody
@@ -129,7 +143,12 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
       colliders={false}
       type="dynamic"
     >
-      <BallCollider args={[1.1]} mass={WHEEL_MASS} rotation={[0, 0, Math.PI * 0.5]} position={[(wheelInfo.side === 'left' ? -0.3 : 0.3),0,0]}/>
+      <BallCollider
+        args={[1.1]} mass={WHEEL_MASS}
+        rotation={[0, 0, Math.PI * 0.5]}
+        position={[(wheelInfo.side === 'left' ? -0.3 : 0.3),0,0]}
+        name="jeepBodyWheel"
+      />
       <group>
         {Object.values(nodes)
         .filter((_node, index) => wheelInfo.nodeIndexes.includes(index))
@@ -152,7 +171,7 @@ function Wheel({ opacity, wheelInfo, body, nodes, materials } : WheelProps) {
       </group>
     </RigidBody>
   );
-}
+});
 
 const chassisPosition = new THREE.Vector3()
 const cameraTarget = new THREE.Vector3(0, 0, 0)
@@ -164,6 +183,8 @@ export type VelocityChangedEvent = {
 export type JeepModelRef = {
   jump: () => void;
   boost: () => void;
+  pause: () => void;
+  reset: () => void;
 } | null;
 
 type JeepModelProps = {
@@ -176,10 +197,12 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
   const { nodes, materials } = useGLTF('/r3f-demos/car/jeep-transformed.glb') as GLTFResult
   const light = useRef<THREE.DirectionalLight>(null!);
   const body = useRef<RapierRigidBody | null>(null);
+  const wheels = useRef<WheelRef[]>([]);
   const chassis = useRef<THREE.Group>(null!);
   const {camera} = useThree();
   const [showBoost, setShowBoost] = useState(false);
   const [velocity, setVelocity] = useState(0);
+  const [respawn, setRespawn] = useState(false);
 
   useImperativeHandle(ref, () => ({
     jump: () => {
@@ -204,6 +227,22 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
       setTimeout(() => {
         onJumpCompleted();
       }, CarConstants.jumpCooldownMsecs);
+    },
+    pause: () => {
+      body.current?.setEnabled(false);
+
+      wheels.current?.forEach(wheel => {
+        // @ts-ignore
+        wheel.pause();
+      })
+    },
+    reset: () => {
+      setRespawn(true);
+
+      setTimeout(() => {
+        body.current = null;
+        setRespawn(false);
+      }, 100);
     }
   }), [body]);
 
@@ -229,7 +268,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
   }, [body.current]);
 
   useFrame(() => {
-    if (opacity.isAnimating || chassis.current === null || !body.current) {
+    if (opacity.isAnimating || chassis.current === null || !body.current || respawn) {
       return;
     }
 
@@ -259,6 +298,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
   return (opacity.isAnimating ? null : (
     <>
       <directionalLight ref={light} args={[ 0xdddddd, 10 ]} castShadow={true} />
+      {respawn ? null :
       <group position={[0,2.5,0]} rotation={[0, Math.PI * 0.5, 0]} >
         {/* --- Body --- */}
         <RigidBody
@@ -268,9 +308,9 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
           enabledRotations={[false, false, true]}
           angularDamping={50}
         >
-          <CuboidCollider args={[1.1,0.88,1.7]} position={[0,3.6,-1.5]} mass={BODY_TOP_MASS} />
-          <CuboidCollider args={[1.6,0.8,3]} position={[0,2,-0.15]} mass={BODY_MIDDLE_MASS} />
-          <CuboidCollider args={[1.1,1,2.5]} position={[0,0.4,-0.15]} mass={BODY_BOTTOM_MASS}/>
+          <CuboidCollider args={[1.1,0.88,1.7]} position={[0,3.6,-1.5]} mass={BODY_TOP_MASS} name="jeepBodyTop" />
+          <CuboidCollider args={[1.6,0.8,3]} position={[0,2,-0.15]} mass={BODY_MIDDLE_MASS} name="jeepBodyMiddle" />
+          <CuboidCollider args={[1.1,1,2.5]} position={[0,0.4,-0.15]} mass={BODY_BOTTOM_MASS} name="jeepBodyBottom" />
           <group position-y={-1.1} ref={chassis}>
             {Object.values(nodes)
               .filter((_node, index) => !EXCLUDE_FROM_CHASSIS.includes(index))
@@ -314,11 +354,21 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
           ) : null}
         </RigidBody>
         {/* --- Wheels --- */}
-        <Wheel opacity={opacity} body={body} wheelInfo={FRONT_LEFT_WHEEL} nodes={nodes} materials={materials} />
-        <Wheel opacity={opacity} body={body} wheelInfo={FRONT_RIGHT_WHEEL} nodes={nodes} materials={materials} />
-        <Wheel opacity={opacity} body={body} wheelInfo={REAR_LEFT_WHEEL} nodes={nodes} materials={materials} />
-        <Wheel opacity={opacity} body={body} wheelInfo={REAR_RIGHT_WHEEL} nodes={nodes} materials={materials} />
+        {WHEELS.map((wheel, index) => {
+          return (
+            <Wheel
+              key={`wheel-${index}`}
+              ref={(wheelRef) => wheels.current[index] = wheelRef}
+              opacity={opacity}
+              body={body}
+              wheelInfo={wheel}
+              nodes={nodes}
+              materials={materials}
+            />
+          );
+        })}
       </group>
+      }
     </>
     )
   )

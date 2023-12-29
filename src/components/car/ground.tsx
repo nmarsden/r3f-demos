@@ -6,6 +6,7 @@ import {RigidBody} from "@react-three/rapier";
 import {Box, Extrude} from "@react-three/drei";
 import {useMemo} from "react";
 import {Wall} from "./wall.tsx";
+import {ObstacleHitEvent} from "./obstacle.ts";
 
 const BASE_HEIGHT = 20;
 const BASE_DEPTH = 10;
@@ -125,7 +126,13 @@ const createTerrainGeometry = (): THREE.PlaneGeometry => {
 
 const TERRAIN_GEOMETRY = createTerrainGeometry();
 
-const Ground = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: () => void; }) => {
+type GroundProps = {
+  opacity: SpringValue;
+  onGroundHit: () => void;
+  onObstacleHit: (event: ObstacleHitEvent) => void;
+};
+
+const Ground = ({ opacity, onGroundHit, onObstacleHit }: GroundProps) => {
   return opacity.isAnimating ? null : (
       <>
         {/* Base */}
@@ -183,7 +190,7 @@ const Ground = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: (
         <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*3.25),0,0]} type={'flat'}/>
         <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*4.25),0,0]} type={'down'}/>
         {/* Walls */}
-        <Wall opacity={opacity} position={[100,0,0]}/>
+        <Wall opacity={opacity} position={[100,0,0]} onHit={() => onObstacleHit({ obstacle: 'WALL' })}/>
       </>
     )
 }
