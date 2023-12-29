@@ -15,8 +15,6 @@ import {GameOver} from "./gameOver.tsx";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
-// TODO change gameState to GAME_OVER when hole hit
-
 // TODO add power-up - invincible
 // TODO add power-up - boost
 // TODO add power-up - shrink

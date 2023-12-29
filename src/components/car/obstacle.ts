@@ -1,4 +1,4 @@
-type ObstacleType = 'WALL';
+type ObstacleType = 'WALL' | 'HOLE';
 
 export type ObstacleHitEvent = {
   obstacle: ObstacleType;

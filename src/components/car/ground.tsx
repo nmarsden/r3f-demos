@@ -1,130 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import * as THREE from "three";
 import {animated, SpringValue} from "@react-spring/three";
 import {RigidBody} from "@react-three/rapier";
-import {Box, Extrude} from "@react-three/drei";
-import {useMemo} from "react";
-import {Wall} from "./wall.tsx";
+import {Box} from "@react-three/drei";
+import {CarConstants} from "./carConstants.ts";
 import {ObstacleHitEvent} from "./obstacle.ts";
+import {Terrain} from "./terrain.tsx";
+import {Hole} from "./hole.tsx";
+import {Ramp} from "./ramp.tsx";
+import {Wall} from "./wall.tsx";
 
 const BASE_HEIGHT = 20;
-const BASE_DEPTH = 10;
-const GROUND_LENGTH = 2000;
-const GROUND_FRICTION = 2;
-
-const BASE_POS_OFFSET_X = -20;
-const BASE_POS_X = GROUND_LENGTH * 0.5 + BASE_POS_OFFSET_X;
-const BASE_POS_Y = BASE_HEIGHT * -0.5;
-
-const TERRAIN_WIDTH = GROUND_LENGTH;
-const TERRAIN_DEPTH = 50;
-const TERRAIN_WIDTH_SEGMENTS = Math.round(TERRAIN_WIDTH * 0.125 * 0.75);
-const TERRAIN_DEPTH_SEGMENTS = Math.round(TERRAIN_DEPTH * 0.125);
-const TERRAIN_MAX_HEIGHT = 20;
-const TERRAIN_POS_X = BASE_POS_X;
-const TERRAIN_POS_Y = -TERRAIN_MAX_HEIGHT;
-const TERRAIN_POS_Z = -((TERRAIN_DEPTH * 0.5) + (BASE_DEPTH * 0.5));
-const TERRAIN_POS_Z_2 = (TERRAIN_DEPTH * 0.5) + (BASE_DEPTH * 0.5);
-const TERRAIN_COLOR = 0x227722;
-const TERRAIN_OPACITY = 1;
-const TERRAIN_FLAT_SHADING = true;
-
-const NUM_MARKERS = 100;
-const MARKER_SIZE = 1;
-const MARKER_OFFSET = GROUND_LENGTH / NUM_MARKERS;
-const MARKER_POSITIONS_X = new Array(NUM_MARKERS);
-for (let i = 0; i<NUM_MARKERS; i++) {
-  MARKER_POSITIONS_X[i] = (i * MARKER_OFFSET) + BASE_POS_OFFSET_X + (MARKER_SIZE * 0.5);
-}
-
-const RAMP_HEIGHT = 25;
-const RAMP_WIDTH = 8 * RAMP_HEIGHT;
-const RAMP_DEPTH = BASE_DEPTH - 4;
-const RAMP_COLOR = 'black';
-
-type RampType = 'up' | 'down' | 'flat';
-
-const Ramp = ({ opacity, type, ...props } : { opacity: SpringValue, type: RampType } & JSX.IntrinsicElements['group']) => {
-  const triangleShape = useMemo(() => {
-    const shape = new THREE.Shape();
-    shape.moveTo(0, 0);
-    shape.lineTo(RAMP_WIDTH, 0);
-    shape.lineTo(RAMP_WIDTH, RAMP_HEIGHT);
-    if (type === 'flat') {
-      shape.lineTo(0, RAMP_HEIGHT);
-    }
-    shape.lineTo(0, 0);
-    return shape;
-  }, [])
-
-  return (
-    <RigidBody
-      type={'fixed'}
-      colliders={'hull'}
-      position={props.position}
-      friction={GROUND_FRICTION}
-    >
-      <group rotation-y={type === 'up' ? 0 : Math.PI}>
-        <Extrude
-          args={[triangleShape, { depth: RAMP_DEPTH }]}
-          castShadow={true}
-          receiveShadow={true}
-          position-z={RAMP_DEPTH * -0.5}
-        >
-          {/* @ts-ignore */}
-          <animated.meshStandardMaterial
-            metalness={0.15}
-            roughness={0.75}
-            color={RAMP_COLOR}
-            transparent={true}
-            opacity={opacity}
-          />
-        </Extrude>
-      </group>
-    </RigidBody>
-  );
-};
-
-function generateHeightData(width: number, depth: number, minHeight: number, maxHeight: number): Float32Array {
-  const size = width * depth;
-  const data = new Float32Array( size );
-
-  const hRange = maxHeight - minHeight;
-  const w2 = width / 2;
-  const d2 = depth / 2;
-  const phaseMult = 4;
-
-  let p = 0;
-
-  for ( let j = 0; j < depth; j ++ ) {
-    for ( let i = 0; i < width; i ++ ) {
-      const radius = Math.sqrt(
-        Math.pow( ( i - w2 ) / w2, 2.0 ) +
-        Math.pow( ( j - d2 ) / d2, 2.0 ) );
-      const height = ( Math.sin( radius * phaseMult ) + 1 ) * 0.5 * hRange + minHeight;
-      data[ p ] = height;
-      p ++;
-    }
-  }
-  return data;
-}
-
-const TERRAIN_HEIGHT_DATA = generateHeightData(TERRAIN_DEPTH_SEGMENTS, TERRAIN_WIDTH_SEGMENTS, 0, TERRAIN_MAX_HEIGHT);
-
-const createTerrainGeometry = (): THREE.PlaneGeometry => {
-  const geometry = new THREE.PlaneGeometry(TERRAIN_WIDTH, TERRAIN_DEPTH, TERRAIN_WIDTH_SEGMENTS - 1, TERRAIN_DEPTH_SEGMENTS - 1);
-  geometry.rotateX( - Math.PI / 2 );
-  const vertices = geometry.attributes.position.array;
-  for ( let i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
-    // j + 1 because it is the y component that we modify
-    vertices[ j + 1 ] = TERRAIN_HEIGHT_DATA[ i ];
-  }
-  geometry.computeVertexNormals();
-  return geometry;
-}
-
-const TERRAIN_GEOMETRY = createTerrainGeometry();
 
 type GroundProps = {
   opacity: SpringValue;
@@ -132,65 +18,40 @@ type GroundProps = {
   onObstacleHit: (event: ObstacleHitEvent) => void;
 };
 
+const Base = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: () => void }) => {
+  return (
+    <RigidBody
+      type={'fixed'}
+      position={[CarConstants.basePosX, BASE_HEIGHT * -0.5, 0]}
+      onCollisionEnter={onGroundHit}
+      friction={CarConstants.groundFriction}
+    >
+      <Box args={[CarConstants.groundLength, BASE_HEIGHT, CarConstants.baseDepth]} receiveShadow={true}>
+        {/* @ts-ignore */}
+        <animated.meshStandardMaterial
+          metalness={0.15}
+          roughness={0.75}
+          color={'black'}
+          transparent={true}
+          opacity={opacity}
+        />
+      </Box>
+    </RigidBody>
+  )
+}
+
 const Ground = ({ opacity, onGroundHit, onObstacleHit }: GroundProps) => {
   return opacity.isAnimating ? null : (
       <>
-        {/* Base */}
-        <RigidBody
-          type={'fixed'}
-          position={[BASE_POS_X, BASE_POS_Y, 0]}
-          onCollisionEnter={onGroundHit}
-          friction={GROUND_FRICTION}
-        >
-          <Box args={[GROUND_LENGTH, BASE_HEIGHT, BASE_DEPTH]} receiveShadow={true}>
-            {/* @ts-ignore */}
-            <animated.meshStandardMaterial
-              metalness={0.15}
-              roughness={0.75}
-              color={'black'}
-              transparent={true}
-              opacity={opacity}
-            />
-          </Box>
-        </RigidBody>
-        {/* Terrain */}
-        <mesh
-          position={[TERRAIN_POS_X, TERRAIN_POS_Y, TERRAIN_POS_Z]}
-          geometry={TERRAIN_GEOMETRY}
-          receiveShadow={true}
-        >
-          {/* @ts-ignore */}
-          <animated.meshStandardMaterial
-            metalness={0.15}
-            roughness={0.75}
-            color={TERRAIN_COLOR}
-            flatShading={TERRAIN_FLAT_SHADING}
-            transparent={true}
-            opacity={TERRAIN_OPACITY}
-          />
-        </mesh>
-        <mesh
-          position={[TERRAIN_POS_X, TERRAIN_POS_Y, TERRAIN_POS_Z_2]}
-          geometry={TERRAIN_GEOMETRY}
-          receiveShadow={true}
-        >
-          {/* @ts-ignore */}
-          <animated.meshStandardMaterial
-            metalness={0.15}
-            roughness={0.75}
-            color={TERRAIN_COLOR}
-            flatShading={TERRAIN_FLAT_SHADING}
-            transparent={true}
-            opacity={TERRAIN_OPACITY}
-          />
-        </mesh>
-        {/* Ramps */}
-        <Ramp opacity={opacity} position={[150,0,0]} type={'up'}/>
-        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*2),0,0]} type={'flat'}/>
-        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*3.25),0,0]} type={'flat'}/>
-        <Ramp opacity={opacity} position={[150+(RAMP_WIDTH*4.25),0,0]} type={'down'}/>
-        {/* Walls */}
+        <Base opacity={opacity} onGroundHit={onGroundHit} />
+        <Terrain />
+        {/* Ramps, Holes & Walls */}
         <Wall opacity={opacity} position={[100,0,0]} onHit={() => onObstacleHit({ obstacle: 'WALL' })}/>
+        <Ramp opacity={opacity} position={[150,0,0]} type={'up'}/>
+        <Ramp opacity={opacity} position={[150+(CarConstants.rampWidth*2),0,0]} type={'flat'}/>
+        <Hole position={[150+(CarConstants.rampWidth*2.5),0,0]} onHit={() => onObstacleHit({ obstacle: 'HOLE' })}/>
+        <Ramp opacity={opacity} position={[150+(CarConstants.rampWidth*3.25),0,0]} type={'flat'}/>
+        <Ramp opacity={opacity} position={[150+(CarConstants.rampWidth*4.25),0,0]} type={'down'}/>
       </>
     )
 }
