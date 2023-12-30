@@ -22,7 +22,13 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 
 // TODO add obstacle - bouncing ball
 // TODO add obstacle - rock
-// TODO add obstacle - crates (destructable)
+// TODO add obstacle - pressure sensor which triggers spikes
+
+// TODO add texture to crate
+// TODO change wall to a log or something
+
+// TODO fix wall incorrectly detects crate as a hit and ends the game
+// TODO fix lava incorrectly detects crate as a hit and ends the game
 
 // TODO fix rendering artifact at the end of 'flat' ramp and the start of 'down' ramp
 const Car = ({ opacity }: { opacity: SpringValue }) => {
