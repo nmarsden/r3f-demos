@@ -5,7 +5,7 @@ import {useCallback} from "react";
 import {CarConstants} from "./carConstants.ts";
 
 const HOLE_WIDTH = CarConstants.objectWidth;
-const HOLE_HEIGHT = CarConstants.rampHeight - 1;
+const HOLE_HEIGHT = CarConstants.objectHeight - 1;
 const HOLE_DEPTH = 6;
 
 let isHit = false;

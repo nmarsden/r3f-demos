@@ -8,7 +8,7 @@ import {RigidBody} from "@react-three/rapier";
 import {Extrude} from "@react-three/drei";
 
 const RAMP_WIDTH = CarConstants.objectWidth;
-const RAMP_HEIGHT = CarConstants.rampHeight;
+const RAMP_HEIGHT = CarConstants.objectHeight;
 const RAMP_DEPTH = CarConstants.baseDepth - 4;
 const RAMP_COLOR = 'black';
 

@@ -224,7 +224,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
 
   useImperativeHandle(ref, () => ({
     jump: () => {
-      const impulse = new THREE.Vector3(0, 700, 0);
+      const impulse = new THREE.Vector3(0, CarConstants.jumpForce, 0);
       const point = vec3(body.current?.translation()).add(new THREE.Vector3(-0.2,0,0));
       body.current?.applyImpulseAtPoint(impulse, point, true);
       // Complete jump after cooldown
@@ -248,6 +248,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
     },
     pause: () => {
       body.current?.setEnabled(false);
+      switchCameraState("STANDARD");
 
       wheels.current?.forEach(wheel => {
         // @ts-ignore
@@ -327,7 +328,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
           colliders={false}
           type="dynamic"
           enabledRotations={[false, false, true]}
-          angularDamping={200}
+          angularDamping={150}
         >
           <CuboidCollider args={[1.1,0.88,1.7]} position={[0,3.6,-1.5]} mass={BODY_TOP_MASS} name="jeepBodyTop" />
           <CuboidCollider args={[1.6,0.8,3]} position={[0,2,-0.15]} mass={BODY_MIDDLE_MASS} name="jeepBodyMiddle" />

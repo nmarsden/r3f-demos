@@ -6,7 +6,7 @@ import {Box} from "@react-three/drei";
 import {useCallback} from "react";
 
 const WALL_WIDTH = 3;
-const WALL_HEIGHT = 6;
+const WALL_HEIGHT = 3;
 const WALL_DEPTH = 10;
 
 let isHit = false;

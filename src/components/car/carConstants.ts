@@ -4,6 +4,7 @@ export const CarConstants = {
   basePosX: (2000 * 0.5) - 20,  // half groundLength minus 20
   baseDepth: 10,
   objectWidth: 25,
-  rampHeight: 25 * 0.5, // half object width
-  jumpCooldownMsecs: 4000
+  objectHeight: 25 * 0.25,
+  jumpForce: 400,
+  jumpCooldownMsecs: 3500
 };

@@ -9,10 +9,11 @@ import {Terrain} from "./terrain.tsx";
 import {Hole} from "./hole.tsx";
 import {Ramp} from "./ramp.tsx";
 import {Wall} from "./wall.tsx";
+import {Lava} from "./lava.tsx";
 
 const BASE_HEIGHT = 20;
 
-type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN';
+type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN' | 'LAVA';
 
 type LevelObject = {
   type: ObjectType;
@@ -26,6 +27,7 @@ const CHAR_TO_OBJECT_TYPE: Map<string, ObjectType> = new Map([
   ['/', 'RAMP_UP'],
   ['O', 'RAMP_FLAT'],
   ['L', 'RAMP_DOWN'],
+  ['=', 'LAVA'],
 ]);
 
 const buildLevelObjects = (level: string): LevelObject[] => {
@@ -43,7 +45,7 @@ const buildLevelObjects = (level: string): LevelObject[] => {
   return levelObjects;
 }
 
-const LEVEL = "_/__/__/__L_|_/O_OL";
+const LEVEL = "__/==L__/O=OL__|__";
 
 const levelObjects = buildLevelObjects(LEVEL);
 
@@ -88,6 +90,7 @@ const Ground = ({ opacity, onGroundHit, onObstacleHit }: GroundProps) => {
             case 'RAMP_FLAT': return <Ramp key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} type={'flat'} />
             case 'RAMP_DOWN': return <Ramp key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} type={'down'} />
             case 'HOLE':      return <Hole key={key} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'HOLE' })} />
+            case 'LAVA':      return <Lava key={key} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'LAVA' })} />
           }
         })}
       </>
