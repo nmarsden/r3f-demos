@@ -12,6 +12,41 @@ import {Wall} from "./wall.tsx";
 
 const BASE_HEIGHT = 20;
 
+type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN';
+
+type LevelObject = {
+  type: ObjectType;
+  posX: number;
+}
+
+const CHAR_TO_OBJECT_TYPE: Map<string, ObjectType> = new Map([
+  ['_', 'NONE'],
+  ['|', 'WALL'],
+  ['X', 'HOLE'],
+  ['/', 'RAMP_UP'],
+  ['O', 'RAMP_FLAT'],
+  ['L', 'RAMP_DOWN'],
+]);
+
+const buildLevelObjects = (level: string): LevelObject[] => {
+  const LEVEL_OBJECT_WIDTH = CarConstants.objectWidth;
+  const levelObjects: LevelObject[] = [];
+  let posX = 0;
+  level.split('').forEach(char => {
+    const type = CHAR_TO_OBJECT_TYPE.get(char) as ObjectType;
+    switch(type) {
+      case 'NONE': break;
+      default: levelObjects.push({ type, posX })
+    }
+    posX += LEVEL_OBJECT_WIDTH;
+  })
+  return levelObjects;
+}
+
+const LEVEL = "_/__/__/__L_|_/O_OL";
+
+const levelObjects = buildLevelObjects(LEVEL);
+
 type GroundProps = {
   opacity: SpringValue;
   onGroundHit: () => void;
@@ -45,13 +80,16 @@ const Ground = ({ opacity, onGroundHit, onObstacleHit }: GroundProps) => {
       <>
         <Base opacity={opacity} onGroundHit={onGroundHit} />
         <Terrain />
-        {/* Ramps, Holes & Walls */}
-        <Wall opacity={opacity} position={[100,0,0]} onHit={() => onObstacleHit({ obstacle: 'WALL' })}/>
-        <Ramp opacity={opacity} position={[150,0,0]} type={'up'}/>
-        <Ramp opacity={opacity} position={[150+(CarConstants.rampWidth*2),0,0]} type={'flat'}/>
-        <Hole position={[150+(CarConstants.rampWidth*2.5),0,0]} onHit={() => onObstacleHit({ obstacle: 'HOLE' })}/>
-        <Ramp opacity={opacity} position={[150+(CarConstants.rampWidth*3.25),0,0]} type={'flat'}/>
-        <Ramp opacity={opacity} position={[150+(CarConstants.rampWidth*4.25),0,0]} type={'down'}/>
+        {levelObjects.map((levelObject, index) => {
+          const key = `${index}`;
+          switch(levelObject.type) {
+            case 'WALL':      return <Wall key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'WALL' })} />
+            case 'RAMP_UP':   return <Ramp key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} type={'up'} />
+            case 'RAMP_FLAT': return <Ramp key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} type={'flat'} />
+            case 'RAMP_DOWN': return <Ramp key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} type={'down'} />
+            case 'HOLE':      return <Hole key={key} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'HOLE' })} />
+          }
+        })}
       </>
     )
 }

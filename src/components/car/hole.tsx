@@ -2,9 +2,10 @@
 
 import {CuboidCollider} from "@react-three/rapier";
 import {useCallback} from "react";
+import {CarConstants} from "./carConstants.ts";
 
-const HOLE_WIDTH = 200;
-const HOLE_HEIGHT = 25 - 1;
+const HOLE_WIDTH = CarConstants.objectWidth;
+const HOLE_HEIGHT = CarConstants.rampHeight - 1;
 const HOLE_DEPTH = 6;
 
 let isHit = false;
@@ -20,7 +21,7 @@ const Hole = ({ onHit, ...props } : { onHit: () => void } & JSX.IntrinsicElement
   }, [onHit]);
 
   return (
-    <group position-y={HOLE_HEIGHT * 0.5}>
+    <group position-x={HOLE_WIDTH * 0.5} position-y={HOLE_HEIGHT * 0.5}>
       <CuboidCollider
         args={[HOLE_WIDTH * 0.5, HOLE_HEIGHT * 0.5, HOLE_DEPTH * 0.5]}
         position={props.position}

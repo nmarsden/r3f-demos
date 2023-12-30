@@ -327,7 +327,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
           colliders={false}
           type="dynamic"
           enabledRotations={[false, false, true]}
-          angularDamping={50}
+          angularDamping={200}
         >
           <CuboidCollider args={[1.1,0.88,1.7]} position={[0,3.6,-1.5]} mass={BODY_TOP_MASS} name="jeepBodyTop" />
           <CuboidCollider args={[1.6,0.8,3]} position={[0,2,-0.15]} mass={BODY_MIDDLE_MASS} name="jeepBodyMiddle" />
