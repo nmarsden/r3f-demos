@@ -11,6 +11,7 @@ import {Ramp} from "./ramp.tsx";
 import {Wall} from "./wall.tsx";
 import {Lava} from "./lava.tsx";
 import {Tiles} from "./tiles.tsx";
+import {forwardRef, useImperativeHandle, useState} from "react";
 
 const BASE_HEIGHT = 20;
 
@@ -23,13 +24,13 @@ type LevelObject = {
 
 const CHAR_TO_OBJECT_TYPE: Map<string, ObjectType> = new Map([
   ['_', 'NONE'],
-  ['|', 'WALL'],
-  ['X', 'HOLE'],
-  ['/', 'RAMP_UP'],
-  ['O', 'RAMP_FLAT'],
-  ['L', 'RAMP_DOWN'],
+  ['I', 'WALL'],
+  ['O', 'HOLE'],
+  ['<', 'RAMP_UP'],
+  ['#', 'RAMP_FLAT'],
+  ['>', 'RAMP_DOWN'],
   ['=', 'LAVA'],
-  ['t', 'TILES'],
+  ['T', 'TILES'],
 ]);
 
 const buildLevelObjects = (level: string): LevelObject[] => {
@@ -47,15 +48,9 @@ const buildLevelObjects = (level: string): LevelObject[] => {
   return levelObjects;
 }
 
-const LEVEL = "__t_/==L__/O=OL___|__";
+const LEVEL = "__T_<=>__<#=#>___I__";
 
 const levelObjects = buildLevelObjects(LEVEL);
-
-type GroundProps = {
-  opacity: SpringValue;
-  onGroundHit: () => void;
-  onObstacleHit: (event: ObstacleHitEvent) => void;
-};
 
 const Base = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: () => void }) => {
   return (
@@ -79,12 +74,34 @@ const Base = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: () 
   )
 }
 
-const Ground = ({ opacity, onGroundHit, onObstacleHit }: GroundProps) => {
+export type GroundRef = {
+  reset: () => void;
+} | null;
+
+type GroundProps = {
+  opacity: SpringValue;
+  onGroundHit: () => void;
+  onObstacleHit: (event: ObstacleHitEvent) => void;
+};
+
+const Ground = forwardRef<GroundRef, GroundProps>(({ opacity, onGroundHit, onObstacleHit }: GroundProps, ref) => {
+  const [respawn, setRespawn] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      setRespawn(true);
+
+      setTimeout(() => {
+        setRespawn(false);
+      }, 100);
+    }
+  }), []);
+
   return opacity.isAnimating ? null : (
       <>
         <Base opacity={opacity} onGroundHit={onGroundHit} />
         <Terrain />
-        {levelObjects.map((levelObject, index) => {
+        {respawn ? null : levelObjects.map((levelObject, index) => {
           const key = `${index}`;
           switch(levelObject.type) {
             case 'WALL':      return <Wall key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'WALL' })} />
@@ -98,6 +115,6 @@ const Ground = ({ opacity, onGroundHit, onObstacleHit }: GroundProps) => {
         })}
       </>
     )
-}
+});
 
 export { Ground }
