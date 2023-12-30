@@ -22,8 +22,6 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 
 // TODO add obstacle - bouncing ball
 // TODO add obstacle - rock
-// TODO add obstacle - wall
-// TODO add obstacle - lava
 
 // TODO fix rendering artifact at the end of 'flat' ramp and the start of 'down' ramp
 const Car = ({ opacity }: { opacity: SpringValue }) => {
