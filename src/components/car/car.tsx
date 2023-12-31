@@ -11,7 +11,7 @@ import {useCursor} from "@react-three/drei";
 import {DashBoard} from "./dashBoard.tsx";
 import {Bloom, EffectComposer} from "@react-three/postprocessing";
 import {GameOver} from "./gameOver.tsx";
-import {Pedal, PedalHoveredChangedEvent} from "./pedal.tsx";
+import {Pedal, PedalHoveredChangedEvent, PedalRef} from "./pedal.tsx";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
 
@@ -28,9 +28,6 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 // TODO add texture to crate
 // TODO change wall to a log or something
 
-// TODO fix pedal stays down when mouse up outside of the pedal
-// TODO fix pedal not reset when play again
-
 // TODO fix wall incorrectly detects crate as a hit and ends the game
 // TODO fix lava incorrectly detects crate as a hit and ends the game
 
@@ -39,6 +36,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);
   const jeep = useRef<JeepModelRef>(null);
+  const pedal = useRef<PedalRef>(null);
   const ground = useRef<GroundRef>(null);
   const [gameState, setGameState] = useState<GameState>('PLAYING');
   const [hovered, setHovered] = useState(false);
@@ -75,6 +73,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   const onPlayAgainButtonClicked = useCallback(() => {
     setPaused(false);
     jeep.current?.reset();
+    pedal.current?.reset();
     ground.current?.reset();
     setGameState('PLAYING');
   }, []);
@@ -105,6 +104,7 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
               <ControlPanel opacity={opacity}>
                 <DashBoard opacity={opacity} velocity={velocity} />
                 <Pedal
+                  ref={pedal}
                   opacity={opacity}
                   onHoveredChanged={onPedalHovered}
                   onPedalDown={onPedalDown}

@@ -1,13 +1,19 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as THREE from "three";
 import {animated, config, SpringValue, useSpring} from "@react-spring/three";
-import {useCallback, useEffect} from "react";
+import {forwardRef, useCallback, useEffect, useImperativeHandle} from "react";
 import {RoundedBox, useTexture} from "@react-three/drei";
+import {ThreeEvent} from "@react-three/fiber";
 
 export type PedalHoveredChangedEvent = {
   isHovered: boolean;
 }
-type PushButtonProps = {
+
+export type PedalRef = {
+  reset: () => void;
+} | null;
+
+type PedalProps = {
   opacity: SpringValue;
   onHoveredChanged: (event: PedalHoveredChangedEvent) => void;
   onPedalDown: () => void;
@@ -21,7 +27,7 @@ const POSITION_Y_MAX = 0.5;
 const ROTATION_X_MIN = Math.PI;
 const ROTATION_X_MAX = Math.PI * 1.05;
 
-const Pedal = ({ opacity, onHoveredChanged, onPedalDown, onPedalUp, enabled }: PushButtonProps) => {
+const Pedal = forwardRef<PedalRef, PedalProps>(({ opacity, onHoveredChanged, onPedalDown, onPedalUp, enabled }: PedalProps, ref) => {
   const textureProps = useTexture({
     map:             '/r3f-demos/car/Metal_Grill_001_COLOR.jpg',
     displacementMap: '/r3f-demos/car/Metal_Grill_001_DISP.png',
@@ -35,6 +41,12 @@ const Pedal = ({ opacity, onHoveredChanged, onPedalDown, onPedalUp, enabled }: P
     from: { positionY: POSITION_Y_MAX, rotationX: ROTATION_X_MIN },
     config: config.stiff
   }))
+
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      api.start({ to: { positionY: POSITION_Y_MAX, rotationX: ROTATION_X_MIN } })
+    },
+  }), []);
 
   const onPointerOver = useCallback(() => {
     if (!enabled) {
@@ -50,18 +62,22 @@ const Pedal = ({ opacity, onHoveredChanged, onPedalDown, onPedalUp, enabled }: P
     onHoveredChanged({ isHovered: false })
   }, [enabled, onHoveredChanged])
 
-  const onPointerDown = useCallback(() => {
+  const onPointerDown = useCallback((event: ThreeEvent<PointerEvent>) => {
     if (!enabled) {
       return
     }
+    // @ts-ignore
+    event.target.setPointerCapture(event.pointerId)
     api.start({ to: { positionY: POSITION_Y_MIN, rotationX: ROTATION_X_MAX } })
     onPedalDown()
   }, [enabled, onPedalDown])
 
-  const onPointerUp = useCallback(() => {
+  const onPointerUp = useCallback((event: ThreeEvent<PointerEvent>) => {
     if (!enabled) {
       return
     }
+    // @ts-ignore
+    event.target.releasePointerCapture(event.pointerId)
     api.start({ to: { positionY: POSITION_Y_MAX, rotationX: ROTATION_X_MIN } })
     onPedalUp()
   }, [enabled, onPedalUp])
@@ -108,6 +124,6 @@ const Pedal = ({ opacity, onHoveredChanged, onPedalDown, onPedalUp, enabled }: P
       <animated.meshStandardMaterial attach="material-1" metalness={0.45} roughness={0.75} color={0x111111} transparent={true} opacity={opacity} />
     </RoundedBox>
   </animated.group>
-}
+});
 
 export { Pedal }
