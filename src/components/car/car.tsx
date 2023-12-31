@@ -12,13 +12,8 @@ import {DashBoard} from "./dashBoard.tsx";
 import {Bloom, EffectComposer} from "@react-three/postprocessing";
 import {GameOver} from "./gameOver.tsx";
 import {Pedal, PedalHoveredChangedEvent} from "./pedal.tsx";
-import * as THREE from "three";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
-
-const PEDAL_POSITION = new THREE.Vector3(0, 0.38, 0);
-
-// TODO button is throttle instead of jump. force is only applied while the button is held
 
 // TODO add power-up - invincible
 // TODO add power-up - boost
@@ -108,8 +103,6 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
                 <DashBoard opacity={opacity} velocity={velocity} />
                 <Pedal
                   opacity={opacity}
-                  position={PEDAL_POSITION}
-                  scale={0.085}
                   onHoveredChanged={onPedalHovered}
                   onPedalDown={onPedalDown}
                   onPedalUp={onPedalUp}

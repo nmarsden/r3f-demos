@@ -1,53 +1,28 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {animated, config, SpringValue, useSpring} from "@react-spring/three";
-import {useCallback, useMemo} from "react";
-import * as THREE from "three";
-import {Lathe} from "@react-three/drei";
-
-const ButtonBase = ({ opacity }: { opacity: SpringValue }) => {
-  const triangleShape = useMemo(() => {
-    const triangleShape = new THREE.Shape();
-    triangleShape.moveTo(2, 0.5);
-    triangleShape.lineTo(2, 0);
-    triangleShape.lineTo(2.5, 0);
-    triangleShape.lineTo(2, 0.5);
-    return triangleShape;
-  }, [])
-
-  return (
-    <Lathe
-      args={[triangleShape.getPoints(), 32]}
-      castShadow={true}
-      receiveShadow={true}
-    >
-      {/* @ts-ignore */}
-      <animated.meshStandardMaterial
-        metalness={0.15}
-        roughness={0.75}
-        color={'grey'}
-        transparent={true}
-        opacity={opacity}
-      />
-    </Lathe>
-  )
-}
+import {useCallback} from "react";
+import {RoundedBox} from "@react-three/drei";
 
 export type PedalHoveredChangedEvent = {
   isHovered: boolean;
 }
 type PushButtonProps = {
   opacity: SpringValue;
-  position: THREE.Vector3;
-  scale: number;
   onHoveredChanged: (event: PedalHoveredChangedEvent) => void;
   onPedalDown: () => void;
   onPedalUp: () => void;
   enabled: boolean;
 }
 
-const Pedal = ({ opacity, position, scale, onHoveredChanged, onPedalDown, onPedalUp, enabled }: PushButtonProps) => {
-  const [{ positionY }, api] = useSpring(() => ({
-    from: { positionY: 0.5 },
+const POSITION_Y_MIN = 0.48;
+const POSITION_Y_MAX = 0.5;
+
+const ROTATION_X_MIN = Math.PI * -0.25;
+const ROTATION_X_MAX = Math.PI * -0.3;
+
+const Pedal = ({ opacity, onHoveredChanged, onPedalDown, onPedalUp, enabled }: PushButtonProps) => {
+  const [{ positionY, rotationX }, api] = useSpring(() => ({
+    from: { positionY: POSITION_Y_MAX, rotationX: ROTATION_X_MIN },
     config: config.stiff
   }))
 
@@ -69,7 +44,7 @@ const Pedal = ({ opacity, position, scale, onHoveredChanged, onPedalDown, onPeda
     if (!enabled) {
       return
     }
-    api.start({ to: { positionY: 0.25 } })
+    api.start({ to: { positionY: POSITION_Y_MIN, rotationX: ROTATION_X_MAX } })
     onPedalDown()
   }, [enabled, onPedalDown])
 
@@ -77,17 +52,21 @@ const Pedal = ({ opacity, position, scale, onHoveredChanged, onPedalDown, onPeda
     if (!enabled) {
       return
     }
-    api.start({ to: { positionY: 0.5 } })
+    api.start({ to: { positionY: POSITION_Y_MAX, rotationX: ROTATION_X_MIN } })
     onPedalUp()
   }, [enabled, onPedalUp])
 
-  return <group
-    scale={scale}
-    position={position}
+  return <animated.group
+    position-y={positionY}
+    position-z={0.1}
+    rotation-x={rotationX}
   >
-    <ButtonBase opacity={opacity} />
-    <animated.mesh
-      position-y={positionY}
+    <RoundedBox
+      args={[0.3, 0.15, 0.18]}
+      radius={0.06} // Radius of the rounded corners. Default is 0.05
+      smoothness={16} // The number of curve segments. Default is 4
+      bevelSegments={0} // The number of bevel segments. Default is 4, setting it to 0 removes the bevel, as a result the texture is applied to the whole geometry.
+      creaseAngle={0.4} // Smooth normals everywhere except faces that meet at an angle greater than the crease angle
       castShadow={true}
       receiveShadow={true}
       onPointerOver={onPointerOver}
@@ -95,17 +74,16 @@ const Pedal = ({ opacity, position, scale, onHoveredChanged, onPedalDown, onPeda
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
     >
-      <cylinderGeometry args={[2, 2, 0.5]} />
       {/* @ts-ignore */}
       <animated.meshStandardMaterial
-        metalness={0.75}
-        roughness={0.15}
-        color={'blue'}
+        metalness={0.45}
+        roughness={0.75}
+        color={'grey'}
         transparent={true}
         opacity={opacity}
       />
-    </animated.mesh>
-  </group>
+    </RoundedBox>
+  </animated.group>
 }
 
 export { Pedal }
