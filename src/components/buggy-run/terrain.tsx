@@ -20,7 +20,7 @@ function generateHeightData(width: number, depth: number, minHeight: number, max
         Math.pow( ( i - w2 ) / w2, 2.0 ) +
         Math.pow( ( j - d2 ) / d2, 2.0 ) );
       const height = ( Math.sin( radius * phaseMult ) + 1 ) * 0.5 * hRange + minHeight;
-      data[ p ] = height;
+      data[ p ] = (p < depth || p > size - depth) ? minHeight : height;
       p ++;
     }
   }
@@ -31,12 +31,12 @@ const TERRAIN_WIDTH = BuggyRunConstants.levelLength;
 const TERRAIN_DEPTH = 50;
 const TERRAIN_WIDTH_SEGMENTS = Math.round(TERRAIN_WIDTH * 0.125 * 0.75);
 const TERRAIN_DEPTH_SEGMENTS = Math.round(TERRAIN_DEPTH * 0.125);
-const TERRAIN_MAX_HEIGHT = 20;
+const TERRAIN_MAX_HEIGHT = 5;
 const TERRAIN_POS_X = BuggyRunConstants.basePosX;
-const TERRAIN_POS_Y = -TERRAIN_MAX_HEIGHT;
-const TERRAIN_POS_Z = -((TERRAIN_DEPTH * 0.5) + (BuggyRunConstants.baseDepth * 0.5));
-const TERRAIN_POS_Z_2 = (TERRAIN_DEPTH * 0.5) + (BuggyRunConstants.baseDepth * 0.5);
-const TERRAIN_COLOR = 0x227722;
+const TERRAIN_POS_Y = (TERRAIN_DEPTH * -0.5);
+const TERRAIN_POS_Y_2 = 20 + (TERRAIN_DEPTH * 0.5);
+const TERRAIN_POS_Z = BuggyRunConstants.baseDepth * 0.5;
+const TERRAIN_COLOR = 0x400000;
 const TERRAIN_OPACITY = 1;
 const TERRAIN_FLAT_SHADING = true;
 const TERRAIN_HEIGHT_DATA = generateHeightData(TERRAIN_DEPTH_SEGMENTS, TERRAIN_WIDTH_SEGMENTS, 0, TERRAIN_MAX_HEIGHT);
@@ -60,6 +60,7 @@ const Terrain = () => {
     <>
       <mesh
         position={[TERRAIN_POS_X, TERRAIN_POS_Y, TERRAIN_POS_Z]}
+        rotation={[Math.PI * 0.5,0,0]}
         geometry={TERRAIN_GEOMETRY}
         receiveShadow={true}
       >
@@ -74,7 +75,8 @@ const Terrain = () => {
         />
       </mesh>
     <mesh
-      position={[TERRAIN_POS_X, TERRAIN_POS_Y, TERRAIN_POS_Z_2]}
+      position={[TERRAIN_POS_X, TERRAIN_POS_Y_2, TERRAIN_POS_Z]}
+      rotation={[Math.PI * 0.5,0,0]}
       geometry={TERRAIN_GEOMETRY}
       receiveShadow={true}
     >
