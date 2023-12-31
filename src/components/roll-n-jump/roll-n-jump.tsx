@@ -94,7 +94,14 @@ const RollNJump = ({ opacity }: { opacity: SpringValue }) => {
           <Ball ref={ball} opacity={opacity}/>
           <Ground ref={ground} opacity={opacity} onGroundHit={onGroundHit} onGroundBoundsChanged={onGroundBoundsChanged}/>
           <Obstacles ref={obstacles} opacity={opacity} groundBounds={groundBounds} onObstacleHit={onObstacleHit} onObstaclePassed={onObstaclePassed}/>
-          <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING'}/>
+          <ControlPanel
+            opacity={opacity}
+            pushButtonSettings={{
+              onButtonClicked,
+              onButtonHovered: onControlPanelButtonHovered,
+              enabled: gameState === 'PLAYING'
+            }}
+          />
           <Score opacity={opacity} score={score} />
           <Background opacity={opacity} groundBounds={groundBounds} />
           {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}

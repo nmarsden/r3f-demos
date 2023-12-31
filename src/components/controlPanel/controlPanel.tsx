@@ -9,7 +9,19 @@ import {ButtonHoveredChangedEvent, PushButton} from "../pushButton/pushButton.ts
 const SIZE = 0.75;
 const BUTTON_POSITION = new THREE.Vector3(0, 0.38, 0);
 
-const ControlPanel = ({ opacity, onButtonClicked, onButtonHovered, enabled, children }: { opacity: SpringValue, onButtonClicked: () => void, onButtonHovered: (event: ButtonHoveredChangedEvent) => void, enabled: boolean, children?: ReactNode }) => {
+type PushButtonSettings = {
+  onButtonClicked: () => void;
+  onButtonHovered: (event: ButtonHoveredChangedEvent) => void;
+  enabled: boolean;
+}
+
+type ControlPanelProps = {
+  opacity: SpringValue;
+  pushButtonSettings?: PushButtonSettings;
+  children?: ReactNode;
+}
+
+const ControlPanel = ({ opacity, pushButtonSettings, children }: ControlPanelProps) => {
   const box = useRef<THREE.Mesh>(null!);
   const spotLight = useRef<THREE.SpotLight>(null!);
 
@@ -29,8 +41,7 @@ const ControlPanel = ({ opacity, onButtonClicked, onButtonHovered, enabled, chil
     if (!spotLight.current || !box.current) return;
 
     spotLight.current.target = box.current;
-
-  }, [box.current, spotLight.current]);
+  }, []);
 
   return (
     <>
@@ -47,7 +58,16 @@ const ControlPanel = ({ opacity, onButtonClicked, onButtonHovered, enabled, chil
           opacity={opacity}
         />
         {children}
-        <PushButton opacity={opacity} position={BUTTON_POSITION} scale={0.085} onHoveredChanged={onButtonHovered} onButtonClicked={onButtonClicked} enabled={enabled} />
+        {!pushButtonSettings ? null :
+          <PushButton
+            opacity={opacity}
+            position={BUTTON_POSITION}
+            scale={0.085}
+            onHoveredChanged={pushButtonSettings.onButtonHovered}
+            onButtonClicked={pushButtonSettings.onButtonClicked}
+            enabled={pushButtonSettings.enabled}
+          />
+        }
         <spotLight ref={spotLight} angle={0.51} intensity={2} castShadow={true} position={[0, 1, 0]} />
       </Box>
     </>

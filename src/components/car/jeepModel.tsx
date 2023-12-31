@@ -92,6 +92,7 @@ const WHEEL_MASS = 5 * MASS_FACTOR;
 // @ts-ignore
 type WheelRef = {
   pause: () => void;
+  setMotorVelocity: (velocity: number) => void;
 } | null;
 
 type WheelProps = {
@@ -122,19 +123,19 @@ const Wheel = forwardRef<WheelRef, WheelProps>(({ opacity, wheelInfo, body, node
   useImperativeHandle(ref, () => ({
     pause: () => {
       wheel.current?.setEnabled(false);
+    },
+    setMotorVelocity: (velocity: number) => {
+      joint.current?.configureMotorVelocity(velocity, 10);
     }
-  }), [wheel]);
+  }), [wheel, joint]);
 
-  // set motor velocity after 2 seconds
+  // configure joint
   useEffect(() => {
     if (!wheel.current) return;
 
-    setTimeout(() => {
-      joint.current?.configureMotorModel(1); // Force based
-      joint.current?.setContactsEnabled(false);
-      joint.current?.configureMotorVelocity(30, 10);
-    }, 2000);
-  }, [wheel])
+    joint.current?.configureMotorModel(1); // Force based
+    joint.current?.setContactsEnabled(false);
+  }, [wheel, joint])
 
   return (
     <RigidBody
@@ -203,15 +204,16 @@ export type JeepModelRef = {
   boost: () => void;
   pause: () => void;
   reset: () => void;
+  pedalDown: () => void;
+  pedalUp: () => void;
 } | null;
 
 type JeepModelProps = {
   opacity: SpringValue;
   onVelocityChanged: (event: VelocityChangedEvent) => void;
-  onJumpCompleted: () => void;
 };
 
-const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocityChanged, onJumpCompleted } : JeepModelProps, ref) => {
+const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocityChanged } : JeepModelProps, ref) => {
   const { nodes, materials } = useGLTF('/r3f-demos/car/jeep-transformed.glb') as GLTFResult
   const light = useRef<THREE.DirectionalLight>(null!);
   const body = useRef<RapierRigidBody | null>(null);
@@ -227,10 +229,6 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
       const impulse = new THREE.Vector3(0, CarConstants.jumpForce, 0);
       const point = vec3(body.current?.translation()).add(new THREE.Vector3(-0.2,0,0));
       body.current?.applyImpulseAtPoint(impulse, point, true);
-      // Complete jump after cooldown
-      setTimeout(() => {
-        onJumpCompleted();
-      }, CarConstants.jumpCooldownMsecs);
     },
     boost: () => {
       const impulse = new THREE.Vector3(500, 0, 0);
@@ -241,10 +239,6 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
       setTimeout(() => {
         setShowBoost(false);
       }, 2000);
-      // Complete boost after 8 seconds
-      setTimeout(() => {
-        onJumpCompleted();
-      }, CarConstants.jumpCooldownMsecs);
     },
     pause: () => {
       body.current?.setEnabled(false);
@@ -263,8 +257,24 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
         body.current = null;
         setRespawn(false);
       }, 100);
+    },
+    pedalDown: () => {
+      wheels.current?.forEach(wheel => {
+        const force = new THREE.Vector3(50, 0, 0);
+        const point = vec3(body.current?.translation()).add(new THREE.Vector3(0,0,0));
+        body.current?.applyImpulseAtPoint(force, point, true);
+
+        // @ts-ignore
+        wheel.setMotorVelocity(30);
+      })
+    },
+    pedalUp: () => {
+      wheels.current?.forEach(wheel => {
+        // @ts-ignore
+        wheel.setMotorVelocity(0);
+      })
     }
-  }), [body]);
+  }), [body, wheels]);
 
   useEffect(() => {
     if (!light.current || !chassis.current) return;
@@ -277,14 +287,6 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
   useEffect(() => {
     setTimeout(() => {
       switchCameraState("ZOOMED-OUT");
-
-      const force = new THREE.Vector3(400, 0, 0);
-      const point = vec3(body.current?.translation()).add(new THREE.Vector3(0,0,0));
-      body.current?.addForceAtPoint(force, point, true);
-
-      setTimeout(() => {
-        body.current?.resetForces(true);
-      }, 2000);
     }, 1000);
 
   }, [body.current]);

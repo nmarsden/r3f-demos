@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import * as THREE from "three";
-import {animated, SpringValue, useSpring} from "@react-spring/three";
-import {Box, Cylinder, Lathe, RoundedBox, Text} from "@react-three/drei";
+import {animated, SpringValue} from "@react-spring/three";
+import {Cylinder, Lathe, RoundedBox} from "@react-three/drei";
 import {ReactNode, useEffect, useMemo, useState} from "react";
 import {useFrame} from "@react-three/fiber";
-import {CarConstants} from "./carConstants.ts";
 
 type GaugeSegmentProps = {
   color: THREE.Color;
@@ -157,81 +156,11 @@ const Needle = ({ opacity, velocity } : { opacity: SpringValue, velocity: number
   );
 }
 
-const JUMP_INDICATOR_WIDTH = 0.25;
-
-const JumpingIndicator = ({ opacity, jumping } : { opacity: SpringValue, jumping: boolean }) => {
-  const [indicatorOpacity, setIndicatorOpacity] = useState(0.1);
-  const [{ indicatorScale, positionX}, api] = useSpring(() => ({
-    from: { indicatorScale: 0, positionX: 0 },
-  }))
-
-  useEffect(() => {
-    if (jumping) {
-      setIndicatorOpacity(0.1);
-      // start cooldown animation
-      api.start({
-        from: { indicatorScale: 0, positionX: JUMP_INDICATOR_WIDTH * -0.5 },
-        to:   { indicatorScale: 1, positionX: 0 },
-        config: {
-          duration: CarConstants.jumpCooldownMsecs
-        }
-      });
-    } else {
-      setIndicatorOpacity(1);
-    }
-  }, [jumping])
-
-  return (
-    <Box
-      args={[JUMP_INDICATOR_WIDTH, 0.08, 0.025]}
-      position={[0, -0.06, 0.08]}
-    >
-      {/* @ts-ignore */}
-      <animated.meshStandardMaterial
-        metalness={0.45}
-        roughness={0.75}
-        color={'red'}
-        transparent={true}
-        opacity={0.1}
-      />
-      <animated.group
-        position-x={positionX}
-        scale-x={indicatorScale}
-      >
-        <Box
-          args={[JUMP_INDICATOR_WIDTH, 0.08, 0.025]}
-        >
-          {/* @ts-ignore */}
-          <animated.meshStandardMaterial
-            metalness={0.45}
-            roughness={0.75}
-            color={'red'}
-            transparent={true}
-            opacity={1}
-          />
-        </Box>
-      </animated.group>
-      <Text position={[0,-0.006,0.0125]} fontSize={0.05} letterSpacing={0.1} outlineWidth={0.002} outlineColor={'white'}>
-        { /* @ts-ignore */ }
-        <animated.meshStandardMaterial
-          metalness={1}
-          roughness={1}
-          color={'white'}
-          transparent={true}
-          opacity={indicatorOpacity}
-        />
-        JUMP
-      </Text>
-    </Box>
-  );
-}
-
-const DashBoard = ({ opacity, velocity, jumping } : { opacity: SpringValue, velocity: number, jumping: boolean }) => {
+const DashBoard = ({ opacity, velocity } : { opacity: SpringValue, velocity: number }) => {
   return (
     <Panel opacity={opacity}>
       <Gauge opacity={opacity} />
       <Needle opacity={opacity} velocity={velocity}/>
-      <JumpingIndicator opacity={opacity} jumping={jumping} />
     </Panel>
   );
 };

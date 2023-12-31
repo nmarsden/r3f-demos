@@ -7,13 +7,18 @@ import {useTransitionState} from "../../hooks/transitionState.ts";
 import {JeepModel, JeepModelRef, VelocityChangedEvent} from "./jeepModel.tsx";
 import {Ground, GroundRef} from "./ground.tsx";
 import {ControlPanel} from "../controlPanel/controlPanel.tsx";
-import {ButtonHoveredChangedEvent} from "../pushButton/pushButton.tsx";
 import {useCursor} from "@react-three/drei";
 import {DashBoard} from "./dashBoard.tsx";
 import {Bloom, EffectComposer} from "@react-three/postprocessing";
 import {GameOver} from "./gameOver.tsx";
+import {Pedal, PedalHoveredChangedEvent} from "./pedal.tsx";
+import * as THREE from "three";
 
 type GameState = 'PLAYING' | 'GAME_OVER';
+
+const PEDAL_POSITION = new THREE.Vector3(0, 0.38, 0);
+
+// TODO button is throttle instead of jump. force is only applied while the button is held
 
 // TODO add power-up - invincible
 // TODO add power-up - boost
@@ -23,6 +28,7 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 // TODO add obstacle - bouncing ball
 // TODO add obstacle - rock
 // TODO add obstacle - pressure sensor which triggers spikes
+// TODO add obstacle - overhead spikes
 
 // TODO add texture to crate
 // TODO change wall to a log or something
@@ -38,22 +44,26 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   const ground = useRef<GroundRef>(null);
   const [gameState, setGameState] = useState<GameState>('PLAYING');
   const [hovered, setHovered] = useState(false);
-  const [jumping, setJumping] = useState(false);
   const [velocity, setVelocity] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  const onControlPanelButtonHovered = useCallback((event: ButtonHoveredChangedEvent) => {
+  const onPedalHovered = useCallback((event: PedalHoveredChangedEvent) => {
     setHovered(event.isHovered);
   }, []);
 
-  useCursor(hovered && !jumping);
+  useCursor(hovered);
 
-  const onButtonClicked = useCallback(() => {
-    if (!jeep.current || jumping) return;
+  const onPedalDown = useCallback(() => {
+    if (!jeep.current) return;
 
-    setJumping(true);
-    jeep.current?.jump();
-  }, [jeep, jumping]);
+    jeep.current?.pedalDown();
+  }, [jeep]);
+
+  const onPedalUp = useCallback(() => {
+    if (!jeep.current) return;
+
+    jeep.current?.pedalUp();
+  }, [jeep]);
 
   const onGroundHit = useCallback(() => {
   }, []);
@@ -75,10 +85,6 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
     setVelocity(event.velocity);
   }, []);
 
-  const onJumpCompleted = useCallback(() => {
-    setJumping(false);
-  }, []);
-
   useEffect(() => {
     if (!mainContext.controls.current) return;
 
@@ -95,11 +101,20 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
         <Physics debug={false} paused={paused}>
           {opacity.isAnimating ? null : (
             <>
-              <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged} onJumpCompleted={onJumpCompleted}/>
+              <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged}/>
               <Ground ref={ground} opacity={opacity} onGroundHit={onGroundHit} onObstacleHit={onObstacleHit}/>
               {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
-              <ControlPanel opacity={opacity} onButtonClicked={onButtonClicked} onButtonHovered={onControlPanelButtonHovered} enabled={gameState === 'PLAYING' && !jumping}>
-                <DashBoard opacity={opacity} velocity={velocity} jumping={jumping}/>
+              <ControlPanel opacity={opacity}>
+                <DashBoard opacity={opacity} velocity={velocity} />
+                <Pedal
+                  opacity={opacity}
+                  position={PEDAL_POSITION}
+                  scale={0.085}
+                  onHoveredChanged={onPedalHovered}
+                  onPedalDown={onPedalDown}
+                  onPedalUp={onPedalUp}
+                  enabled={gameState === 'PLAYING'}
+                />
               </ControlPanel>
               <EffectComposer>
                 <Bloom mipmapBlur={false} intensity={0.125} />
