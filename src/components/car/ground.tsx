@@ -12,11 +12,12 @@ import {Wall} from "./wall.tsx";
 import {Lava} from "./lava.tsx";
 import {Tiles} from "./tiles.tsx";
 import {Crates} from "./crates.tsx";
+import {Bumps} from "./bumps.tsx";
 import {forwardRef, useImperativeHandle, useState} from "react";
 
 const BASE_HEIGHT = 20;
 
-type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN' | 'LAVA' | 'TILES' | 'CRATES';
+type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN' | 'LAVA' | 'TILES' | 'CRATES' | 'BUMPS';
 
 type LevelObject = {
   type: ObjectType;
@@ -33,6 +34,7 @@ const CHAR_TO_OBJECT_TYPE: Map<string, ObjectType> = new Map([
   ['=', 'LAVA'],
   ['T', 'TILES'],
   ['C', 'CRATES'],
+  ['w', 'BUMPS'],
 ]);
 
 const buildLevelObjects = (level: string): LevelObject[] => {
@@ -50,7 +52,7 @@ const buildLevelObjects = (level: string): LevelObject[] => {
   return levelObjects;
 }
 
-const LEVEL = "__<=>__<=#>___C__I";
+const LEVEL = "_w__<=>__w__<=#>___C__I";
 
 const levelObjects = buildLevelObjects(LEVEL);
 
@@ -114,6 +116,7 @@ const Ground = forwardRef<GroundRef, GroundProps>(({ opacity, onGroundHit, onObs
             case 'LAVA':      return <Lava key={key} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'LAVA' })} />
             case 'TILES':     return <Tiles key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
             case 'CRATES':    return <Crates key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
+            case 'BUMPS':     return <Bumps key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
           }
         })}
       </>
