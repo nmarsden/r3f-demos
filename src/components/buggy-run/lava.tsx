@@ -3,11 +3,11 @@
 import * as THREE from 'three'
 import {CuboidCollider} from "@react-three/rapier";
 import {useCallback, useMemo, useRef} from "react";
-import {CarConstants} from "./carConstants.ts";
+import {BuggyRunConstants} from "./buggyRunConstants.ts";
 import {useFrame} from "@react-three/fiber";
 import {ShaderMaterial} from "three";
 
-const LAVA_WIDTH = CarConstants.objectWidth;
+const LAVA_WIDTH = BuggyRunConstants.objectWidth;
 const LAVA_HEIGHT = 3;
 const LAVA_DEPTH = 6;
 

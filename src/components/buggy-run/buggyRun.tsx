@@ -33,7 +33,7 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 // TODO fix lava incorrectly detects crate as a hit and ends the game
 
 // TODO fix rendering artifact at the end of 'flat' ramp and the start of 'down' ramp
-const Car = ({ opacity }: { opacity: SpringValue }) => {
+const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);
   const jeep = useRef<JeepModelRef>(null);
@@ -124,4 +124,4 @@ const Car = ({ opacity }: { opacity: SpringValue }) => {
   )
 }
 
-export { Car }
+export { BuggyRun }

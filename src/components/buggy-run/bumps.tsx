@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import * as THREE from "three";
-import {CarConstants} from "./carConstants.ts";
+import {BuggyRunConstants} from "./buggyRunConstants.ts";
 import {animated, SpringValue} from "@react-spring/three";
 import {useMemo} from "react";
 import {RigidBody} from "@react-three/rapier";
 import {Extrude} from "@react-three/drei";
 
 const NUM_BUMPS = 8;
-const BUMPS_WIDTH = CarConstants.objectWidth;
+const BUMPS_WIDTH = BuggyRunConstants.objectWidth;
 const BUMPS_HEIGHT = 2;
-const BUMPS_DEPTH = CarConstants.baseDepth - 4;
+const BUMPS_DEPTH = BuggyRunConstants.baseDepth - 4;
 const BUMPS_COLOR = 'black';
 const BUMP_WIDTH = BUMPS_WIDTH / NUM_BUMPS;
 
@@ -35,7 +35,7 @@ const Bumps = ({ opacity, ...props } : { opacity: SpringValue } & JSX.IntrinsicE
         type={'fixed'}
         colliders={'trimesh'}
         position={props.position}
-        friction={CarConstants.groundFriction}
+        friction={BuggyRunConstants.groundFriction}
       >
         <group rotation-y={Math.PI}>
           <Extrude

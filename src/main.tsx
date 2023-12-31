@@ -11,6 +11,7 @@ import {Paint} from "./components/paint/paint";
 import {Boxes} from "./components/boxes/boxes";
 import {Maze} from "./components/maze/maze.tsx";
 import {RollNJump} from "./components/roll-n-jump/roll-n-jump.tsx";
+import {BuggyRun} from "./components/buggy-run/buggyRun.tsx";
 import {About} from "./components/about/about.tsx";
 import {Environment, Loader, OrbitControls} from "@react-three/drei";
 import {Route, Switch, Router} from "wouter";
@@ -21,7 +22,6 @@ import {MainContext} from "./mainContext";
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import {useHashLocation} from "./hooks/hashLocation.ts";
 import {suspend } from 'suspend-react'
-import {Car} from "./components/car/car.tsx";
 // @ts-ignore
 const warehouse = import('@pmndrs/assets/hdri/warehouse.exr').then((module) => module.default)
 
@@ -33,7 +33,7 @@ const pages: Page[] = [
   { name: 'Boxes', path: '/boxes', screenshot: '/r3f-demos/home/boxes.png', renderFn: (props) => <Boxes {...props} /> },
   { name: 'Maze', path: '/maze', screenshot: '/r3f-demos/home/maze.png', renderFn: (props) => <Maze {...props} />, cameraPosition: new THREE.Vector3(0, 8, 0) },
   { name: "Roll-n-Jump", path: '/roll-n-jump', screenshot: '/r3f-demos/home/roll-n-jump.png', renderFn: (props) => <RollNJump {...props} />, cameraPosition: new THREE.Vector3(0, 2, 16) },
-  { name: "Car", path: '/car', screenshot: '/r3f-demos/home/car.png', renderFn: (props) => <Car {...props} />, cameraPosition: new THREE.Vector3(0, 30, 30) },
+  { name: "Buggy Run", path: '/buggy-run', screenshot: '/r3f-demos/home/buggy-run.png', renderFn: (props) => <BuggyRun {...props} />, cameraPosition: new THREE.Vector3(0, 30, 30) },
   // { name: 'Test_A', path: '/test-a', screenshot: '', renderFn: (props) => <Test text='TEST A' {...props} /> },
   // { name: 'Test_B', path: '/test-b', screenshot: '', renderFn: (props) => <Test text='TEST B' {...props} /> },
   { name: 'About', path: '/about', screenshot: '', renderFn: (props) => <About {...props} /> },
@@ -114,8 +114,8 @@ const App = () => {
         >
           <MainContext.Provider value={{ controls: controls, pages: pages }} >
             <CameraAnimation reset={isTransitioning} cameraPosition={cameraPosition} controls={controls} />
-            {!['/roll-n-jump', '/car'].includes(location) ? <Lights/> : null}
-            <Floor showCross={location === '/boxes'} enabled={!['/roll-n-jump', '/car'].includes(location)}/>
+            {!['/roll-n-jump', '/buggy-run'].includes(location) ? <Lights/> : null}
+            <Floor showCross={location === '/boxes'} enabled={!['/roll-n-jump', '/buggy-run'].includes(location)}/>
             { transition(({ position, rotation, scale, opacity }, location) => (
               <animated.group
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {animated} from "@react-spring/three";
 import * as THREE from "three";
-import {CarConstants} from "./carConstants.ts";
+import {BuggyRunConstants} from "./buggyRunConstants.ts";
 
 function generateHeightData(width: number, depth: number, minHeight: number, maxHeight: number): Float32Array {
   const size = width * depth;
@@ -27,15 +27,15 @@ function generateHeightData(width: number, depth: number, minHeight: number, max
   return data;
 }
 
-const TERRAIN_WIDTH = CarConstants.groundLength;
+const TERRAIN_WIDTH = BuggyRunConstants.groundLength;
 const TERRAIN_DEPTH = 50;
 const TERRAIN_WIDTH_SEGMENTS = Math.round(TERRAIN_WIDTH * 0.125 * 0.75);
 const TERRAIN_DEPTH_SEGMENTS = Math.round(TERRAIN_DEPTH * 0.125);
 const TERRAIN_MAX_HEIGHT = 20;
-const TERRAIN_POS_X = CarConstants.basePosX;
+const TERRAIN_POS_X = BuggyRunConstants.basePosX;
 const TERRAIN_POS_Y = -TERRAIN_MAX_HEIGHT;
-const TERRAIN_POS_Z = -((TERRAIN_DEPTH * 0.5) + (CarConstants.baseDepth * 0.5));
-const TERRAIN_POS_Z_2 = (TERRAIN_DEPTH * 0.5) + (CarConstants.baseDepth * 0.5);
+const TERRAIN_POS_Z = -((TERRAIN_DEPTH * 0.5) + (BuggyRunConstants.baseDepth * 0.5));
+const TERRAIN_POS_Z_2 = (TERRAIN_DEPTH * 0.5) + (BuggyRunConstants.baseDepth * 0.5);
 const TERRAIN_COLOR = 0x227722;
 const TERRAIN_OPACITY = 1;
 const TERRAIN_FLAT_SHADING = true;

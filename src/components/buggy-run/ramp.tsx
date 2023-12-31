@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import {CarConstants} from "./carConstants.ts";
+import {BuggyRunConstants} from "./buggyRunConstants.ts";
 import {animated, SpringValue} from "@react-spring/three";
 import {useMemo} from "react";
 import * as THREE from "three";
 import {RigidBody} from "@react-three/rapier";
 import {Extrude} from "@react-three/drei";
 
-const RAMP_WIDTH = CarConstants.objectWidth;
-const RAMP_HEIGHT = CarConstants.objectHeight;
-const RAMP_DEPTH = CarConstants.baseDepth - 4;
+const RAMP_WIDTH = BuggyRunConstants.objectWidth;
+const RAMP_HEIGHT = BuggyRunConstants.objectHeight;
+const RAMP_DEPTH = BuggyRunConstants.baseDepth - 4;
 const RAMP_COLOR = 'black';
 
 type RampType = 'up' | 'down' | 'flat';
@@ -36,7 +36,7 @@ const Ramp = ({ opacity, type, ...props } : { opacity: SpringValue, type: RampTy
         type={'fixed'}
         colliders={'hull'}
         position={props.position}
-        friction={CarConstants.groundFriction}
+        friction={BuggyRunConstants.groundFriction}
       >
         <group rotation-y={type === 'up' ? 0 : Math.PI}>
           <Extrude

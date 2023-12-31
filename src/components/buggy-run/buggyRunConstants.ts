@@ -1,4 +1,4 @@
-export const CarConstants = {
+export const BuggyRunConstants = {
   groundFriction: 2,
   groundLength: 2000,
   basePosX: (2000 * 0.5) - 20,  // half groundLength minus 20

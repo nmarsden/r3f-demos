@@ -3,7 +3,7 @@
 import {animated, SpringValue} from "@react-spring/three";
 import {RigidBody} from "@react-three/rapier";
 import {Box} from "@react-three/drei";
-import {CarConstants} from "./carConstants.ts";
+import {BuggyRunConstants} from "./buggyRunConstants.ts";
 import {ObstacleHitEvent} from "./obstacle.ts";
 import {Terrain} from "./terrain.tsx";
 import {Hole} from "./hole.tsx";
@@ -38,7 +38,7 @@ const CHAR_TO_OBJECT_TYPE: Map<string, ObjectType> = new Map([
 ]);
 
 const buildLevelObjects = (level: string): LevelObject[] => {
-  const LEVEL_OBJECT_WIDTH = CarConstants.objectWidth;
+  const LEVEL_OBJECT_WIDTH = BuggyRunConstants.objectWidth;
   const levelObjects: LevelObject[] = [];
   let posX = 0;
   level.split('').forEach(char => {
@@ -60,11 +60,11 @@ const Base = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: () 
   return (
     <RigidBody
       type={'fixed'}
-      position={[CarConstants.basePosX, BASE_HEIGHT * -0.5, 0]}
+      position={[BuggyRunConstants.basePosX, BASE_HEIGHT * -0.5, 0]}
       onCollisionEnter={onGroundHit}
-      friction={CarConstants.groundFriction}
+      friction={BuggyRunConstants.groundFriction}
     >
-      <Box args={[CarConstants.groundLength, BASE_HEIGHT, CarConstants.baseDepth]} receiveShadow={true}>
+      <Box args={[BuggyRunConstants.groundLength, BASE_HEIGHT, BuggyRunConstants.baseDepth]} receiveShadow={true}>
         {/* @ts-ignore */}
         <animated.meshStandardMaterial
           metalness={0.15}

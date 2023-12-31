@@ -29,12 +29,12 @@ const ROTATION_X_MAX = Math.PI * 1.05;
 
 const Pedal = forwardRef<PedalRef, PedalProps>(({ opacity, onHoveredChanged, onPedalDown, onPedalUp, enabled }: PedalProps, ref) => {
   const textureProps = useTexture({
-    map:             '/r3f-demos/car/Metal_Grill_001_COLOR.jpg',
-    displacementMap: '/r3f-demos/car/Metal_Grill_001_DISP.png',
-    alphaMap:        '/r3f-demos/car/Metal_Grill_001_MASK.jpg',
-    normalMap:       '/r3f-demos/car/Metal_Grill_001_NORM.jpg',
-    aoMap:           '/r3f-demos/car/Metal_Grill_001_OCC.jpg',
-    // roughnessMap:    '/r3f-demos/car/Metal_Grill_001_ROUGH.jpg',
+    map:             '/r3f-demos/buggy-run/Metal_Grill_001_COLOR.jpg',
+    displacementMap: '/r3f-demos/buggy-run/Metal_Grill_001_DISP.png',
+    alphaMap:        '/r3f-demos/buggy-run/Metal_Grill_001_MASK.jpg',
+    normalMap:       '/r3f-demos/buggy-run/Metal_Grill_001_NORM.jpg',
+    aoMap:           '/r3f-demos/buggy-run/Metal_Grill_001_OCC.jpg',
+    // roughnessMap:    '/r3f-demos/buggy-run/Metal_Grill_001_ROUGH.jpg',
   })
 
   const [{ positionY, rotationX }, api] = useSpring(() => ({
