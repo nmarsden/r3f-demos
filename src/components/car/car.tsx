@@ -28,6 +28,9 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 // TODO add texture to crate
 // TODO change wall to a log or something
 
+// TODO fix pedal stays down when mouse up outside of the pedal
+// TODO fix pedal not reset when play again
+
 // TODO fix wall incorrectly detects crate as a hit and ends the game
 // TODO fix lava incorrectly detects crate as a hit and ends the game
 
