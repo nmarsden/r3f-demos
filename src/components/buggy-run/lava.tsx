@@ -8,7 +8,7 @@ import {useFrame} from "@react-three/fiber";
 import {ShaderMaterial} from "three";
 
 const LAVA_WIDTH = BuggyRunConstants.objectWidth;
-const LAVA_HEIGHT = 3;
+const LAVA_HEIGHT = 2;
 const LAVA_DEPTH = 6;
 
 let isHit = false;

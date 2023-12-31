@@ -15,6 +15,8 @@ import {Crates} from "./crates.tsx";
 import {Bumps} from "./bumps.tsx";
 import {forwardRef, useImperativeHandle, useState} from "react";
 
+const CEILING_POS_Y = 40;
+const CEILING_HEIGHT = 20;
 const BASE_HEIGHT = 20;
 
 type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN' | 'LAVA' | 'TILES' | 'CRATES' | 'BUMPS';
@@ -56,6 +58,26 @@ const LEVEL = "_w__<=>__w__<=#>___C__I";
 
 const levelObjects = buildLevelObjects(LEVEL);
 
+const Ceiling = ({ opacity }: { opacity: SpringValue }) => {
+  return (
+    <RigidBody
+      type={'fixed'}
+      position={[BuggyRunConstants.basePosX, CEILING_POS_Y + (CEILING_HEIGHT * -0.5), 0]}
+    >
+      <Box args={[BuggyRunConstants.levelLength, CEILING_HEIGHT, BuggyRunConstants.baseDepth]} receiveShadow={true}>
+        {/* @ts-ignore */}
+        <animated.meshStandardMaterial
+          metalness={0.15}
+          roughness={0.75}
+          color={'black'}
+          transparent={true}
+          opacity={opacity}
+        />
+      </Box>
+    </RigidBody>
+  )
+}
+
 const Base = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: () => void }) => {
   return (
     <RigidBody
@@ -64,7 +86,7 @@ const Base = ({ opacity, onGroundHit }: { opacity: SpringValue, onGroundHit: () 
       onCollisionEnter={onGroundHit}
       friction={BuggyRunConstants.groundFriction}
     >
-      <Box args={[BuggyRunConstants.groundLength, BASE_HEIGHT, BuggyRunConstants.baseDepth]} receiveShadow={true}>
+      <Box args={[BuggyRunConstants.levelLength, BASE_HEIGHT, BuggyRunConstants.baseDepth]} receiveShadow={true}>
         {/* @ts-ignore */}
         <animated.meshStandardMaterial
           metalness={0.15}
@@ -103,6 +125,7 @@ const Ground = forwardRef<GroundRef, GroundProps>(({ opacity, onGroundHit, onObs
 
   return opacity.isAnimating ? null : (
       <>
+        <Ceiling opacity={opacity} />
         <Base opacity={opacity} onGroundHit={onGroundHit} />
         <Terrain />
         {respawn ? null : levelObjects.map((levelObject, index) => {

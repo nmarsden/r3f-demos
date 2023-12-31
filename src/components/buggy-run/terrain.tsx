@@ -27,7 +27,7 @@ function generateHeightData(width: number, depth: number, minHeight: number, max
   return data;
 }
 
-const TERRAIN_WIDTH = BuggyRunConstants.groundLength;
+const TERRAIN_WIDTH = BuggyRunConstants.levelLength;
 const TERRAIN_DEPTH = 50;
 const TERRAIN_WIDTH_SEGMENTS = Math.round(TERRAIN_WIDTH * 0.125 * 0.75);
 const TERRAIN_DEPTH_SEGMENTS = Math.round(TERRAIN_DEPTH * 0.125);
