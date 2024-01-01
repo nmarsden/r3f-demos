@@ -5,7 +5,7 @@ import {Physics} from "@react-three/rapier";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 import {JeepModel, JeepModelRef, VelocityChangedEvent} from "./jeepModel.tsx";
-import {Ground, GroundRef} from "./ground.tsx";
+import {Level, GroundRef} from "./level.tsx";
 import {ControlPanel} from "../controlPanel/controlPanel.tsx";
 import {useCursor} from "@react-three/drei";
 import {DashBoard} from "./dashBoard.tsx";
@@ -100,7 +100,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
           {opacity.isAnimating ? null : (
             <>
               <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged}/>
-              <Ground ref={ground} opacity={opacity} onGroundHit={onGroundHit} onObstacleHit={onObstacleHit}/>
+              <Level ref={ground} opacity={opacity} onGroundHit={onGroundHit} onObstacleHit={onObstacleHit}/>
               {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
               <ControlPanel opacity={opacity}>
                 <DashBoard opacity={opacity} velocity={velocity} />

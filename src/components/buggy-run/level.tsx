@@ -156,7 +156,7 @@ type GroundProps = {
   onObstacleHit: (event: ObstacleHitEvent) => void;
 };
 
-const Ground = forwardRef<GroundRef, GroundProps>(({ opacity, onGroundHit, onObstacleHit }: GroundProps, ref) => {
+const Level = forwardRef<GroundRef, GroundProps>(({ opacity, onGroundHit, onObstacleHit }: GroundProps, ref) => {
   const [respawn, setRespawn] = useState(false);
 
   useImperativeHandle(ref, () => ({
@@ -188,4 +188,4 @@ const Ground = forwardRef<GroundRef, GroundProps>(({ opacity, onGroundHit, onObs
     )
 });
 
-export { Ground }
+export { Level }
