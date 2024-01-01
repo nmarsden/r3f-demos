@@ -323,7 +323,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
     <>
       <directionalLight ref={light} args={[ 0xdddddd, 10 ]} castShadow={true} />
       {respawn ? null :
-      <group position={[0,2.5,0]} rotation={[0, Math.PI * 0.5, 0]} >
+      <group position={[BuggyRunConstants.objectWidth,2.5,0]} rotation={[0, Math.PI * 0.5, 0]} >
         {/* --- Body --- */}
         <RigidBody
           ref={body}

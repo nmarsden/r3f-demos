@@ -2,6 +2,7 @@
 import {animated} from "@react-spring/three";
 import * as THREE from "three";
 import {BuggyRunConstants} from "./buggyRunConstants.ts";
+import {useMemo} from "react";
 
 function generateHeightData(width: number, depth: number, minHeight: number, maxHeight: number): Float32Array {
   const size = width * depth;
@@ -27,41 +28,38 @@ function generateHeightData(width: number, depth: number, minHeight: number, max
   return data;
 }
 
-const TERRAIN_WIDTH = BuggyRunConstants.levelLength;
 const TERRAIN_DEPTH = 50;
-const TERRAIN_WIDTH_SEGMENTS = Math.round(TERRAIN_WIDTH * 0.125 * 0.75);
 const TERRAIN_DEPTH_SEGMENTS = Math.round(TERRAIN_DEPTH * 0.125);
 const TERRAIN_MAX_HEIGHT = 5;
-const TERRAIN_POS_X = BuggyRunConstants.basePosX;
 const TERRAIN_POS_Y = (TERRAIN_DEPTH * -0.5);
-const TERRAIN_POS_Y_2 = 20 + (TERRAIN_DEPTH * 0.5);
 const TERRAIN_POS_Z = BuggyRunConstants.baseDepth * 0.5;
 const TERRAIN_COLOR = 0x400000;
 const TERRAIN_OPACITY = 1;
 const TERRAIN_FLAT_SHADING = true;
-const TERRAIN_HEIGHT_DATA = generateHeightData(TERRAIN_DEPTH_SEGMENTS, TERRAIN_WIDTH_SEGMENTS, 0, TERRAIN_MAX_HEIGHT);
 
-const createTerrainGeometry = (): THREE.PlaneGeometry => {
-  const geometry = new THREE.PlaneGeometry(TERRAIN_WIDTH, TERRAIN_DEPTH, TERRAIN_WIDTH_SEGMENTS - 1, TERRAIN_DEPTH_SEGMENTS - 1);
-  geometry.rotateX( - Math.PI / 2 );
-  const vertices = geometry.attributes.position.array;
-  for ( let i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
-    // j + 1 because it is the y component that we modify
-    vertices[ j + 1 ] = TERRAIN_HEIGHT_DATA[ i ];
-  }
-  geometry.computeVertexNormals();
-  return geometry;
-}
+const Terrain = ({ levelWidth } : { levelWidth: number }) => {
 
-const TERRAIN_GEOMETRY = createTerrainGeometry();
+  const geometry = useMemo(() => {
+    const TERRAIN_WIDTH_SEGMENTS = Math.round(levelWidth * 0.125 * 0.75);
+    const TERRAIN_HEIGHT_DATA = generateHeightData(TERRAIN_DEPTH_SEGMENTS, TERRAIN_WIDTH_SEGMENTS, 0, TERRAIN_MAX_HEIGHT);
 
-const Terrain = () => {
+    const geometry = new THREE.PlaneGeometry(levelWidth, TERRAIN_DEPTH, TERRAIN_WIDTH_SEGMENTS - 1, TERRAIN_DEPTH_SEGMENTS - 1);
+    geometry.rotateX( - Math.PI / 2 );
+    const vertices = geometry.attributes.position.array;
+    for ( let i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
+      // j + 1 because it is the y component that we modify
+      vertices[ j + 1 ] = TERRAIN_HEIGHT_DATA[ i ];
+    }
+    geometry.computeVertexNormals();
+    return geometry;
+  }, [levelWidth]);
+
   return (
     <>
       <mesh
-        position={[TERRAIN_POS_X, TERRAIN_POS_Y, TERRAIN_POS_Z]}
+        position={[levelWidth * 0.5, TERRAIN_POS_Y, TERRAIN_POS_Z]}
         rotation={[Math.PI * 0.5,0,0]}
-        geometry={TERRAIN_GEOMETRY}
+        geometry={geometry}
         receiveShadow={true}
       >
         {/* @ts-ignore */}
@@ -74,22 +72,6 @@ const Terrain = () => {
           opacity={TERRAIN_OPACITY}
         />
       </mesh>
-    <mesh
-      position={[TERRAIN_POS_X, TERRAIN_POS_Y_2, TERRAIN_POS_Z]}
-      rotation={[Math.PI * 0.5,0,0]}
-      geometry={TERRAIN_GEOMETRY}
-      receiveShadow={true}
-    >
-      {/* @ts-ignore */}
-      <animated.meshStandardMaterial
-        metalness={0.15}
-        roughness={0.75}
-        color={TERRAIN_COLOR}
-        flatShading={TERRAIN_FLAT_SHADING}
-        transparent={true}
-        opacity={TERRAIN_OPACITY}
-      />
-    </mesh>
     </>
   )
 }
