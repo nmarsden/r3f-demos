@@ -25,6 +25,7 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 // TODO add obstacle - pressure sensor which triggers spikes
 // TODO add obstacle - overhead spikes
 // TODO add obstacle - hammer swinging from the ceiling
+// TODO add obstacle - opening & closing jaws
 
 // TODO add texture to crate
 // TODO change wall to a log or something
