@@ -27,6 +27,8 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 // TODO add obstacle - hammer swinging from the ceiling
 // TODO add obstacle - opening & closing jaws
 
+// TODO add floating platform which moves side to side
+
 // TODO add texture to crate
 // TODO change wall to a log or something
 
