@@ -260,9 +260,12 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
     },
     pedalDown: () => {
       wheels.current?.forEach(wheel => {
-        const force = new THREE.Vector3(50, 0, 0);
-        const point = vec3(body.current?.translation()).add(new THREE.Vector3(0,0,0));
-        body.current?.applyImpulseAtPoint(force, point, true);
+        const bodyVelocity = body.current.linvel().x
+        if (bodyVelocity < 1) {
+          const force = new THREE.Vector3(50, 0, 0);
+          const point = vec3(body.current?.translation()).add(new THREE.Vector3(0, 0, 0));
+          body.current?.applyImpulseAtPoint(force, point, true);
+        }
 
         // @ts-ignore
         wheel.setMotorVelocity(30);
