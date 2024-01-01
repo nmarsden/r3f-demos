@@ -24,15 +24,15 @@ type PedalProps = {
 const POSITION_Y_MIN = 0.48;
 const POSITION_Y_MAX = 0.5;
 
-const ROTATION_X_MIN = Math.PI;
-const ROTATION_X_MAX = Math.PI * 1.05;
+const ROTATION_X_MIN = Math.PI * 0.6;
+const ROTATION_X_MAX = Math.PI * 0.5;
 
 const Pedal = forwardRef<PedalRef, PedalProps>(({ opacity, onHoveredChanged, onPedalDown, onPedalUp, enabled }: PedalProps, ref) => {
   const textureProps = useTexture({
     map:             '/r3f-demos/buggy-run/Metal_Grill_001_COLOR.jpg',
     displacementMap: '/r3f-demos/buggy-run/Metal_Grill_001_DISP.png',
     alphaMap:        '/r3f-demos/buggy-run/Metal_Grill_001_MASK.jpg',
-    normalMap:       '/r3f-demos/buggy-run/Metal_Grill_001_NORM.jpg',
+    // normalMap:       '/r3f-demos/buggy-run/Metal_Grill_001_NORM.jpg',
     aoMap:           '/r3f-demos/buggy-run/Metal_Grill_001_OCC.jpg',
     // roughnessMap:    '/r3f-demos/buggy-run/Metal_Grill_001_ROUGH.jpg',
   })
@@ -98,11 +98,11 @@ const Pedal = forwardRef<PedalRef, PedalProps>(({ opacity, onHoveredChanged, onP
     rotation-x={rotationX}
   >
     <RoundedBox
-      args={[0.3, 0.15, 0.1]}
+      args={[0.3, 0.15, 0.14]}
       radius={0.06} // Radius of the rounded corners. Default is 0.05
-      smoothness={16} // The number of curve segments. Default is 4
+      smoothness={32} // The number of curve segments. Default is 4
       bevelSegments={0} // The number of bevel segments. Default is 4, setting it to 0 removes the bevel, as a result the texture is applied to the whole geometry.
-      creaseAngle={0.4} // Smooth normals everywhere except faces that meet at an angle greater than the crease angle
+      creaseAngle={2} // Smooth normals everywhere except faces that meet at an angle greater than the crease angle
       castShadow={true}
       receiveShadow={true}
       onPointerOver={onPointerOver}

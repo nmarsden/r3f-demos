@@ -184,8 +184,8 @@ type CameraSettings = {
 const chassisPosition = new THREE.Vector3();
 const cameraTarget = new THREE.Vector3(0, 0, 0);
 const CAMERA_SETTINGS: Map<CameraState, CameraSettings> = new Map([
-  ['STANDARD',    { lerpAlpha: 0.1, offsetY: 0, offsetZ: 20   }],
-  ['ZOOMED-OUT',  { lerpAlpha: 0.1, offsetY: 0, offsetZ: 50 }]
+  ['STANDARD',    { lerpAlpha: 0.1, offsetY: 2, offsetZ: 20   }],
+  ['ZOOMED-OUT',  { lerpAlpha: 0.1, offsetY: 5, offsetZ: 50 }]
 ]);
 let cameraState: CameraState = 'STANDARD';
 let cameraSettings = CAMERA_SETTINGS.get(cameraState) as CameraSettings;
@@ -260,7 +260,7 @@ const JeepModel = forwardRef<JeepModelRef, JeepModelProps>(({ opacity, onVelocit
     },
     pedalDown: () => {
       wheels.current?.forEach(wheel => {
-        const bodyVelocity = body.current.linvel().x
+        const bodyVelocity = body.current?.linvel().x as number;
         if (bodyVelocity < 1) {
           const force = new THREE.Vector3(50, 0, 0);
           const point = vec3(body.current?.translation()).add(new THREE.Vector3(0, 0, 0));
