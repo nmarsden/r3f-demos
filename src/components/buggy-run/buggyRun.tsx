@@ -5,7 +5,7 @@ import {Physics} from "@react-three/rapier";
 import {MainContext} from "../../mainContext.ts";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 import {JeepModel, JeepModelRef, VelocityChangedEvent} from "./jeepModel.tsx";
-import {Level, GroundRef} from "./level.tsx";
+import {Level, LevelRef} from "./level.tsx";
 import {ControlPanel} from "../controlPanel/controlPanel.tsx";
 import {useCursor} from "@react-three/drei";
 import {DashBoard} from "./dashBoard.tsx";
@@ -26,12 +26,13 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 // TODO add obstacle - overhead spikes
 // TODO add obstacle - hammer swinging from the ceiling
 // TODO add obstacle - opening & closing jaws
-
-// TODO add floating platform which moves side to side
+// TODO add obstacle - treadmill
+// TODO add obstacle - lift
 
 // TODO add texture to crate
 // TODO change wall to a log or something
 
+// TODO fix platform in lava changing position when game over
 // TODO fix wall incorrectly detects crate as a hit and ends the game
 // TODO fix lava incorrectly detects crate as a hit and ends the game
 
@@ -41,7 +42,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
   const transitionState = useTransitionState(opacity);
   const jeep = useRef<JeepModelRef>(null);
   const pedal = useRef<PedalRef>(null);
-  const ground = useRef<GroundRef>(null);
+  const level = useRef<LevelRef>(null);
   const [gameState, setGameState] = useState<GameState>('PLAYING');
   const [hovered, setHovered] = useState(false);
   const [velocity, setVelocity] = useState(0);
@@ -78,7 +79,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
     setPaused(false);
     jeep.current?.reset();
     pedal.current?.reset();
-    ground.current?.reset();
+    level.current?.reset();
     setGameState('PLAYING');
   }, []);
 
@@ -103,7 +104,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
           {opacity.isAnimating ? null : (
             <>
               <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged}/>
-              <Level ref={ground} opacity={opacity} onGroundHit={onGroundHit} onObstacleHit={onObstacleHit}/>
+              <Level ref={level} opacity={opacity} onGroundHit={onGroundHit} onObstacleHit={onObstacleHit}/>
               {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
               <ControlPanel opacity={opacity}>
                 <DashBoard opacity={opacity} velocity={velocity} />

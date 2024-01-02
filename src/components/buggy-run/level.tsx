@@ -59,8 +59,8 @@ type Level = {
 };
 
 const LEVEL: Level = {
-  ceiling: '_____w__<=>__w__<=#>______',
-  ground:  '__I__w__<=>__w__<=#>______',
+  ceiling: '_________w__<#>__w__<##>______',
+  ground:  '__<=>_I__w__<#>__w__<##>______',
 };
 
 const LEVEL_WIDTH = LEVEL.ground.length * BuggyRunConstants.objectWidth;
@@ -137,7 +137,7 @@ const LevelObjects = ({ opacity, levelObjects, onObstacleHit }: { opacity: Sprin
         case 'RAMP_FLAT': return <Ramp key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} type={'flat'} />
         case 'RAMP_DOWN': return <Ramp key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} type={'down'} />
         case 'HOLE':      return <Hole key={key} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'HOLE' })} />
-        case 'LAVA':      return <Lava key={key} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'LAVA' })} />
+        case 'LAVA':      return <Lava key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'LAVA' })} />
         case 'TILES':     return <Tiles key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
         case 'CRATES':    return <Crates key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
         case 'BUMPS':     return <Bumps key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
@@ -146,17 +146,17 @@ const LevelObjects = ({ opacity, levelObjects, onObstacleHit }: { opacity: Sprin
   );
 };
 
-export type GroundRef = {
+export type LevelRef = {
   reset: () => void;
 } | null;
 
-type GroundProps = {
+type LevelProps = {
   opacity: SpringValue;
   onGroundHit: () => void;
   onObstacleHit: (event: ObstacleHitEvent) => void;
 };
 
-const Level = forwardRef<GroundRef, GroundProps>(({ opacity, onGroundHit, onObstacleHit }: GroundProps, ref) => {
+const Level = forwardRef<LevelRef, LevelProps>(({ opacity, onGroundHit, onObstacleHit }: LevelProps, ref) => {
   const [respawn, setRespawn] = useState(false);
 
   useImperativeHandle(ref, () => ({

@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import * as THREE from 'three'
-import {CuboidCollider} from "@react-three/rapier";
-import {useCallback, useMemo, useRef} from "react";
+import {CuboidCollider, RapierRigidBody, RigidBody, useRapier, vec3} from "@react-three/rapier";
+import {useCallback, useEffect, useMemo, useRef} from "react";
 import {BuggyRunConstants} from "./buggyRunConstants.ts";
 import {useFrame} from "@react-three/fiber";
 import {ShaderMaterial} from "three";
+import {animated, config, SpringValue, useSpring} from "@react-spring/three";
+import {Box} from "@react-three/drei";
 
 const LAVA_WIDTH = BuggyRunConstants.objectWidth;
 const LAVA_HEIGHT = 1;
 const LAVA_DEPTH = 6;
 
-let isHit = false;
+let isLavaHit = false;
 
 const fragmentShader = `
 uniform vec3 u_colorA;
@@ -47,7 +49,68 @@ void main() {
 
 `;
 
-const Lava = ({ onHit, ...props } : { onHit: () => void } & JSX.IntrinsicElements['group']) => {
+const PLATFORM_WIDTH = BuggyRunConstants.objectWidth * 0.5;
+const PLATFORM_HEIGHT = 2;
+const PLATFORM_DEPTH = BuggyRunConstants.baseDepth - 4;
+const PLATFORM_COLOR: THREE.Color = new THREE.Color('black');
+const VECTOR = new THREE.Vector3(0,0,0);
+
+const Platform = ({ opacity, ...props } : { opacity: SpringValue } & JSX.IntrinsicElements['group']) => {
+  const [{ positionX }, api] = useSpring(() => ({
+    from: { positionX: PLATFORM_WIDTH * 0.5 },
+    config: config.stiff
+  }))
+  const platform = useRef<RapierRigidBody>(null);
+  const { isPaused } = useRapier();
+
+  const startPosition = useMemo(() => {
+    const pos = props.position as number[];
+    return new THREE.Vector3(pos[0], BuggyRunConstants.objectHeight - (PLATFORM_HEIGHT * 0.5), 0);
+  }, [props.position]);
+
+  useEffect(() => {
+    api.start({
+      to: { positionX: BuggyRunConstants.objectWidth - (PLATFORM_WIDTH * 0.5) },
+      loop: true,
+      reverse: true,
+      delay: 2000,
+      config: {
+        duration: 3000
+      }
+    });
+  }, [api]);
+
+  useFrame(() => {
+    if (!platform.current || isPaused) return;
+
+    const currentPosition = vec3(platform.current.translation());
+    const desiredPosition = startPosition.clone().add(VECTOR.setX(positionX.get()));
+    const newPosition = currentPosition.clone().lerp(desiredPosition, 0.1);
+
+    platform.current.setNextKinematicTranslation(newPosition);
+  });
+
+  return (
+    <RigidBody
+      ref={platform}
+      type={'kinematicPosition'}
+      position={startPosition}
+    >
+      <Box args={[PLATFORM_WIDTH,PLATFORM_HEIGHT,PLATFORM_DEPTH]}>
+        {/* @ts-ignore */}
+        <animated.meshStandardMaterial
+          metalness={0.15}
+          roughness={0.75}
+          color={PLATFORM_COLOR}
+          transparent={true}
+          opacity={opacity}
+        />
+      </Box>
+    </RigidBody>
+  );
+};
+
+const LavaFlow = ({ onHit, ...props } : { onHit: () => void } & JSX.IntrinsicElements['group']) => {
   const mesh = useRef<THREE.Mesh>(null!);
 
   const uniforms = useMemo(
@@ -61,10 +124,10 @@ const Lava = ({ onHit, ...props } : { onHit: () => void } & JSX.IntrinsicElement
   );
 
   const onIntersectionEnter = useCallback(() => {
-    if (isHit) return;
+    if (isLavaHit) return;
 
-    isHit = true;
-    setTimeout(() => { isHit = false; }, 1000);
+    isLavaHit = true;
+    setTimeout(() => { isLavaHit = false; }, 1000);
 
     onHit();
   }, [onHit]);
@@ -93,6 +156,15 @@ const Lava = ({ onHit, ...props } : { onHit: () => void } & JSX.IntrinsicElement
         />
       </mesh>
     </group>
+  );
+};
+
+const Lava = ({ opacity, onHit, ...props } : { opacity: SpringValue, onHit: () => void  } & JSX.IntrinsicElements['group']) => {
+  return (
+    <>
+      <Platform opacity={opacity} {...props} />
+      <LavaFlow onHit={onHit} {...props} />
+    </>
   );
 };
 
