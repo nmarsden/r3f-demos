@@ -40,7 +40,7 @@ const Ramp = ({ opacity, type, ...props } : { opacity: SpringValue, type: RampTy
       >
         <group rotation-y={type === 'up' ? 0 : Math.PI}>
           <Extrude
-            args={[triangleShape, { depth: RAMP_DEPTH }]}
+            args={[triangleShape, { depth: RAMP_DEPTH, bevelEnabled: false }]}
             castShadow={true}
             receiveShadow={true}
             position-z={RAMP_DEPTH * -0.5}

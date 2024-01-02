@@ -39,7 +39,7 @@ const Bumps = ({ opacity, ...props } : { opacity: SpringValue } & JSX.IntrinsicE
       >
         <group rotation-y={Math.PI}>
           <Extrude
-            args={[triangleShape, { depth: BUMPS_DEPTH }]}
+            args={[triangleShape, { depth: BUMPS_DEPTH, bevelEnabled: false }]}
             castShadow={true}
             receiveShadow={true}
             position-z={BUMPS_DEPTH * -0.5}

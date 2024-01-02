@@ -23,19 +23,17 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 // TODO add obstacle - bouncing ball
 // TODO add obstacle - rock
 // TODO add obstacle - pressure sensor which triggers spikes
-// TODO add obstacle - overhead spikes
 // TODO add obstacle - hammer swinging from the ceiling
-// TODO add obstacle - opening & closing jaws
 // TODO add obstacle - treadmill
 // TODO add obstacle - lift
 
+// TODO activate the brakes when the pedal is released to allow more control
+
 // TODO add texture to crate
-// TODO change wall to a log or something
 
 // TODO fix wall incorrectly detects crate as a hit and ends the game
 // TODO fix lava incorrectly detects crate as a hit and ends the game
 
-// TODO fix rendering artifact at the end of 'flat' ramp and the start of 'down' ramp
 const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
   const mainContext = useContext(MainContext)
   const transitionState = useTransitionState(opacity);

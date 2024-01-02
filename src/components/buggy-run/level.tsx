@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import * as THREE from 'three'
+import {forwardRef, useImperativeHandle, useMemo, useState} from "react";
 import {animated, SpringValue} from "@react-spring/three";
 import {RigidBody} from "@react-three/rapier";
 import {Box, Line} from "@react-three/drei";
@@ -14,11 +15,11 @@ import {Lava} from "./lava.tsx";
 import {Tiles} from "./tiles.tsx";
 import {Crates} from "./crates.tsx";
 import {Bumps} from "./bumps.tsx";
-import {forwardRef, useImperativeHandle, useMemo, useState} from "react";
+import {Spikes} from "./spikes.tsx";
 
 const BASE_HEIGHT = 20;
 
-type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN' | 'LAVA' | 'TILES' | 'CRATES' | 'BUMPS';
+type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN' | 'LAVA' | 'TILES' | 'CRATES' | 'BUMPS' | 'SPIKES';
 
 type LevelObject = {
   type: ObjectType;
@@ -35,7 +36,8 @@ const CHAR_TO_OBJECT_TYPE: Map<string, ObjectType> = new Map([
   ['=', 'LAVA'],
   ['T', 'TILES'],
   ['C', 'CRATES'],
-  ['w', 'BUMPS'],
+  ['~', 'BUMPS'],
+  ['w', 'SPIKES'],
 ]);
 
 const buildLevelObjects = (level: string): LevelObject[] => {
@@ -59,8 +61,8 @@ type Level = {
 };
 
 const LEVEL: Level = {
-  ceiling: '_________w__<#>__w__<##>______',
-  ground:  '__<=>_I__w__<#>__w__<##>______',
+  ceiling: '___<w>____~__<#>__~__<##>______',
+  ground:  '___<#>_I__~__<#>__~__<##>______',
 };
 
 const LEVEL_WIDTH = LEVEL.ground.length * BuggyRunConstants.objectWidth;
@@ -141,6 +143,7 @@ const LevelObjects = ({ opacity, levelObjects, onObstacleHit }: { opacity: Sprin
         case 'TILES':     return <Tiles key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
         case 'CRATES':    return <Crates key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
         case 'BUMPS':     return <Bumps key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
+        case 'SPIKES':    return <Spikes key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'SPIKES' })} />
       }
     })
   );
