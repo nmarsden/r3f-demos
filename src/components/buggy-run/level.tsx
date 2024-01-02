@@ -61,8 +61,8 @@ type Level = {
 };
 
 const LEVEL: Level = {
-  ceiling: '___<w>____~__<#>__~__<##>______',
-  ground:  '___<#>_I__~__<#>__~__<##>______',
+  ceiling: '__<w>I<w>__~__<#>__~__<##>______',
+  ground:  '__<=>I<#>__~__<#>__~__<##>______',
 };
 
 const LEVEL_WIDTH = LEVEL.ground.length * BuggyRunConstants.objectWidth;
@@ -70,7 +70,7 @@ const LEVEL_WIDTH = LEVEL.ground.length * BuggyRunConstants.objectWidth;
 const ceilingLevelObjects = buildLevelObjects(LEVEL.ceiling);
 const groundLevelObjects = buildLevelObjects(LEVEL.ground);
 
-const LevelObjectsHelper = ({ enabled } : { enabled: false }) => {
+const LevelObjectsHelper = ({ enabled } : { enabled: boolean }) => {
   const positions: THREE.Vector3[] = useMemo(() => {
     if (!enabled) return [];
 

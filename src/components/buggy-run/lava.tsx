@@ -119,7 +119,7 @@ const LavaFlow = ({ onHit, ...props } : { onHit: () => void } & JSX.IntrinsicEle
         value: 0.0,
       },
       u_colorA: { value: new THREE.Color("#000000") },
-      u_colorB: { value: new THREE.Color("orange").multiplyScalar(2) },
+      u_colorB: { value: new THREE.Color("orange").multiplyScalar(0.5) },
     }), []
   );
 
