@@ -125,7 +125,7 @@ const Wheel = forwardRef<WheelRef, WheelProps>(({ opacity, wheelInfo, body, node
       wheel.current?.setEnabled(false);
     },
     setMotorVelocity: (velocity: number) => {
-      joint.current?.configureMotorVelocity(velocity, 10);
+      joint.current?.configureMotorVelocity(velocity, velocity === 0 ? 100 : 0);
     }
   }), [wheel, joint]);
 
