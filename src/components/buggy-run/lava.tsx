@@ -66,7 +66,7 @@ const Platform = ({ opacity, ...props } : { opacity: SpringValue } & JSX.Intrins
   const startPosition = useMemo(() => {
     const pos = props.position as number[];
     return new THREE.Vector3(pos[0], BuggyRunConstants.objectHeight - (PLATFORM_HEIGHT * 0.5), 0);
-  }, [props.position]);
+  }, []);
 
   useEffect(() => {
     api.start({
