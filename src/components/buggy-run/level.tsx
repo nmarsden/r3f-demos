@@ -61,8 +61,8 @@ type Level = {
 };
 
 const LEVEL: Level = {
-  ceiling: '___I____________________________',
-  ground:  '___I_<##>_<~~>_<ww>_<II>_<===>__',
+  ceiling: '_______________________===___',
+  ground:  '__<##>_<~~>_<ww>_<II>_<===>__',
 };
 
 const LEVEL_WIDTH = LEVEL.ground.length * BuggyRunConstants.objectWidth;

@@ -4,50 +4,16 @@ import * as THREE from 'three'
 import {CuboidCollider, RapierRigidBody, RigidBody, useRapier, vec3} from "@react-three/rapier";
 import {useCallback, useEffect, useMemo, useRef} from "react";
 import {BuggyRunConstants} from "./buggyRunConstants.ts";
-import {useFrame} from "@react-three/fiber";
-import {ShaderMaterial} from "three";
+import {extend, useFrame} from "@react-three/fiber";
 import {animated, config, SpringValue, useSpring} from "@react-spring/three";
-import {Box} from "@react-three/drei";
+import {Box, shaderMaterial} from "@react-three/drei";
 
 const LAVA_WIDTH = BuggyRunConstants.objectWidth;
-const LAVA_HEIGHT = 1;
+const LAVA_HEIGHT = 4;
 const LAVA_DEPTH = BuggyRunConstants.objectDepth;
+const LAVA_COLOR = new THREE.Color("orange");
 
 let isLavaHit = false;
-
-const fragmentShader = `
-uniform vec3 u_colorA;
-uniform vec3 u_colorB;
-varying float vZ;
-
-
-void main() {
-  vec3 color = mix(u_colorA, u_colorB, vZ * 2.0 + 0.5); 
-  gl_FragColor = vec4(color, 1.0);
-}
-
-`;
-
-const vertexShader = `
-uniform float u_time;
-
-varying float vZ;
-
-void main() {
-  vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-  
-  modelPosition.y += sin(modelPosition.x * 5.0 + u_time * 3.0) * 0.25;
-  modelPosition.y += sin(modelPosition.z * 6.0 + u_time * 2.0) * 0.25;
-  
-  vZ = modelPosition.y;
-
-  vec4 viewPosition = viewMatrix * modelPosition;
-  vec4 projectedPosition = projectionMatrix * viewPosition;
-
-  gl_Position = projectedPosition;
-}
-
-`;
 
 const PLATFORM_WIDTH = BuggyRunConstants.objectWidth * 0.5;
 const PLATFORM_HEIGHT = 2;
@@ -110,18 +76,65 @@ const Platform = ({ opacity, ...props } : { opacity: SpringValue } & JSX.Intrins
   );
 };
 
-const LavaFlow = ({ onHit, ...props } : { onHit: () => void } & JSX.IntrinsicElements['group']) => {
-  const mesh = useRef<THREE.Mesh>(null!);
+const WaveShaderMaterial = shaderMaterial(
+  { time: 0, color: new THREE.Color("black") },
+  // vertex shader
+  /*glsl*/`
+    uniform float time;
 
-  const uniforms = useMemo(
-    () => ({
-      u_time: {
-        value: 0.0,
-      },
-      u_colorA: { value: new THREE.Color("#000000") },
-      u_colorB: { value: new THREE.Color("orange").multiplyScalar(0.5) },
-    }), []
-  );
+    #include <common>
+    #include <logdepthbuf_pars_vertex>
+  
+    varying vec2 vUv;
+    varying float vZ;
+
+    void main() {
+      vUv = uv;
+      vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+      
+      modelPosition.y += sin(modelPosition.x * 5.0 + time * 3.0) * 0.25;
+      modelPosition.y += sin(modelPosition.z * 6.0 + time * 2.0) * 0.25;
+      
+      vZ = position.y;
+      // vZ = modelPosition.y;
+      
+      vec4 viewPosition = viewMatrix * modelPosition;
+      vec4 projectedPosition = projectionMatrix * viewPosition;
+      
+      gl_Position = projectedPosition;
+       
+      // gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      
+      #include <logdepthbuf_vertex>
+    }
+  `,
+  // fragment shader
+  /*glsl*/`
+    uniform float time;
+    uniform vec3 color;
+    
+    #include <common>
+    #include <logdepthbuf_pars_fragment>
+    
+    varying vec2 vUv;
+    varying float vZ;
+    
+    void main() {
+    
+      #include <logdepthbuf_fragment>
+
+      // gl_FragColor.rgba = vec4(vZ, vZ, vZ, 1.0);
+
+      gl_FragColor.rgba = vec4(vZ * color, 1.0);
+    }
+  `
+);
+
+extend({ WaveShaderMaterial });
+
+const LavaFlow = ({ onHit, ...props } : { onHit: () => void } & JSX.IntrinsicElements['group']) => {
+  const wave = useRef<typeof WaveShaderMaterial>(null!);
+  const mesh = useRef<THREE.Mesh>(null!);
 
   const onIntersectionEnter = useCallback(() => {
     if (isLavaHit) return;
@@ -136,21 +149,18 @@ const LavaFlow = ({ onHit, ...props } : { onHit: () => void } & JSX.IntrinsicEle
     if (!mesh.current) return;
 
     const { clock } = state;
-    (mesh.current.material as ShaderMaterial).uniforms.u_time.value = clock.getElapsedTime();
+    // @ts-ignore
+    wave.current.uniforms.time.value = clock.getElapsedTime();
   });
 
   return (
-    <group position-x={LAVA_WIDTH * 0.5} position-y={LAVA_HEIGHT}>
-      <mesh ref={mesh} position={props.position} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[LAVA_WIDTH, LAVA_DEPTH, 16, 8]} />
-        <shaderMaterial
-          fragmentShader={fragmentShader}
-          vertexShader={vertexShader}
-          uniforms={uniforms}
-          wireframe={false}
-        />
+    <group position-x={LAVA_WIDTH * 0.5} position-y={LAVA_HEIGHT * -0.2}>
+      <mesh ref={mesh} position={props.position} rotation={[0, 0, 0]}>
+        <boxGeometry args={[LAVA_WIDTH, LAVA_HEIGHT, LAVA_DEPTH, 16, 1, 2]} />
+        {/* @ts-ignore */}
+        <waveShaderMaterial ref={wave} key={WaveShaderMaterial.key} color={LAVA_COLOR} />
         <CuboidCollider
-          args={[LAVA_WIDTH * 0.5, LAVA_DEPTH * 0.5, LAVA_HEIGHT * 0.5]}
+          args={[LAVA_WIDTH * 0.5, LAVA_HEIGHT * 0.5, LAVA_DEPTH * 0.5]}
           sensor={true}
           onIntersectionEnter={onIntersectionEnter}
         />
