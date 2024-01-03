@@ -1,0 +1,72 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
+import {animated, config, SpringValue, useSpring} from "@react-spring/three";
+import {useEffect, useMemo, useRef} from "react";
+import {RapierRigidBody, RigidBody, useRapier, vec3} from "@react-three/rapier";
+import * as THREE from "three";
+import {BuggyRunConstants} from "./buggyRunConstants.ts";
+import {useFrame} from "@react-three/fiber";
+import {Box} from "@react-three/drei";
+
+const PLATFORM_WIDTH = BuggyRunConstants.objectWidth * 0.5;
+const PLATFORM_HEIGHT = 2;
+const PLATFORM_DEPTH = BuggyRunConstants.objectDepth;
+const PLATFORM_COLOR: THREE.Color = new THREE.Color('black');
+const VECTOR = new THREE.Vector3(0,0,0);
+
+const Platform = ({ opacity, ...props } : { opacity: SpringValue } & JSX.IntrinsicElements['group']) => {
+  const [{ positionX }, api] = useSpring(() => ({
+    from: { positionX: PLATFORM_WIDTH * 0.5 },
+    config: config.stiff
+  }))
+  const platform = useRef<RapierRigidBody>(null);
+  const { isPaused } = useRapier();
+
+  const startPosition = useMemo(() => {
+    const pos = props.position as number[];
+    return new THREE.Vector3(pos[0], BuggyRunConstants.objectHeight - (PLATFORM_HEIGHT * 0.5), 0);
+  }, []);
+
+  useEffect(() => {
+    api.start({
+      to: { positionX: BuggyRunConstants.objectWidth - (PLATFORM_WIDTH * 0.5) },
+      loop: true,
+      reverse: true,
+      delay: 2000,
+      config: {
+        duration: 3000
+      }
+    });
+  }, [api]);
+
+  useFrame(() => {
+    if (!platform.current || isPaused) return;
+
+    const currentPosition = vec3(platform.current.translation());
+    const desiredPosition = startPosition.clone().add(VECTOR.setX(positionX.get()));
+    const newPosition = currentPosition.clone().lerp(desiredPosition, 0.1);
+
+    platform.current.setNextKinematicTranslation(newPosition);
+  });
+
+  return (
+    <RigidBody
+      ref={platform}
+      type={'kinematicPosition'}
+      position={startPosition}
+    >
+      <Box args={[PLATFORM_WIDTH,PLATFORM_HEIGHT,PLATFORM_DEPTH]}>
+        {/* @ts-ignore */}
+        <animated.meshStandardMaterial
+          metalness={0.15}
+          roughness={0.75}
+          color={PLATFORM_COLOR}
+          transparent={true}
+          opacity={opacity}
+        />
+      </Box>
+    </RigidBody>
+  );
+};
+
+export { Platform };
