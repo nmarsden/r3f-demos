@@ -10,13 +10,13 @@ import {BuggyRunConstants} from "./buggyRunConstants.ts";
 const NUM_SPIKES = 8;
 const SPIKES_WIDTH = BuggyRunConstants.objectWidth;
 const SPIKES_HEIGHT = 2;
-const SPIKES_DEPTH = BuggyRunConstants.baseDepth - 4;
+const SPIKES_DEPTH = BuggyRunConstants.objectDepth;
 const SPIKE_WIDTH = SPIKES_WIDTH / NUM_SPIKES;
 const SPIKES_COLOR = new THREE.Color('orange').multiplyScalar(2);
 
 const WALL_WIDTH = BuggyRunConstants.objectWidth;
 const WALL_HEIGHT = BuggyRunConstants.objectHeight - SPIKES_HEIGHT;
-const WALL_DEPTH = BuggyRunConstants.baseDepth - 4;
+const WALL_DEPTH = BuggyRunConstants.objectDepth;
 const WALL_COLOR: THREE.Color = new THREE.Color('black');
 
 let isHit = false;

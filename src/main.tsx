@@ -111,6 +111,7 @@ const App = () => {
         <Canvas
           shadows={true}
           camera={{ position: cameraPosition, fov: 70 }}
+          gl={{ logarithmicDepthBuffer: true }}
         >
           <MainContext.Provider value={{ controls: controls, pages: pages }} >
             <CameraAnimation reset={isTransitioning} cameraPosition={cameraPosition} controls={controls} />

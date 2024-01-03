@@ -10,7 +10,7 @@ import {Extrude} from "@react-three/drei";
 const NUM_BUMPS = 8;
 const BUMPS_WIDTH = BuggyRunConstants.objectWidth;
 const BUMPS_HEIGHT = 2;
-const BUMPS_DEPTH = BuggyRunConstants.baseDepth - 4;
+const BUMPS_DEPTH = BuggyRunConstants.objectDepth;
 const BUMPS_COLOR = 'black';
 const BUMP_WIDTH = BUMPS_WIDTH / NUM_BUMPS;
 

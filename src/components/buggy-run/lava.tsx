@@ -11,7 +11,7 @@ import {Box} from "@react-three/drei";
 
 const LAVA_WIDTH = BuggyRunConstants.objectWidth;
 const LAVA_HEIGHT = 1;
-const LAVA_DEPTH = 6;
+const LAVA_DEPTH = BuggyRunConstants.objectDepth;
 
 let isLavaHit = false;
 
@@ -51,7 +51,7 @@ void main() {
 
 const PLATFORM_WIDTH = BuggyRunConstants.objectWidth * 0.5;
 const PLATFORM_HEIGHT = 2;
-const PLATFORM_DEPTH = BuggyRunConstants.baseDepth - 4;
+const PLATFORM_DEPTH = BuggyRunConstants.objectDepth;
 const PLATFORM_COLOR: THREE.Color = new THREE.Color('black');
 const VECTOR = new THREE.Vector3(0,0,0);
 

@@ -9,7 +9,7 @@ import {Extrude} from "@react-three/drei";
 
 const RAMP_WIDTH = BuggyRunConstants.objectWidth;
 const RAMP_HEIGHT = BuggyRunConstants.objectHeight;
-const RAMP_DEPTH = BuggyRunConstants.baseDepth - 4;
+const RAMP_DEPTH = BuggyRunConstants.objectDepth;
 const RAMP_COLOR = 'black';
 
 type RampType = 'up' | 'down' | 'flat';

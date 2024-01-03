@@ -184,8 +184,8 @@ type CameraSettings = {
 const chassisPosition = new THREE.Vector3();
 const cameraTarget = new THREE.Vector3(0, 0, 0);
 const CAMERA_SETTINGS: Map<CameraState, CameraSettings> = new Map([
-  ['STANDARD',    { lerpAlpha: 0.1, offsetY: 2, offsetZ: 20   }],
-  ['ZOOMED-OUT',  { lerpAlpha: 0.1, offsetY: 5, offsetZ: 50 }]
+  ['STANDARD',    { lerpAlpha: 0.1, offsetY: 5, offsetZ: 50   }],
+  ['ZOOMED-OUT',  { lerpAlpha: 0.1, offsetY: 12, offsetZ: 120 }]
 ]);
 let cameraState: CameraState = 'STANDARD';
 let cameraSettings = CAMERA_SETTINGS.get(cameraState) as CameraSettings;

@@ -10,7 +10,7 @@ import {useFrame} from "@react-three/fiber";
 
 const WALL_WIDTH = 3;
 const WALL_HEIGHT = BuggyRunConstants.objectHeight;
-const WALL_DEPTH = BuggyRunConstants.baseDepth - 4;
+const WALL_DEPTH = BuggyRunConstants.objectDepth;
 const WALL_COLOR: THREE.Color = new THREE.Color('orange').multiplyScalar(2);
 
 let isHit = false;

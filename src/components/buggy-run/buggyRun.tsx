@@ -27,10 +27,15 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 // TODO add obstacle - treadmill
 // TODO add obstacle - lift
 
-// TODO activate the brakes when the pedal is released to allow more control
+// TODO introduce stand-alone platform object
+// TODO introduce variations of spike, bumps, and lava, with and without platform
+
+// TODO what if at the end of the level the jeep auto-drives onto a vertical half-pipe which rotates the level 180 degrees?
+//      so you need to drive back through the same level, but now what was on the ceiling before is now on the ground
 
 // TODO add texture to crate
 
+// TODO fix lava not rendering correctly
 // TODO fix wall incorrectly detects crate as a hit and ends the game
 // TODO fix lava incorrectly detects crate as a hit and ends the game
 

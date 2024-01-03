@@ -7,7 +7,7 @@ import {RigidBody} from "@react-three/rapier";
 import {Box, Line} from "@react-three/drei";
 import {BuggyRunConstants} from "./buggyRunConstants.ts";
 import {ObstacleHitEvent} from "./obstacle.ts";
-import {Terrain} from "./terrain.tsx";
+// import {Terrain} from "./terrain.tsx";
 import {Hole} from "./hole.tsx";
 import {Ramp} from "./ramp.tsx";
 import {Wall} from "./wall.tsx";
@@ -61,8 +61,8 @@ type Level = {
 };
 
 const LEVEL: Level = {
-  ceiling: '__<w>I<w>__~__<#>__~__<##>______',
-  ground:  '__<=>I<#>__~__<#>__~__<##>______',
+  ceiling: '___I____________________________',
+  ground:  '___I_<##>_<~~>_<ww>_<II>_<===>__',
 };
 
 const LEVEL_WIDTH = LEVEL.ground.length * BuggyRunConstants.objectWidth;
@@ -178,14 +178,14 @@ const Level = forwardRef<LevelRef, LevelProps>(({ opacity, onGroundHit, onObstac
         {/* Ceiling */}
         <group position={[0,20,0]} rotation={[Math.PI,0,0]}>
           <Base opacity={opacity} onGroundHit={onGroundHit} />
-          <group position={[LEVEL_WIDTH, 0, 0]} rotation={[0,Math.PI,0]}>
-            <Terrain levelWidth={LEVEL_WIDTH} />
-          </group>
+          {/*<group position={[LEVEL_WIDTH, 0, 0]} rotation={[0,Math.PI,0]}>*/}
+          {/*  <Terrain levelWidth={LEVEL_WIDTH} />*/}
+          {/*</group>*/}
           {respawn ? null : <LevelObjects opacity={opacity} levelObjects={ceilingLevelObjects} onObstacleHit={onObstacleHit} />}
         </group>
         {/* Ground */}
         <Base opacity={opacity} onGroundHit={onGroundHit} />
-        <Terrain levelWidth={LEVEL_WIDTH} />
+        {/*<Terrain levelWidth={LEVEL_WIDTH} />*/}
         {respawn ? null : <LevelObjects opacity={opacity} levelObjects={groundLevelObjects} onObstacleHit={onObstacleHit} />}
       </>
     )
