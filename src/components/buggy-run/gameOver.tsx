@@ -8,7 +8,7 @@ const GameOver = ({ opacity, isFinished, onPlayAgainButtonClicked } : { opacity:
     <>
       <ScreenSpace depth={1}>
         <Billboard>
-          <Message opacity={opacity} text={isFinished ? 'COMPLETE!' : 'GAME OVER!'} />
+          <Message opacity={opacity} text={isFinished ? 'YOU WIN!' : 'GAME OVER!'} />
           <PlayAgainButton opacity={opacity} onButtonClicked={onPlayAgainButtonClicked}/>
         </Billboard>
       </ScreenSpace>
