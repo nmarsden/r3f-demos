@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import {animated, config, SpringValue, useSpring} from "@react-spring/three";
+import {animated, SpringValue, useSpring} from "@react-spring/three";
 import {useEffect, useRef, useState} from "react";
 import {RapierRigidBody, RigidBody, useRapier, vec3} from "@react-three/rapier";
 import * as THREE from "three";
@@ -15,20 +15,23 @@ const PLATFORM_COLOR: THREE.Color = new THREE.Color('black');
 const VECTOR = new THREE.Vector3(0,0,0);
 
 const Platform = ({ opacity, ...props } : { opacity: SpringValue } & JSX.IntrinsicElements['group']) => {
-  const [{ positionX }, api] = useSpring(() => ({
-    from: { positionX: PLATFORM_WIDTH * 0.5 },
-    config: config.stiff
-  }))
+  const [{ positionX }, api] = useSpring(() => ({ positionX: 0 }));
   const platform = useRef<RapierRigidBody>(null);
   const { isPaused } = useRapier();
   const [visible, setVisible] = useState(false);
   const [startPosition, setStartPosition] = useState<THREE.Vector3>(new THREE.Vector3((props.position as number[])[0], 0, 0));
 
   useEffect(() => {
+    const position = props.position as number[];
+    const isEven = (position[0] / BuggyRunConstants.objectWidth) % 2 === 0;
+    const minX = PLATFORM_WIDTH * 0.5;
+    const maxX = BuggyRunConstants.objectWidth - (PLATFORM_WIDTH * 0.5);
+    const from = { positionX: isEven ? minX : maxX };
+    const to = { positionX: isEven ? maxX : minX };
     api.start({
-      to: { positionX: BuggyRunConstants.objectWidth - (PLATFORM_WIDTH * 0.5) },
-      loop: true,
-      reverse: true,
+      from,
+      to,
+      loop: { reverse: true },
       delay: 2000,
       config: {
         duration: 3000

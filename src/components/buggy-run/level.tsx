@@ -41,7 +41,6 @@ const CHAR_TO_OBJECT_TYPE: Map<string, ObjectType> = new Map([
 ]);
 
 const buildLevelObjects = (level: string): LevelObject[] => {
-  const LEVEL_OBJECT_WIDTH = BuggyRunConstants.objectWidth;
   const levelObjects: LevelObject[] = [];
   let posX = 0;
   level.split('').forEach(char => {
@@ -50,7 +49,7 @@ const buildLevelObjects = (level: string): LevelObject[] => {
       case 'NONE': break;
       default: levelObjects.push({ type, posX })
     }
-    posX += LEVEL_OBJECT_WIDTH;
+    posX += BuggyRunConstants.objectWidth;
   })
   return levelObjects;
 }
@@ -61,7 +60,7 @@ type Level = {
 };
 
 const LEVEL: Level = {
-  ceiling: '_______________________===___',
+  ceiling: '__<##>__~~___~~__<II>_<===>__',
   ground:  '__<##>_<~~>_<ww>_<II>_<===>__',
 };
 
