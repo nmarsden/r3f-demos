@@ -12,8 +12,9 @@ import {DashBoard} from "./dashBoard.tsx";
 import {Bloom, EffectComposer} from "@react-three/postprocessing";
 import {GameOver} from "./gameOver.tsx";
 import {Pedal, PedalHoveredChangedEvent, PedalRef} from "./pedal.tsx";
+import {ObstacleHitEvent} from "./obstacle.ts";
 
-type GameState = 'PLAYING' | 'GAME_OVER';
+type GameState = 'PLAYING' | 'GAME_OVER' | 'FINISHED';
 
 // TODO add power-up - invincible
 // TODO add power-up - boost
@@ -34,6 +35,9 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 //      so you need to drive back through the same level, but now what was on the ceiling before is now on the ground
 
 // TODO add texture to crate
+
+// TODO show time on HUD
+// TODO show best time on FINISHED
 
 // TODO fix wall incorrectly detects crate as a hit and ends the game
 // TODO fix lava incorrectly detects crate as a hit and ends the game
@@ -70,8 +74,8 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
   const onGroundHit = useCallback(() => {
   }, []);
 
-  const onObstacleHit = useCallback(() => {
-    setGameState('GAME_OVER');
+  const onObstacleHit = useCallback((event: ObstacleHitEvent) => {
+    setGameState(event.obstacle === 'FINISH' ? 'FINISHED' : 'GAME_OVER');
     setPaused(true)
     jeep.current?.pause();
   }, []);
@@ -106,7 +110,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
             <>
               <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged}/>
               <Level ref={level} opacity={opacity} onGroundHit={onGroundHit} onObstacleHit={onObstacleHit}/>
-              {gameState === 'GAME_OVER' ? <GameOver opacity={opacity} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
+              {['GAME_OVER', 'FINISHED'].includes(gameState) ? <GameOver opacity={opacity} isFinished={gameState === 'FINISHED'} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
               <ControlPanel opacity={opacity}>
                 <DashBoard opacity={opacity} velocity={velocity} />
                 <Pedal

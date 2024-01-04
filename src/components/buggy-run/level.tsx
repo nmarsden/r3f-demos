@@ -16,10 +16,11 @@ import {Tiles} from "./tiles.tsx";
 import {Crates} from "./crates.tsx";
 import {Bumps} from "./bumps.tsx";
 import {Spikes} from "./spikes.tsx";
+import {Finish} from "./finish.tsx";
 
 const BASE_HEIGHT = 20;
 
-type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN' | 'LAVA' | 'TILES' | 'CRATES' | 'BUMPS' | 'SPIKES';
+type ObjectType = 'NONE' | 'WALL' | 'HOLE' | 'RAMP_UP' | 'RAMP_FLAT' | 'RAMP_DOWN' | 'LAVA' | 'TILES' | 'CRATES' | 'BUMPS' | 'SPIKES' | 'FINISH';
 
 type LevelObject = {
   type: ObjectType;
@@ -38,6 +39,7 @@ const CHAR_TO_OBJECT_TYPE: Map<string, ObjectType> = new Map([
   ['C', 'CRATES'],
   ['~', 'BUMPS'],
   ['w', 'SPIKES'],
+  ['f', 'FINISH']
 ]);
 
 const buildLevelObjects = (level: string): LevelObject[] => {
@@ -60,8 +62,8 @@ type Level = {
 };
 
 const LEVEL: Level = {
-  ceiling: '__<##>__~~___~~__<II>_<===>__',
-  ground:  '__<##>_<~~>_<ww>_<II>_<===>__',
+  ceiling: '__<##>__~~___~~__<II>_<===>___',
+  ground:  '__<##>_<~~>_<ww>_<II>_<===>__f',
 };
 
 const LEVEL_WIDTH = LEVEL.ground.length * BuggyRunConstants.objectWidth;
@@ -143,6 +145,7 @@ const LevelObjects = ({ opacity, levelObjects, onObstacleHit }: { opacity: Sprin
         case 'CRATES':    return <Crates key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
         case 'BUMPS':     return <Bumps key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} />
         case 'SPIKES':    return <Spikes key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'SPIKES' })} />
+        case 'FINISH':    return <Finish key={key} opacity={opacity} position={[levelObject.posX, 0, 0]} onHit={() => onObstacleHit({ obstacle: 'FINISH' })} />
       }
     })
   );
