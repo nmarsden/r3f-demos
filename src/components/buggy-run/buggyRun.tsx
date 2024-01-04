@@ -35,7 +35,6 @@ type GameState = 'PLAYING' | 'GAME_OVER';
 
 // TODO add texture to crate
 
-// TODO fix lava platform when on the ceiling
 // TODO fix wall incorrectly detects crate as a hit and ends the game
 // TODO fix lava incorrectly detects crate as a hit and ends the game
 

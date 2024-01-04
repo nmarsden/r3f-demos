@@ -36,14 +36,11 @@ const WaveShaderMaterial = shaderMaterial(
       modelPosition.y += sin(modelPosition.z * 6.0 + time * 2.0) * 0.25;
       
       vZ = position.y;
-      // vZ = modelPosition.y;
       
       vec4 viewPosition = viewMatrix * modelPosition;
       vec4 projectedPosition = projectionMatrix * viewPosition;
       
       gl_Position = projectedPosition;
-       
-      // gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       
       #include <logdepthbuf_vertex>
     }
@@ -62,8 +59,6 @@ const WaveShaderMaterial = shaderMaterial(
     void main() {
     
       #include <logdepthbuf_fragment>
-
-      // gl_FragColor.rgba = vec4(vZ, vZ, vZ, 1.0);
 
       gl_FragColor.rgba = vec4(vZ * color, 1.0);
     }
