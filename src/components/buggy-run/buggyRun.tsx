@@ -13,6 +13,7 @@ import {Bloom, EffectComposer} from "@react-three/postprocessing";
 import {GameOver} from "./gameOver.tsx";
 import {Pedal, PedalHoveredChangedEvent, PedalRef} from "./pedal.tsx";
 import {ObstacleHitEvent} from "./obstacle.ts";
+import {StopWatch, StopWatchRef} from "./stopWatch.tsx";
 
 type GameState = 'PLAYING' | 'GAME_OVER' | 'FINISHED';
 
@@ -36,7 +37,6 @@ type GameState = 'PLAYING' | 'GAME_OVER' | 'FINISHED';
 
 // TODO add texture to crate
 
-// TODO show time on HUD
 // TODO show best time on FINISHED
 
 // TODO fix wall incorrectly detects crate as a hit and ends the game
@@ -48,6 +48,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
   const jeep = useRef<JeepModelRef>(null);
   const pedal = useRef<PedalRef>(null);
   const level = useRef<LevelRef>(null);
+  const stopWatch = useRef<StopWatchRef>(null);
   const [gameState, setGameState] = useState<GameState>('PLAYING');
   const [hovered, setHovered] = useState(false);
   const [velocity, setVelocity] = useState(0);
@@ -62,6 +63,9 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
   const onPedalDown = useCallback(() => {
     if (!jeep.current) return;
 
+    if (!stopWatch.current?.isStarted()) {
+      stopWatch.current?.start();
+    }
     jeep.current?.pedalDown();
   }, [jeep]);
 
@@ -78,6 +82,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
     setGameState(event.obstacle === 'FINISH' ? 'FINISHED' : 'GAME_OVER');
     setPaused(true)
     jeep.current?.pause();
+    stopWatch.current?.stop();
   }, []);
 
   const onPlayAgainButtonClicked = useCallback(() => {
@@ -85,6 +90,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
     jeep.current?.reset();
     pedal.current?.reset();
     level.current?.reset();
+    stopWatch.current?.reset();
     setGameState('PLAYING');
   }, []);
 
@@ -112,6 +118,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
               <Level ref={level} opacity={opacity} onGroundHit={onGroundHit} onObstacleHit={onObstacleHit}/>
               {['GAME_OVER', 'FINISHED'].includes(gameState) ? <GameOver opacity={opacity} isFinished={gameState === 'FINISHED'} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
               <ControlPanel opacity={opacity}>
+                <StopWatch ref={stopWatch} opacity={opacity} />
                 <DashBoard opacity={opacity} velocity={velocity} />
                 <Pedal
                   ref={pedal}
