@@ -1,15 +1,13 @@
-import {TrophyModel} from "./trophyModel.tsx";
 import {PlayAgainButton} from "../playAgainButton/playAgainButton.tsx";
 import {Message} from "../message/message.tsx";
-import {TrophyBackground} from "./trophyBackground.tsx";
 import {SpringValue} from "@react-spring/three";
+import {Trophy} from "../trophy/trophy.tsx";
 
 const Won = ({ opacity, onPlayAgainButtonClicked } : { opacity: SpringValue, onPlayAgainButtonClicked: () => void }) => {
   return (
     <>
-      <TrophyBackground />
-      <TrophyModel />
-      <Message opacity={opacity} text={'YOU WON!'} />
+      <Trophy />
+      <Message opacity={opacity} text={['YOU WON!']} />
       <PlayAgainButton opacity={opacity} onButtonClicked={onPlayAgainButtonClicked}/>
     </>
   )

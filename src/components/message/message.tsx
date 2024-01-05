@@ -3,7 +3,7 @@ import './message.css';
 import {SpringValue} from "@react-spring/three";
 import {useTransitionState} from "../../hooks/transitionState.ts";
 
-const Message = ({ opacity, text } : { opacity: SpringValue, text: string }) => {
+const Message = ({ opacity, text } : { opacity: SpringValue, text: string[] }) => {
   const transitionState = useTransitionState(opacity);
 
   return (
@@ -13,7 +13,7 @@ const Message = ({ opacity, text } : { opacity: SpringValue, text: string }) => 
         zIndexRange={[50, 40]}
       >
         <div className={`message-container ${transitionState === "LEAVING" ? 'hide' : 'fade-in'}`}>
-          <div className={'message-text'}>{text}</div>
+          {text.map((txt, index) => <div key={`${index}`} className={'message-text'}>{txt}</div> )}
         </div>
       </Html>
     </group>

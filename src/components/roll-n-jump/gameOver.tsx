@@ -8,7 +8,7 @@ const GameOver = ({ opacity, onPlayAgainButtonClicked } : { opacity: SpringValue
     <>
       <ScreenSpace depth={1}>
         <Billboard>
-          <Message opacity={opacity} text={'GAME OVER!'} />
+          <Message opacity={opacity} text={['GAME OVER!']} />
           <PlayAgainButton opacity={opacity} onButtonClicked={onPlayAgainButtonClicked}/>
         </Billboard>
       </ScreenSpace>

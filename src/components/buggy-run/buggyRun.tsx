@@ -29,15 +29,12 @@ type GameState = 'PLAYING' | 'GAME_OVER' | 'FINISHED';
 // TODO add obstacle - treadmill
 // TODO add obstacle - lift
 
-// TODO introduce stand-alone platform object
 // TODO introduce variations of spike, bumps, and lava, with and without platform
 
 // TODO what if at the end of the level the jeep auto-drives onto a vertical half-pipe which rotates the level 180 degrees?
 //      so you need to drive back through the same level, but now what was on the ceiling before is now on the ground
 
 // TODO add texture to crate
-
-// TODO show best time on FINISHED
 
 // TODO fix wall incorrectly detects crate as a hit and ends the game
 // TODO fix lava incorrectly detects crate as a hit and ends the game
@@ -53,6 +50,8 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
   const [hovered, setHovered] = useState(false);
   const [velocity, setVelocity] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [bestTimes, setBestTimes] = useState<number[]>([0, 0, 0]);
+  const [newBestTime, setNewBestTime] = useState<boolean>(false);
 
   const onPedalHovered = useCallback((event: PedalHoveredChangedEvent) => {
     setHovered(event.isHovered);
@@ -79,11 +78,20 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
   }, []);
 
   const onObstacleHit = useCallback((event: ObstacleHitEvent) => {
-    setGameState(event.obstacle === 'FINISH' ? 'FINISHED' : 'GAME_OVER');
     setPaused(true)
     jeep.current?.pause();
     stopWatch.current?.stop();
-  }, []);
+    if (event.obstacle === 'FINISH') {
+      const time = stopWatch.current?.getTime() as number;
+      if (bestTimes[0] === 0 || time < bestTimes[0]) {
+        setNewBestTime(true);
+        setBestTimes(prevState => [time, prevState[0], prevState[1]]);
+      }
+      setGameState('FINISHED');
+    } else {
+      setGameState('GAME_OVER');
+    }
+  }, [bestTimes]);
 
   const onPlayAgainButtonClicked = useCallback(() => {
     setPaused(false);
@@ -91,6 +99,7 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
     pedal.current?.reset();
     level.current?.reset();
     stopWatch.current?.reset();
+    setNewBestTime(false);
     setGameState('PLAYING');
   }, []);
 
@@ -116,7 +125,14 @@ const BuggyRun = ({ opacity }: { opacity: SpringValue }) => {
             <>
               <JeepModel ref={jeep} opacity={opacity} onVelocityChanged={onVelocityChanged}/>
               <Level ref={level} opacity={opacity} onGroundHit={onGroundHit} onObstacleHit={onObstacleHit}/>
-              {['GAME_OVER', 'FINISHED'].includes(gameState) ? <GameOver opacity={opacity} isFinished={gameState === 'FINISHED'} onPlayAgainButtonClicked={onPlayAgainButtonClicked}/> : null}
+              {['GAME_OVER', 'FINISHED'].includes(gameState) ? (
+                <GameOver
+                  opacity={opacity}
+                  isFinished={gameState === 'FINISHED'}
+                  newBestTime={newBestTime}
+                  bestTimes={bestTimes}
+                  onPlayAgainButtonClicked={onPlayAgainButtonClicked}
+                />) : null}
               <ControlPanel opacity={opacity}>
                 <StopWatch ref={stopWatch} opacity={opacity} />
                 <DashBoard opacity={opacity} velocity={velocity} />

@@ -28,6 +28,7 @@ export type StopWatchRef = {
   stop: () => void;
   reset: () => void;
   isStarted: () => boolean;
+  getTime: () => number;
 } | null;
 
 type StopWatchProps = {
@@ -59,12 +60,17 @@ const StopWatch = forwardRef<StopWatchRef, StopWatchProps>(({ opacity }: StopWat
     return !!intervalHandle.current;
   }, []);
 
+  const getTime = useCallback(() => {
+    return time;
+  }, [time]);
+
   useImperativeHandle(ref, () => ({
     start: () => start(),
     stop: () => stop(),
     reset: () => reset(),
-    isStarted: () => isStarted()
-  }), [start, stop, reset, isStarted]);
+    isStarted: () => isStarted(),
+    getTime: () => getTime()
+  }), [start, stop, reset, isStarted, getTime]);
 
   const formattedTime = () => {
     return `${Math.floor(time / 60)}`.padStart(2, '0') + ':' + `${Math.floor(time % 60)}`.padStart(2, '0');
